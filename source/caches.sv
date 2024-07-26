@@ -17,6 +17,7 @@ module caches (
   input logic CLK, nRST,
   datapath_cache_if.cache dcif,
 <<<<<<< HEAD
+<<<<<<< HEAD
   caches_if.caches cif
 );
   // import types
@@ -30,6 +31,10 @@ module caches (
 
   word_t instr;
   word_t daddr;
+=======
+  caches_if cif
+);
+>>>>>>> a7fda6302ce91fbe3f32bf24bbcc6d438b7ec5bf
 
   // icache
   //icache  ICACHE(dcif, cif);
@@ -64,7 +69,10 @@ module caches (
   assign dcif.ihit = (dcif.imemREN) ? ~cif.iwait : 0;
   assign dcif.dhit = (dcif.dmemREN|dcif.dmemWEN) ? ~cif.dwait : 0;
   assign dcif.imemload = cif.iload;
+<<<<<<< HEAD
 >>>>>>> c54c166650f4a106c60fd07435109d6e4e177e69
+=======
+>>>>>>> a7fda6302ce91fbe3f32bf24bbcc6d438b7ec5bf
   assign dcif.dmemload = cif.dload;
 
 
@@ -74,9 +82,13 @@ module caches (
   assign cif.dstore = dcif.dmemstore;
   assign cif.iaddr = dcif.imemaddr;
 <<<<<<< HEAD
+<<<<<<< HEAD
   assign cif.daddr = daddr;
 =======
   assign cif.daddr = dcif.dmemaddr;
 >>>>>>> c54c166650f4a106c60fd07435109d6e4e177e69
+=======
+  assign cif.daddr = dcif.dmemaddr;
+>>>>>>> a7fda6302ce91fbe3f32bf24bbcc6d438b7ec5bf
 
 endmodule

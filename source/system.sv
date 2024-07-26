@@ -47,6 +47,7 @@ module system (input logic CLK, nRST, system_if.sys syif);
 
   // processor
 <<<<<<< HEAD
+<<<<<<< HEAD
   singlecycle #(.PC0('h0))              CPU (CPUCLK, nRST, halt, prif);
 
   /* **** MAKE SURE to CHANGE the CLK to CPUCLK in pipeline and multicore modules **** */
@@ -56,6 +57,11 @@ module system (input logic CLK, nRST, system_if.sys syif);
   pipeline    #(.PC0('h0))              CPU (CPUCLK, nRST, halt, prif);
 >>>>>>> c54c166650f4a106c60fd07435109d6e4e177e69
   //multicore   #(.PC0('h0), .PC1('h200)) CPU (CLK, nRST, halt, prif);
+=======
+  //singlecycle #(.PC0('h0))              CPU (CPUCLK, nRST, halt, prif);
+  //pipeline    #(.PC0('h0))              CPU (CPUCLK, nRST, halt, prif);
+  multicore   #(.PC0('h0), .PC1('h200)) CPU (CPUCLK, nRST, halt, prif);
+>>>>>>> a7fda6302ce91fbe3f32bf24bbcc6d438b7ec5bf
 
   // memory
   ram                                   RAM (CLK, nRST, prif);
