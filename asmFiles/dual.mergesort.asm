@@ -1,3 +1,6 @@
+#----------------------------------------------------------
+# RISC-V Assembly
+#----------------------------------------------------------
 #Mergesort for benchmarking
 #Optimized for 512 bit I$ 1024 bit D$
 #Author Adam Hendrickson ahendri@purdue.edu
@@ -5,86 +8,71 @@
 
 #CORE 0
 org 0x0000
-  ori   $fp, $zero, 0xFFFC
-  ori   $sp, $zero, 0xFFFC
-  ori   $a0, $zero, data
-  lw    $s0, size($zero)
-  ori   $t0, $0, 1
-  srlv  $a1, $t0, $s0
-  or    $s1, $zero, $a0
-  or    $s2, $zero, $a1
-  jal   insertion_sort
-  ori   $t0, $0, 1
-  srlv  $t0, $t0, $s0
-  subu  $a1, $s0, $t0
-  ori   $t1, $0, 2
-  sllv  $t0, $t1, $t0
-  ori   $a0, $zero, data
-  addu  $a0, $a0, $t0
-  or    $s3, $zero, $a0
-  or    $s4, $zero, $a1
-  or    $a0, $zero, $s1
-  or    $a1, $zero, $s2
-  or    $a2, $zero, $s3
-  or    $a3, $zero, $s4
-  ori   $t0, $zero, sorted
-  push  $t0
-  ori   $t1, $zero, flag
-wait1:
-  lw    $t2, 0($t1)
-  beq   $t2, $zero, wait1
-  jal   merge
-  addiu $sp, $sp, 4
-  halt
+  ori   $8, $0, 0xfFC
+  ori   $2, $0, 0xffc 
+  lui $3, 0xffff7  
+  sub $2, $2, $3
+  sub $8, $8, $3
+  lui $3, 0x00007
+  add $2, $2, $3
+  add $8, $8, $3
+
+   ori   $12, $0, data
+   lw    $24, size($0)
+   ori   $5, $0, 1
+   srl  $13,$24,$5
+   or    $9, $0, $12
+   or    $18, $0, $13
+   jal   insertion_sort
+  ori   $5, $0, 1
+   srl  $5,$24,$5
+   sub  $13, $24, $5
+   ori   $6, $0, 2
+   sll  $5,$5,$6
+   ori   $12, $0, data
+   add  $12, $12, $5
+   or    $19, $0, $12
+   or    $20, $0, $13
+   or    $12, $0, $9
+   or    $13, $0, $18
+   or    $14, $0, $19
+   or    $15, $0, $20
+   ori   $5, $0, sorted
+   push  $5
+   ori   $6, $0, flag
+ wait1:
+  lw    $7, 0($6)
+   beq   $7, $0, wait1
+   jal   merge
+  addi $2, $2, 4
+   halt
 
 #CORE 1
 org 0x0200
-  ori   $fp, $zero, 0x3FFC
-  ori   $sp, $zero, 0x3FFC
-  ori   $a0, $zero, data
-  lw    $s0, size($zero)
-  ori   $t0, $0, 1
-  srlv  $a1, $t0, $s0
-  ori   $t0, $0, 2
-  sllv  $t0, $t0, $a1
-  addu  $a0, $a0, $t0
-  subu  $a1, $s0, $a1
-  jal   insertion_sort
-  ori   $t0, $zero, flag
-  ori   $t1, $zero, 1
-  sw    $t1, 0($t0)
-  halt
+  lui $3, 0xffffc  
+  ori   $8, $0, 0xFFC
+   ori   $2, $0, 0xFFC
+   sub $2, $2, $3
+   sub $8, $8, $3
+   ori   $12, $0, data
+   lw    $24, size($0)
+   ori   $5, $0, 1
+   srl  $13,$24,$5
+   ori   $5, $0, 2
+   sll  $5,$13,$5
+   add  $12, $12, $5
+   sub  $13, $24, $13
+   jal   insertion_sort
+  ori   $5, $0, flag
+   ori   $6, $0, 1
+   sw    $6, 0($5)
+   halt
 
 #void insertion_sort(int* $a0, int $a1)
 # $a0 : pointer to data start
 # $a1 : size of array
 #--------------------------------------
 insertion_sort:
-<<<<<<< HEAD
-  ori   $t0, $zero, 4
-  ori   $t1, $0, 2
-  sllv  $t1, $t1, $a1
-is_outer:
-  sltu  $at, $t0, $t1
-  beq   $at, $zero, is_end
-  addu  $t9, $a0, $t0
-  lw    $t8, 0($t9)
-is_inner:
-  beq   $t9, $a0, is_inner_end
-  lw    $t7, -4($t9)
-  slt   $at, $t8, $t7
-  beq   $at, $zero, is_inner_end
-  sw    $t7, 0($t9)
-  addiu $t9, $t9, -4
-  j     is_inner
-is_inner_end:
-  sw    $t8, 0($t9)
-  addiu $t0, $t0, 4
-  j     is_outer
-is_end:
-  jr    $ra
-#--------------------------------------
-=======
   ori   $5, $0, 4
    ori   $6, $0, 2
    sll  $6,$13,$6
@@ -108,7 +96,6 @@ is_inner_end:
 is_end:
   jr    $1
  #--------------------------------------
->>>>>>> 0993c6e9ef29110898425c513d61e32a1032dceb
 
 #void merge(int* $a0, int $a1, int* $a2, int $a3, int* dst)
 # $a0 : pointer to list 1
@@ -118,51 +105,6 @@ is_end:
 # dst [$sp+4] : pointer to merged list location
 #--------------------------------------
 merge:
-<<<<<<< HEAD
-  lw    $t0, 0($sp)
-m_1:
-  bne   $a1, $zero, m_3
-m_2:
-  bne   $a3, $zero, m_3
-  j     m_end
-m_3:
-  beq   $a3, $zero, m_4
-  beq   $a1, $zero, m_5
-  lw    $t1, 0($a0)
-  lw    $t2, 0($a2)
-  slt   $at, $t1, $t2
-  beq   $at, $zero, m_3a
-  sw    $t1, 0($t0)
-  addiu $t0, $t0, 4
-  addiu $a0, $a0, 4
-  addiu $a1, $a1, -1
-  j     m_1
-m_3a:
-  sw    $t2, 0($t0)
-  addiu $t0, $t0, 4
-  addiu $a2, $a2, 4
-  addiu $a3, $a3, -1
-  j     m_1
-m_4:  #left copy
-  lw    $t1, 0($a0)
-  sw    $t1, 0($t0)
-  addiu $t0, $t0, 4
-  addiu $a1, $a1, -1
-  addiu $a0, $a0, 4
-  beq   $a1, $zero, m_end
-  j     m_4
-m_5:  # right copy
-  lw    $t2, 0($a2)
-  sw    $t2, 0($t0)
-  addiu $t0, $t0, 4
-  addiu $a3, $a3, -1
-  addiu $a2, $a2, 4
-  beq   $a3, $zero, m_end
-  j     m_5
-m_end:
-  jr    $ra
-#--------------------------------------
-=======
   lw    $5, 0($2)
  m_1:
   bne   $13, $0, m_3
@@ -206,7 +148,6 @@ m_5:  # right copy
 m_end:
   jr    $1
  #--------------------------------------
->>>>>>> 0993c6e9ef29110898425c513d61e32a1032dceb
 
 
 org 0x400

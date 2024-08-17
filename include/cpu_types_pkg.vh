@@ -7,6 +7,9 @@
   Shubham Rastogi
   shubhamrastogi3111995@gmail.com
 
+  Ansh Patel
+  patelansh092@gmail.com
+
   cache structs added
   
 */
@@ -60,22 +63,68 @@ package cpu_types_pkg;
     HALT      = 7'b1111111
   } opcode_t;
 
-  // rtype funct op type
-  typedef enum logic [FUNC_W-1:0] {
-    SLLV    = 6'b000100,
-    SRLV    = 6'b000110,
-    JR      = 6'b001000,
-    ADD     = 6'b100000,
-    ADDU    = 6'b100001,
-    SUB     = 6'b100010,
-    SUBU    = 6'b100011,
-    AND     = 6'b100100,
-    OR      = 6'b100101,
-    XOR     = 6'b100110,
-    NOR     = 6'b100111,
-    SLT     = 6'b101010,
-    SLTU    = 6'b101011
-  } funct_t;
+  typedef enum logic[4:0] {
+    LR = 5'h02,
+    SC = 5'h03
+  } funct5_atomic_t;
+  
+  // r/itype funct3 op type
+  typedef enum logic [FUNC3_W-1:0] {
+    SLL     = 3'h1,
+    SRL_SRA = 3'h5,
+    ADD_SUB = 3'h0,
+    AND     = 3'h7,
+    OR      = 3'h6,
+    XOR     = 3'h4,
+    SLT     = 3'h2,
+    SLTU    = 3'h3
+  } funct3_r_t;
+
+  typedef enum logic [FUNC3_W-1:0] {
+    ADDI    = 3'h0,
+    XORI    = 3'h4,
+    ORI     = 3'h6,
+    ANDI    = 3'h7,
+    SLLI    = 3'h1,
+    SRLI_SRAI = 3'h5,
+    SLTI    = 3'h2,
+    SLTIU   = 3'h3
+  } funct3_i_t;
+
+  typedef enum logic [FUNC3_W-1:0] {
+    LB      = 3'h0,
+    LH      = 3'h1,
+    LW      = 3'h2,
+    LBU     = 3'h4,
+    LHU     = 3'h5
+  } funct3_ld_i_t;
+
+  typedef enum logic [FUNC3_W-1:0] {
+    SB      = 3'h0,
+    SH      = 3'h1,
+    SW      = 3'h2
+  } funct3_s_t;
+
+  typedef enum logic [FUNC3_W-1:0] {
+    BEQ     = 3'h0,
+    BNE     = 3'h1,
+    BLT     = 3'h4,
+    BGE     = 3'h5,
+    BLTU    = 3'h6,
+    BGEU    = 3'h7
+  } funct3_b_t;
+
+  // rtype funct7 op type
+  typedef enum logic [FUNC7_W-1:0] {
+    ADD     = 7'h00,
+    SUB     = 7'h20
+  } funct7_r_t;
+
+  // rtype sra,srl funct7 op type
+  typedef enum logic [FUNC7_W-1:0] {
+    SRA     = 7'h20,
+    SRL     = 7'h00
+  } funct7_srla_r_t;
 
   // alu op type
   typedef enum logic [AOP_W-1:0] {
