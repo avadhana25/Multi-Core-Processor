@@ -1,41 +1,44 @@
+#----------------------------------------------------------
+# RISC-V Assembly
+#----------------------------------------------------------
+
 # registers a0-1,v0-1,t0
 # a0 = Numerator
 # a1 = Denominator
 # v0 = Quotient
 # v1 = Remainder
-
 #-divide(N=$a0,D=$a1) returns (Q=$v0,R=$v1)--------
 divide:               # setup frame
-  push  $ra           # saved return address
-  push  $a0           # saved register
-  push  $a1           # saved register
-  or    $v0, $0, $0   # Quotient v0=0
-  or    $v1, $0, $a0  # Remainder t2=N=a0
-  beq   $0, $a1, divrtn # test zero D
-  slt   $t0, $a1, $0  # test neg D
-  bne   $t0, $0, divdneg
-  slt   $t0, $a0, $0  # test neg N
-  bne   $t0, $0, divnneg
-divloop:
-  slt   $t0, $v1, $a1 # while R >= D
-  bne   $t0, $0, divrtn
-  addiu $v0, $v0, 1   # Q = Q + 1
-  subu  $v1, $v1, $a1 # R = R - D
-  j     divloop
+  push  $1           # saved return address
+   push  $12           # saved register
+   push  $13           # saved register
+   or    $10, $0, $0   # Quotient v0=0
+   or    $11, $0, $12  # Remainder t2=N=a0
+   beq   $0, $13, divrtn # test zero D
+   slt   $5, $13, $0  # test neg D
+   bne   $5, $0, divdneg
+   slt   $5, $12, $0  # test neg N
+   bne   $5, $0, divnneg
+ divloop:
+  slt   $5, $11, $13 # while R >= D
+   bne   $5, $0, divrtn
+   addi $10, $10, 1   # Q = Q + 1
+   sub  $11, $11, $13 # R = R - D
+   j     divloop
 divnneg:
-  subu  $a0, $0, $a0  # negate N
-  jal   divide        # call divide
-  subu  $v0, $0, $v0  # negate Q
-  beq   $v1, $0, divrtn
-  addiu $v0, $v0, -1  # return -Q-1
-  j     divrtn
+  sub  $12, $0, $12  # negate N
+   jal   divide        # call divide
+  sub  $10, $0, $10  # negate Q
+   beq   $11, $0, divrtn
+   addi $10, $10, -1  # return -Q-1
+   j     divrtn
 divdneg:
-  subu  $a0, $0, $a1  # negate D
-  jal   divide        # call divide
-  subu  $v0, $0, $v0  # negate Q
-divrtn:
-  pop $a1
-  pop $a0
-  pop $ra
-  jr  $ra
+  sub  $12, $0, $13  # negate D
+   jal   divide        # call divide
+  sub  $10, $0, $10  # negate Q
+ divrtn:
+  pop $13
+   pop $12
+   pop $1
+   jr  $1
 #-divide--------------------------------------------

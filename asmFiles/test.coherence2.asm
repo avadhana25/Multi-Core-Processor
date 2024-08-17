@@ -1,40 +1,43 @@
+#----------------------------------------------------------
+# RISC-V Assembly
+#----------------------------------------------------------
 # Multicore coherence test
 # stores 0xDEADBEEF to value
 
 #core 1
 org 0x0000
-  ori $t0, $0, word1
-  lw  $t1, 0($t0)
-  ori $t2, $0, 16
-  sllv $t1, $t2, $t1
-  ori $t4, $0, value
-  ori $t2, $0, flag
-
+  ori $5, $0, word1
+   lw  $6, 0($5)
+   ori $7, $0, 16
+   sll $6,$6,$7
+   ori $29, $0, value
+   ori $7, $0, flag
+ 
 # wait for core 2 to finish
 wait1:
-  lw  $t3, 0($t2)
-  beq $t3, $0, wait1
-
+  lw  $28, 0($7)
+   beq $28, $0, wait1
+ 
 # complete store
-  lw  $t0, 0($t4)
-  or  $t0, $t0, $t1
-  sw  $t0, 0($t4)
-
+  lw  $5, 0($29)
+   or  $5, $5, $6
+   sw  $5, 0($29)
+ 
   halt
 
 # core 2
 org 0x0200
-  ori $t0, $0, word2
-  lw  $t1, 0($t0)
-  ori $t2, $0, value
-  sw  $t1, 0($t2)
-
+  ori $5, $0, word2
+   lw  $6, 0($5)
+   ori $7, $0, value
+   sw  $6, 0($7)
+ 
 # set flag
-  ori $t1, $0, flag
-  ori $t2, $0, 1
-
-  sw  $t2, 0($t1)
-  halt
+  ori $6, $0, flag
+   ori $7, $0, 1
+ 
+  sw  $7, 0($6)
+   halt
 
 org 0x0400
 flag:
