@@ -60,6 +60,7 @@ org 0x0200
 # $a1 : size of array
 #--------------------------------------
 insertion_sort:
+<<<<<<< HEAD
   ori   $t0, $zero, 4
   ori   $t1, $0, 2
   sllv  $t1, $t1, $a1
@@ -83,6 +84,31 @@ is_inner_end:
 is_end:
   jr    $ra
 #--------------------------------------
+=======
+  ori   $5, $0, 4
+   ori   $6, $0, 2
+   sll  $6,$13,$6
+ is_outer:
+  sltu  $4, $5, $6
+   beq   $4, $0, is_end
+   add  $31, $12, $5
+   lw    $30, 0($31)
+ is_inner:
+  beq   $31, $12, is_inner_end
+   lw    $16, -4($31)
+   slt   $4, $30, $16
+   beq   $4, $0, is_inner_end
+   sw    $16, 0($31)
+   addi $31, $31, -4
+   j     is_inner
+is_inner_end:
+  sw    $30, 0($31)
+   addi $5, $5, 4
+   j     is_outer
+is_end:
+  jr    $1
+ #--------------------------------------
+>>>>>>> 0993c6e9ef29110898425c513d61e32a1032dceb
 
 #void merge(int* $a0, int $a1, int* $a2, int $a3, int* dst)
 # $a0 : pointer to list 1
@@ -92,6 +118,7 @@ is_end:
 # dst [$sp+4] : pointer to merged list location
 #--------------------------------------
 merge:
+<<<<<<< HEAD
   lw    $t0, 0($sp)
 m_1:
   bne   $a1, $zero, m_3
@@ -135,6 +162,51 @@ m_5:  # right copy
 m_end:
   jr    $ra
 #--------------------------------------
+=======
+  lw    $5, 0($2)
+ m_1:
+  bne   $13, $0, m_3
+ m_2:
+  bne   $15, $0, m_3
+   j     m_end
+m_3:
+  beq   $15, $0, m_4
+   beq   $13, $0, m_5
+   lw    $6, 0($12)
+   lw    $7, 0($14)
+   slt   $4, $6, $7
+   beq   $4, $0, m_3a
+   sw    $6, 0($5)
+   addi $5, $5, 4
+   addi $12, $12, 4
+   addi $13, $13, -1
+   j     m_1
+m_3a:
+  sw    $7, 0($5)
+   addi $5, $5, 4
+   addi $14, $14, 4
+   addi $15, $15, -1
+   j     m_1
+m_4:  #left copy
+  lw    $6, 0($12)
+   sw    $6, 0($5)
+   addi $5, $5, 4
+   addi $13, $13, -1
+   addi $12, $12, 4
+   beq   $13, $0, m_end
+   j     m_4
+m_5:  # right copy
+  lw    $7, 0($14)
+   sw    $7, 0($5)
+   addi $5, $5, 4
+   addi $15, $15, -1
+   addi $14, $14, 4
+   beq   $15, $0, m_end
+   j     m_5
+m_end:
+  jr    $1
+ #--------------------------------------
+>>>>>>> 0993c6e9ef29110898425c513d61e32a1032dceb
 
 
 org 0x400

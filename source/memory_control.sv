@@ -20,6 +20,10 @@ module memory_control (
   import cpu_types_pkg::*;
 
   // number of cpus for cc
+<<<<<<< HEAD
   parameter CPUS = 2;
+=======
+  parameter CPUS = 1;
+>>>>>>> 0993c6e9ef29110898425c513d61e32a1032dceb
 
 endmodule
