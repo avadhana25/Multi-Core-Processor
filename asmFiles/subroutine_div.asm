@@ -7,6 +7,8 @@
 # a1 = Denominator
 # v0 = Quotient
 # v1 = Remainder
+
+
 #-divide(N=$a0,D=$a1) returns (Q=$v0,R=$v1)--------
 divide:               # setup frame
   push  $1           # saved return address
