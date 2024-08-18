@@ -5,18 +5,27 @@
 #Optimized for 512 bit I$ 1024 bit D$
 #Author Adam Hendrickson ahendri@purdue.edu
 
+
+#CORE 0
 org 0x0000
-  ori   $8, $0, 0xFFFC
-   ori   $2, $0, 0xFFFC
+  ori   $8, $0, 0xfFC
+  ori   $2, $0, 0xffc 
+  lui $3, 0xffff7  
+  sub $2, $2, $3
+  sub $8, $8, $3
+  lui $3, 0x00007
+  add $2, $2, $3
+  add $8, $8, $3
+
    ori   $12, $0, data
    lw    $24, size($0)
-   ori   $6, $0, 1
-   srl  $13,$24,$6
+   ori   $5, $0, 1
+   srl  $13,$24,$5
    or    $9, $0, $12
    or    $18, $0, $13
    jal   insertion_sort
-  ori   $6, $0, 1
-   srl  $5,$24,$6
+  ori   $5, $0, 1
+   srl  $5,$24,$5
    sub  $13, $24, $5
    ori   $6, $0, 2
    sll  $5,$5,$6
@@ -24,18 +33,40 @@ org 0x0000
    add  $12, $12, $5
    or    $19, $0, $12
    or    $20, $0, $13
-   jal   insertion_sort
-  or    $12, $0, $9
+   or    $12, $0, $9
    or    $13, $0, $18
    or    $14, $0, $19
    or    $15, $0, $20
    ori   $5, $0, sorted
    push  $5
+   ori   $6, $0, flag
+ wait1:
+  lw    $7, 0($6)
+   beq   $7, $0, wait1
    jal   merge
   addi $2, $2, 4
    halt
 
-
+#CORE 1
+org 0x0200
+  lui $3, 0xffffc  
+  ori   $8, $0, 0xFFC
+   ori   $2, $0, 0xFFC
+   sub $2, $2, $3
+   sub $8, $8, $3
+   ori   $12, $0, data
+   lw    $24, size($0)
+   ori   $5, $0, 1
+   srl  $13,$24,$5
+   ori   $5, $0, 2
+   sll  $5,$13,$5
+   add  $12, $12, $5
+   sub  $13, $24, $13
+   jal   insertion_sort
+  ori   $5, $0, flag
+   ori   $6, $0, 1
+   sw    $6, 0($5)
+   halt
 
 #void insertion_sort(int* $a0, int $a1)
 # $a0 : pointer to data start
@@ -43,8 +74,8 @@ org 0x0000
 #--------------------------------------
 insertion_sort:
   ori   $5, $0, 4
-   ori   $7, $0, 2
-   sll  $6,$13,$7
+   ori   $6, $0, 2
+   sll  $6,$13,$6
  is_outer:
   sltu  $4, $5, $6
    beq   $4, $0, is_end
@@ -119,7 +150,9 @@ m_end:
  #--------------------------------------
 
 
-org 0x300
+org 0x400
+flag:
+cfw 0
 size:
 cfw 64
 data:
@@ -188,5 +221,5 @@ cfw 50
 cfw 7
 cfw 67
 
-org 0x500
+org 0x600
 sorted:
