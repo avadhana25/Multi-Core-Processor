@@ -62,19 +62,8 @@ begin
   @(posedge CLK);
 end
 endtask
-/*
-task print_register;
-input [31:0] curr_register;
-input reg_count;
-begin
-    $monitor("@%00g CLK = %b nRST = %b register[%d] = %h",
-    $time, CLK, nRST, reg_count, curr_register);
-  
-end
 
-  
-endtask //automatic
-*/
+
 endmodule
 
 program test;
