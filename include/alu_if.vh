@@ -16,7 +16,7 @@ interface alu_if;
 
   logic negative, zero, overflow;
   aluop_t ALUOP;
-  regbits_t port_a, port_b, port_out;
+  word_t port_a, port_b, port_out;
 
 
   // alu ports
@@ -26,7 +26,7 @@ interface alu_if;
   );
   // register file tb
   modport tb (
-    input   port_out, negative, overflow, zero
+    input   port_out, negative, overflow, zero,
     output  ALUOP, port_a, port_b
   );
 endinterface

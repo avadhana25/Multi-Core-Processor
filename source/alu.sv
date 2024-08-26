@@ -32,7 +32,7 @@ begin
             //OVERFLOW LOGIC
             if ((alu.port_a[31] == alu.port_b[31]) && (alu.port_a[31] != alu.port_out[31]))    //pos+pos = neg or neg+neg = pos
             begin
-                alu.overflow = 1'b0;
+                alu.overflow = 1'b1;
             end
         end
 
@@ -43,7 +43,7 @@ begin
             //OVERFLOW LOGIC
             if ((alu.port_a[31] != alu.port_b[31]) && (alu.port_a[31] != alu.port_out[31]))     //pos-neg = neg or neg-pos = pos
             begin
-                alu.overflow = 1'b0;
+                alu.overflow = 1'b1;
             end
         end
 
@@ -102,7 +102,7 @@ begin
     begin
         alu.negative = 1'b1;
     end
-    
+
     //ZERO LOGIC
     if (alu.port_out == 0)
     begin
