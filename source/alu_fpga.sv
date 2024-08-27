@@ -31,16 +31,16 @@ always_ff @( posedge CLOCK_50 )
 begin
     if (SW[17])
     begin
-        register_b <= SW[16:0];
+        alu.port_b <= SW[16:0];
     end
     else
     begin
-        register_b <= register_b;
+        alu.port_b <= register_b;
     end   
 end
 
 assign alu.port_a = SW[16:0];
-assign alu.port_b = register_b;
+assign register_b = alu.port_b;
 assign alu.ALUOP[0]  = ~KEY[0];
 assign alu.ALUOP[1]  = ~KEY[1];
 assign alu.ALUOP[2]  = ~KEY[2];
