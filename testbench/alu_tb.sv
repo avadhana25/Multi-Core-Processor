@@ -374,19 +374,6 @@ program test;
         $display("Test Case 1 for ZERO Failed: %b\n", alu.port_out);
     end 
 
-
-
-
-
-    
-
-
-
-
-
-
-
-
   end
 
 
