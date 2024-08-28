@@ -10,10 +10,10 @@
   addi $2, $0, 0xFFFC           #initialize stack at 0xFFFC
   add  $8, $8, $2               #set r8 to sp address
   addi $8, $8, -4               #set r8 to address sp will be after multiplying all operands
-  addi $4, $4, 4                #set r4 to 4
-  addi $5, $5, 5                #set r5 to 5
-  addi $6, $6, 6                #set r6 to 6
-  addi $7, $7, 7                #set r7 to 7
+  addi $4, $4, 1                #set r4 to 4
+  addi $5, $5, 2                #set r5 to 5
+  addi $6, $6, 3                #set r6 to 6
+  addi $7, $7, 4                #set r7 to 7
   push $4                       #push r4 onto stack
   push $5                       #push r5 onto stack
   push $6                       #push r6 onto stack

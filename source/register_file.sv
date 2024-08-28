@@ -6,9 +6,11 @@ register file source file
 
 //all types
 `include "cpu_types_pkg.vh"
+`include "register_file_if.vh"
 
 // import types
   import cpu_types_pkg::*;
+
 
 
 module register_file(input logic CLK, nRST, register_file_if.rf rfif);

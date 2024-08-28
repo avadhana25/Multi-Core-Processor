@@ -6,6 +6,7 @@ alu source file
 
 //all types
 `include "cpu_types_pkg.vh"
+`include "alu_if.vh"
 
 // import types
   import cpu_types_pkg::*;
