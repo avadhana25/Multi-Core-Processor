@@ -22,4 +22,57 @@ module memory_control (
   // number of cpus for cc
   parameter CPUS = 1;
 
+
+
+  //dwait logic
+  always_comb
+  begin
+    //default value
+    ccif.dwait = 1'b1;
+
+    //logic
+    if ((ccif.dREN || ccif.dWEN) && (ccif.ramstate == ACCESS))
+    begin
+      ccif.dwait = 1'b0;
+    end
+  end
+
+  //iwait logic
+  always_comb
+  begin
+    //default value
+    ccif.iwait = 1'b1;
+
+    //logic
+    if ((!(ccif.dREN || ccif.dWEN)) && (ccif.ramstate == ACCESS))
+    begin
+      ccif.iwait = 1'b0;
+    end
+  end
+
+  //ramREN logic
+  assign ccif.ramREN = ~ccif.dWEN;
+
+  //ramWEN logic
+  assign ccif.ramWEN = ccif.dWEN;
+
+  //ramstore logic
+  assign ccif.ramstore = ccif.dstore;
+
+  //iload logic
+  assign ccif.iload = ccif.dREN ? 1'b0 : ccif.ramload;
+
+  //dload logic
+  assign ccif.dload = ccif.dREN ? ccif.ramload : 1'b0;
+
+  //ramaddr logic
+  assign ccif.ramaddr = (ccif.dREN | ccif.dWEN) ? ccif.daddr : ccif.iaddr;
+
+
+
+
+  
+
+
+
 endmodule
