@@ -69,10 +69,4 @@ module memory_control (
   assign ccif.ramaddr = (ccif.dREN | ccif.dWEN) ? ccif.daddr : ccif.iaddr;
 
 
-
-
-  
-
-
-
 endmodule
