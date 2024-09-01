@@ -221,7 +221,7 @@ program test;
         #(PERIOD)
         if ((ccif.ramaddr == cif0.daddr) && (ccif.ramload == cif0.dload) && (ccif.dwait == 0))
         begin
-            $display("Data in Memory %0d succesfully read", i + 1);
+            $display("Data in Memory %0d succesfully read: %h", i + 1, ccif.ramload);
         end
         else
         begin
@@ -254,11 +254,11 @@ program test;
         #(PERIOD)
         if ((ccif.ramaddr == cif0.daddr) && (ccif.ramstore == cif0.dstore) && (ccif.dwait == 0))
         begin
-            $display("Data in Memory %0d succesfully read", i + 1);
+            $display("Data in Memory %0d succesfully loaded", i + 1);
         end
         else
         begin
-            $display("Data in Memory %0d UNSUCCESFULLY read", i + 1);
+            $display("Data in Memory %0d UNSUCCESFULLY loaded", i + 1);
         end
     end
     dump_memory;
