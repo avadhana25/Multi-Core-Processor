@@ -13,7 +13,6 @@
 `include "cpu_types_pkg.vh"
 
 module memory_control (
-  input CLK, nRST,
   cache_control_if.cc ccif
 );
   // type import
@@ -60,13 +59,13 @@ module memory_control (
   assign ccif.ramstore = ccif.dstore;
 
   //iload logic
-  assign ccif.iload = ccif.dREN ? 1'b0 : ccif.ramload;
+  assign ccif.iload = ccif.dREN ? 32'b0 : ccif.ramload;
 
   //dload logic
-  assign ccif.dload = ccif.dREN ? ccif.ramload : 1'b0;
+  assign ccif.dload = ccif.dREN ? ccif.ramload : 32'b0;
 
   //ramaddr logic
-  assign ccif.ramaddr = (ccif.dREN | ccif.dWEN) ? ccif.daddr : ccif.iaddr;
+  assign ccif.ramaddr = (ccif.dREN || ccif.dWEN) ? ccif.daddr : ccif.iaddr;
 
 
 endmodule

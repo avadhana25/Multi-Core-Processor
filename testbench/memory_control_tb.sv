@@ -38,45 +38,9 @@ test #(.PERIOD(PERIOD)) PROG ();
 always #(PERIOD/2) CLK++;
 
 //DUT
-`ifndef MAPPED
-  memory_control DUT(CLK, nRST, ccif);
-`else
-  memory_control DUT (
-    .\CLK(CLK),
-    .\nRST(nRST),
-    .\ccif.iREN(ccif.iREN),
-    .\ccif.dREN(ccif.dREN),
-    .\ccif.dWEN(ccif.dWEN),
-    .\ccif.dstore(ccif.dstore),
-    .\ccif.iaddr(ccif.iaddr),
-    .\ccif.daddr(ccif.daddr),
-    .\ccif.ramload(ccif.ramload),
-    .\ccif.ramstate(ccif.ramstate),
-    .\ccif.iwait(ccif.iwait),
-    .\ccif.dwait(ccif.dwait),
-    .\ccif.iload(ccif.iload),
-    .\ccif.dload(ccif.dload),
-    .\ccif.ramstore(ccif.ramstore),
-    .\ccif.ramaddr(ccif.ramaddr),
-    .\ccif.ramWEN(ccif.ramWEN),
-    .\ccif.ramREN(ccif.ramREN)
-  );
-`endif 
+  memory_control DUT(ccif);
 
-`ifndef MAPPED
   ram LINK(CLK, nRST, ramif);
-`else
-  ram LINK (
-    .\CLK(CLK),
-    .\nRST(nRST),
-    .\ramif.ramaddr(ramif.ramaddr),
-    .\ramif.ramstore(ramif.ramstore),
-    .\ramif.ramREN(ramif.ramREN),
-    .\ramif.ramWEN(ramif.ramWEN),
-    .\ramif.ramstate(ramif.ramstate),
-    .\ramif.ramload(ramif.ramload)
-  );
-`endif
 
   //connect cache input/output and ram input/output
   assign ramif.ramaddr = ccif.ramaddr;
@@ -218,7 +182,7 @@ program test;
 
         cif0.daddr = cif0.daddr + 4;
         cif0.dREN = 1'b1;
-        #(PERIOD)
+        #(PERIOD * 2)
         if ((ccif.ramaddr == cif0.daddr) && (ccif.ramload == cif0.dload) && (ccif.dwait == 0))
         begin
             $display("Data in Memory %0d succesfully read: %h", i + 1, ccif.ramload);
@@ -242,7 +206,7 @@ program test;
     cif0.dREN = 1'b0;
     cif0.dWEN = 1'b0;
     cif0.iaddr = '0;
-    cif0.daddr = '0;
+    cif0.daddr = 32'h400;
 
     for (int i = 0; i <= 5 ; i++) 
     begin
@@ -251,7 +215,7 @@ program test;
         cif0.daddr = cif0.daddr + 4;
         cif0.dWEN = 1'b1;
         cif0.dstore = 32'hA;
-        #(PERIOD)
+        #(PERIOD*2)
         if ((ccif.ramaddr == cif0.daddr) && (ccif.ramstore == cif0.dstore) && (ccif.dwait == 0))
         begin
             $display("Data in Memory %0d succesfully loaded", i + 1);
@@ -261,7 +225,8 @@ program test;
             $display("Data in Memory %0d UNSUCCESFULLY loaded", i + 1);
         end
     end
-    dump_memory;
+    dump_memory();
+    $finish;
 
   end
   endprogram

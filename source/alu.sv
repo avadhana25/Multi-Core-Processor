@@ -18,7 +18,7 @@ module alu(alu_if.alu alu);
 always_comb
 begin
     //default values
-    alu.port_out = '0;
+    alu.port_out = '0; 
     alu.negative = 0;
     alu.overflow = 0;
     alu.zero     = 0;
