@@ -24,7 +24,7 @@ begin
     alu.zero     = 0;
 
     //ALU LOGIC
-    casez (alu.ALUOP)
+    casez (alu.aluOp)
 
         //ADD LOGIC
         ALU_ADD: 

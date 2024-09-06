@@ -41,7 +41,7 @@ begin
     new_register = register;
 
     //logic
-    if (rfif.WEN)
+    if (rfif.wen)
     begin
         new_register[rfif.wsel] = rfif.wdat;        
     end    

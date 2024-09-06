@@ -31,6 +31,7 @@ test PROG ();
 `else
   control_unit DUT (
     .\cuif.instr (cuif.instr),
+    .\cuif.branch (cuif.branch),
     .\cuif.rs1 (cuif.rs1),
     .\cuif.rs2 (cuif.rs2),
     .\cuif.rd (cuif.rd),
@@ -43,7 +44,10 @@ test PROG ();
     .\cuif.jpSel (cuif.jpSel),
     .\cuif.imm (cuif.imm),
     .\cuif.pcSrc (cuif.pcSrc),
-    .\cuif.rdSel (cuif.rdSel)
+    .\cuif.rdSel (cuif.rdSel),
+    .\cuif.halt (cuif.halt),
+    .\cuif.iREN (cuif.iREN)
+
   );
 `endif 
 
@@ -225,7 +229,7 @@ program test;
         
         check_i_fields;
 
-        if (cuif.regWr && cuif.aluSrc && (cuif.pcSrc == 2'b0) && (cuif.rdSel == 3'b1) && (cuif.aluOp == ALU_ADD) && !cuif.shift)
+        if (cuif.regWr && cuif.aluSrc && (cuif.pcSrc == 2'b0) && (cuif.rdSel == 3'b1) && (cuif.aluOp == ALU_ADD) && cuif.dREN)
         begin
             $display("control signals are accurate");
         end

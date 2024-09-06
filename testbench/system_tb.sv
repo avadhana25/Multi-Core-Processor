@@ -42,30 +42,30 @@ module system_tb;
     // No need to change this
     .CLK(DUT.CPU.DP.CLK),
     // Since single cycle, this is just PC enable
-    .wb_stall(~DUT.CPU.DP.pc0_en),
+    .wb_stall(~DUT.CPU.DP.pcif.en),
     // The 'funct' portion of an instruction. Must be of funct_t type
-    .funct(DUT.CPU.DP.funct),
+   // .funct(DUT.CPU.DP.funct),
     // The 'opcode' portion of an instruction. Must be of opcode_t type
-    .opcode(DUT.CPU.DP.op_code),
+    .opcode(DUT.CPU.DP.opcode),
     // The 'rs' portion of an instruction
-    .rs(DUT.CPU.DP.rs),
+    .rs(DUT.CPU.DP.cuif.rs1),
     // The 'rt' portion of an instruction
-    .rt(DUT.CPU.DP.rt),
+    .rt(DUT.CPU.DP.cuif.rs2),
     // The final selected wsel
     .wsel(DUT.CPU.DP.rfif.wsel),
     // Make sure the interface (dpif) matches your name
     .instr(DUT.CPU.DP.dpif.imemload),
     // Connect the PC to this
-    .pc(DUT.CPU.DP.PC0),
+    .pc(DUT.CPU.DP.pcif.curr_pc),
     // Connect the next PC value (the next registered value) here
-    .npc(DUT.CPU.DP.pc_selected),
+    .npc(DUT.CPU.DP.pcif.new_pc),
     // The final imm/shamt signals
     // This means it should already be shifted/extended/whatever
-    .imm(DUT.CPU.DP.imm_shamt_out),
-    .shamt(DUT.CPU.DP.imm_shamt_out),
-     .lui(DUT.CPU.DP.imm),
+    .imm(DUT.CPU.DP.signExt),
+   // .shamt(DUT.CPU.DP.imm_shamt_out),
+     .lui(DUT.CPU.DP.zeroExt),
     // The branch target (aka offset added to npc)
-    .branch_addr(DUT.CPU.DP.pc_branch),
+    .branch_addr(DUT.CPU.DP.branchAddr),
     // Make sure the interface (dpif) matches your name
     .dat_addr(DUT.CPU.DP.dpif.dmemaddr),
     // Make sure the interface (dpif) matches your name

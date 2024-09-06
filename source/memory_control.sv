@@ -12,8 +12,8 @@
 // memory types
 `include "cpu_types_pkg.vh"
 
-module memory_control (
-  cache_control_if.cc ccif
+module memory_control ( 
+  input logic CLK, nRST, cache_control_if.cc ccif
 );
   // type import
   import cpu_types_pkg::*;

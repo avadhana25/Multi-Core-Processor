@@ -237,16 +237,8 @@ begin
     cuif.regWr  = 1'b0;      //do not write to register
     cuif.aluSrc = 1'b0;      //use both register values
     //cuif.rdSel = x         //dont care value due to regWr being 0
-    cuif.jpSel = 1'b0;     //use Branch Address
-
-    if (cuif.branch)               //if branch taken
-    begin
-        cuif.pcSrc = 2'b1;     //PC = branchaddr
-    end
-    else
-    begin
-        cuif.pcSrc = 2'b0;     //else pc = pc + 4
-    end
+    cuif.jpSel = 1'b0;     //use Branch Address\
+    cuif.pcSrc = 2'b1;
 
     casez (func3) 
 

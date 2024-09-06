@@ -15,19 +15,19 @@ interface alu_if;
   import cpu_types_pkg::*;
 
   logic negative, zero, overflow;
-  aluop_t ALUOP;
+  aluop_t aluOp;
   word_t port_a, port_b, port_out;
 
 
   // alu ports
   modport alu (
-    input   ALUOP, port_a, port_b,
+    input   aluOp, port_a, port_b,
     output  port_out, negative, overflow, zero
   );
   // register file tb
   modport tb (
     input   port_out, negative, overflow, zero,
-    output  ALUOP, port_a, port_b
+    output  aluOp, port_a, port_b
   );
 endinterface
 
