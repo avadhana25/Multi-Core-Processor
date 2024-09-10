@@ -34,5 +34,7 @@ begin
     end
 end
 
+assign ruif.pcen = ruif.ihit;
+
 
 endmodule

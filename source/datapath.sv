@@ -55,8 +55,8 @@ module datapath (
   logic branch;
 
   //Setup Immediate values
-  assign jumpAddr = {dpif.imemload[31], dpif.imemload[19:12], dpif.imemload[20], dpif.imemload[30:21], 1'b0};
-  assign branchAddr = {dpif.imemload[31], dpif.imemload[7], dpif.imemload[30:25], dpif.imemload[11:8], 1'b0};
+  assign jumpAddr = (dpif.imemload[31] == 1) ? {19'h7ffff, dpif.imemload[31], dpif.imemload[19:12], dpif.imemload[20], dpif.imemload[30:21], 1'b0} : {19'h0, dpif.imemload[31], dpif.imemload[19:12], dpif.imemload[20], dpif.imemload[30:21], 1'b0};
+  assign branchAddr = (dpif.imemload[31] == 1) ? {19'h7ffff, dpif.imemload[31], dpif.imemload[7], dpif.imemload[30:25], dpif.imemload[11:8], 1'b0} : {19'h0, dpif.imemload[31], dpif.imemload[7], dpif.imemload[30:25], dpif.imemload[11:8], 1'b0};
   assign zeroExt = {dpif.imemload[31:12], 12'b0};    //for u type
   assign signExt = (cuif.imm[11] == 1) ? {20'hfffff, cuif.imm} : {20'h00000, cuif.imm};
 
@@ -152,14 +152,18 @@ module datapath (
     begin
       branch = ~aluif.zero;
     end
-    else
+    else if ((func3 == BLT ) || (func3 == BLTU))
     begin
-      branch = aluif.port_out;
+      branch = aluif.port_out[0];
+    end
+    else if ((func3 == BGE) || (func3 == BGEU))
+    begin
+      branch = ~(aluif.port_out[0]);
     end
   end
 
   //connect program counter
-  assign pcif.en = dpif.ihit;
+  assign pcif.en = ruif.pcen;
   always_comb
   begin
     //default

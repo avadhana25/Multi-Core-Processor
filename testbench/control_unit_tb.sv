@@ -31,7 +31,6 @@ test PROG ();
 `else
   control_unit DUT (
     .\cuif.instr (cuif.instr),
-    .\cuif.branch (cuif.branch),
     .\cuif.rs1 (cuif.rs1),
     .\cuif.rs2 (cuif.rs2),
     .\cuif.rd (cuif.rd),
@@ -259,6 +258,185 @@ program test;
         begin
             $display("control signals are INACCURATE");
         end
+
+        //TESTCASE 7: S-TYPE SW
+        testcase++;
+        testdesc = "S-TYPE SW";
+        testcases(testcase, testdesc);
+
+        cuif.instr = 32'b0000000_00001_00010_010_00011_0100011;
+
+        #(1ns);    //cycle
+
+        
+        if (cuif.rs1 == cuif.instr[19:15])
+        begin
+            $display("rs1 field is accurate");
+        end
+        else
+        begin
+            $display("rs1 field is INACCURATE");
+        end
+
+        if (cuif.imm == {cuif.instr[31:25], cuif.instr[11:7]})
+        begin
+            $display("imm field is accurate");
+        end
+        else
+        begin
+            $display("imm field is INACCURATE");
+        end
+
+        if (cuif.rs2 == cuif.instr[24:20])
+        begin
+            $display("rs2 field is accurate");
+        end
+        else
+        begin
+            $display("rs2 field is INACCURATE");
+        end
+
+
+        if (!cuif.regWr && cuif.aluSrc && (cuif.pcSrc == 2'h0) && (cuif.aluOp == ALU_ADD) && !cuif.shift)
+        begin
+            $display("control signals are accurate");
+        end
+        else
+        begin
+            $display("control signals are INACCURATE");
+        end
+
+
+        //TESTCASE 8: B-TYPE BRANCH
+        testcase++;
+        testdesc = "B-TYPE BRANCH";
+        testcases(testcase, testdesc);
+
+        cuif.instr = 32'b0000000_00001_00010_001_00011_1100011;
+
+        #(1ns);    //cycle
+
+        
+        if (cuif.rs1 == cuif.instr[19:15])
+        begin
+            $display("rs1 field is accurate");
+        end
+        else
+        begin
+            $display("rs1 field is INACCURATE");
+        end
+
+
+        if (cuif.rs2 == cuif.instr[24:20])
+        begin
+            $display("rs2 field is accurate");
+        end
+        else
+        begin
+            $display("rs2 field is INACCURATE");
+        end
+
+
+        if (!cuif.regWr && !cuif.aluSrc && (cuif.pcSrc == 2'h1) && (cuif.aluOp == ALU_SUB) && !cuif.shift)
+        begin
+            $display("control signals are accurate");
+        end
+        else
+        begin
+            $display("control signals are INACCURATE");
+        end
+
+        //TESTCASE 9: J-TYPE JAL
+        testcase++;
+        testdesc = "J-TYPE JAL";
+        testcases(testcase, testdesc);
+
+        cuif.instr = 32'b0000000_00001_00010_001_00011_1101111;
+
+        #(1ns);    //cycle
+
+        
+        if (cuif.rd == cuif.instr[11:7])
+        begin
+            $display("rd field is accurate");
+        end
+        else
+        begin
+            $display("rd field is INACCURATE");
+        end
+
+
+        if (cuif.regWr && (cuif.rdSel == 3'h2) && (cuif.pcSrc == 2'h1) && cuif.jpSel && !cuif.shift)
+        begin
+            $display("control signals are accurate");
+        end
+        else
+        begin
+            $display("control signals are INACCURATE");
+        end
+
+
+        //TESTCASE 10: U-TYPE LUI
+        testcase++;
+        testdesc = "U-TYPE LUI";
+        testcases(testcase, testdesc);
+
+        cuif.instr = 32'b0000000_00001_00010_001_00011_0110111;
+
+        #(1ns);    //cycle
+
+        
+        if (cuif.rd == cuif.instr[11:7])
+        begin
+            $display("rd field is accurate");
+        end
+        else
+        begin
+            $display("rd field is INACCURATE");
+        end
+
+
+        if (cuif.regWr && (cuif.rdSel == 3'h3) && (cuif.pcSrc == 2'h0) && !cuif.jpSel && !cuif.shift)
+        begin
+            $display("control signals are accurate");
+        end
+        else
+        begin
+            $display("control signals are INACCURATE");
+        end
+
+
+
+        //TESTCASE 11: U-TYPE AUIPC
+        testcase++;
+        testdesc = "U-TYPE AUIPC";
+        testcases(testcase, testdesc);
+
+        cuif.instr = 32'b0000000_00001_00010_001_00011_0010111;
+
+        #(1ns);    //cycle
+
+        
+        if (cuif.rd == cuif.instr[11:7])
+        begin
+            $display("rd field is accurate");
+        end
+        else
+        begin
+            $display("rd field is INACCURATE");
+        end
+
+
+        if (cuif.regWr && (cuif.rdSel == 3'h4) && (cuif.pcSrc == 2'h0) && !cuif.jpSel && !cuif.shift)
+        begin
+            $display("control signals are accurate");
+        end
+        else
+        begin
+            $display("control signals are INACCURATE");
+        end
+
+        
 
         
 

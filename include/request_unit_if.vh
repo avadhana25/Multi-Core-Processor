@@ -15,13 +15,13 @@ interface request_unit_if;
   import cpu_types_pkg::*;
 
 
-logic ihit, dhit, dREN, dWEN;
+logic ihit, dhit, dREN, dWEN, pcen;
 logic dmemREN, dmemWEN;
 
 //ru ports
 modport ru (
     input ihit, dhit, dREN, dWEN,
-    output dmemREN, dmemWEN
+    output dmemREN, dmemWEN, pcen
 );
 endinterface
 
