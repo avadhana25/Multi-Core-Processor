@@ -18,7 +18,7 @@ module register_file(input logic CLK, nRST, register_file_if.rf rfif);
 word_t [31:0] register, new_register;
 
 //flip flop for all of the registers
-always_ff@(posedge CLK or negedge nRST)
+always_ff@(negedge CLK or negedge nRST)         //change to negedge for pipelin write in first  half of cycle
 begin
     if (nRST == 0)
     begin

@@ -10,9 +10,12 @@
 `include "datapath_cache_if.vh"
 `include "control_unit_if.vh"
 `include "program_counter_if.vh"
-`include "request_unit_if.vh"
 `include "alu_if.vh"
 `include "register_file_if.vh"
+`include "if_id_if.vh"
+`include "id_ex_if.vh"
+`include "ex_mem_if.vh"
+`include "mem_wb_if.vh"
 
 
 
@@ -30,16 +33,23 @@ module datapath (
   //interfaces initializations
   control_unit_if    cuif();
   program_counter_if pcif();
-  request_unit_if    ruif();
   alu_if             aluif();
   register_file_if   rfif();
+  if_id_if           fdif();
+  id_ex_if           dxif();
+  ex_mem_if          xmif();
+  mem_wb_if          mwif();
+
 
   //DUTS
-  control_unit CTRLU    (cuif);
-  program_counter PCNT  (CLK, nRST, pcif);
-  request_unit REQU     (CLK, nRST, ruif);
-  alu        ALU      (aluif);
-  register_file REGFILE (CLK, nRST, rfif);
+  control_unit    CTRLU    (cuif);
+  program_counter PCNT     (CLK, nRST, pcif);
+  alu             ALU      (aluif);
+  register_file   REGFILE  (CLK, nRST, rfif);
+  if_id           IFID     (CLK, nRST, fdif);
+  id_ex           IDEX     (CLK, nRST, idex);
+
+
 
   // pc init
   parameter PC_INIT = 0;
