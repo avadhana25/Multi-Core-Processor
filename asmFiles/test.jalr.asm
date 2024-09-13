@@ -9,11 +9,15 @@
   addi $5, $0, 15         #failure symbol
   addi $6, $0, 12          #success symbol
   jal taken
+  nop
+  nop
   sw $6, 0($10)           #if jalr returns store success
   halt
 
 
   taken:
   jalr $1
+  nop
+  nop
   sw $5, 0($10)           #if jalr not taken store failure
   halt
