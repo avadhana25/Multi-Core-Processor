@@ -5,7 +5,7 @@
    MEM_WB LATCH interface
 */
 `ifndef MEM_WB_IF_VH
-`define MEM_WB_IF_VH
+`define MEM_WB_IF_VH 
 
 // types
 `include "cpu_types_pkg.vh"
