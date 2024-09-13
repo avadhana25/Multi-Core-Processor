@@ -21,6 +21,7 @@ begin
     begin
         dxif.instr_o   <= 32'b0;
         dxif.npc_o     <= 32'b0;
+        dxif.curr_pc_o <= 32'b0;
         dxif.rdat1_o   <= 32'b0;
         dxif.rdat2_o   <= 32'b0;
         dxif.regWr_o   <= 1'b0;
@@ -29,7 +30,7 @@ begin
         dxif.shift_o   <= 1'b0;
         dxif.jpSel_o   <= 1'b0;
         dxif.aluSrc_o  <= 1'b0;
-        dxif.aluOp_o   <= 4'b0;
+        dxif.aluOp_o   <= ALU_SLL;
         dxif.rdSel_o   <= 3'b0;
         dxif.pcSrc_o   <= 2'b0;
         dxif.halt_o    <= 1'b0;
@@ -38,6 +39,7 @@ begin
     begin
         dxif.instr_o   <= dxif.instr_i;
         dxif.npc_o     <= dxif.npc_i;
+        dxif.curr_pc_o <= dxif.curr_pc_i;
         dxif.rdat1_o   <= dxif.rdat1_i;
         dxif.rdat2_o   <= dxif.rdat2_i;
         dxif.regWr_o   <= dxif.regWr_i;
@@ -55,6 +57,7 @@ begin
     begin
         dxif.instr_o   <= 32'b0;
         dxif.npc_o     <= 32'b0;
+        dxif.curr_pc_o <= 32'b0;
         dxif.rdat1_o   <= 32'b0;
         dxif.rdat2_o   <= 32'b0;
         dxif.regWr_o   <= 1'b0;
@@ -63,7 +66,7 @@ begin
         dxif.shift_o   <= 1'b0;
         dxif.jpSel_o   <= 1'b0;
         dxif.aluSrc_o  <= 1'b0;
-        dxif.aluOp_o   <= 4'b0;
+        dxif.aluOp_o   <= ALU_SLL;
         dxif.rdSel_o   <= 3'b0;
         dxif.pcSrc_o   <= 2'b0;
         dxif.halt_o    <= 1'b0;

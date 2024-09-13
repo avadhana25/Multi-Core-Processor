@@ -305,7 +305,7 @@ begin
   HALT:
   begin
     cuif.halt = 1'b1;
-    cuif.iREN = 1'b0;
+  //  cuif.iREN = 1'b0;
   end
 
   endcase

@@ -19,18 +19,21 @@ always_ff @(posedge CLK, negedge nRST)
 begin
     if (!nRST)
     begin
-        fdif.instr_o <= 32'b0;
-        fdif.npc_o   <= 32'b0;
+        fdif.instr_o   <= 32'b0;
+        fdif.npc_o     <= 32'b0;
+        fdif.curr_pc_o <= 32'b0;
     end
     else if (fdif.en)
     begin
-        fdif.instr_o <= fdif.instr_i;
-        fdif.npc_o   <= fdif.npc_i;
+        fdif.instr_o    <= fdif.instr_i;
+        fdif.npc_o      <= fdif.npc_i;
+        fdif.curr_pc_o <= fdif.curr_pc_i;
     end
     else if (fdif.flush)
     begin
-        fdif.instr_o <= 32'b0;
-        fdif.npc_o   <= 32'b0;
+        fdif.instr_o   <= 32'b0;
+        fdif.npc_o     <= 32'b0;
+        fdif.curr_pc_o <= 32'b0;
     end
 end
 

@@ -20,8 +20,10 @@ begin
     if (!nRST)
     begin
         xmif.npc_o        <= 32'b0;
+        xmif.curr_pc_o    <= 32'b0;
         xmif.rdat2_o      <= 32'b0;
         xmif.branchAddr_o <= 32'b0;
+        xmif.jumpAddr_o   <= 32'b0;
         xmif.zeroExt_o    <= 32'b0;
         xmif.port_out_o   <= 32'b0;
         xmif.rs1_o        <= 5'b0;
@@ -39,8 +41,10 @@ begin
     else if (xmif.dhit)
     begin
         xmif.npc_o        <= 32'b0;
+        xmif.curr_pc_o    <= 32'b0;
         xmif.rdat2_o      <= 32'b0;
         xmif.branchAddr_o <= 32'b0;
+        xmif.jumpAddr_o   <= 32'b0;
         xmif.zeroExt_o    <= 32'b0;
         xmif.port_out_o   <= 32'b0;
         xmif.rs1_o        <= 5'b0;
@@ -58,8 +62,10 @@ begin
     else if (xmif.en)
     begin
         xmif.npc_o        <= xmif.npc_i;
+        xmif.curr_pc_o    <= xmif.curr_pc_i;
         xmif.rdat2_o      <= xmif.rdat2_i;
         xmif.branchAddr_o <= xmif.branchAddr_i;
+        xmif.jumpAddr_o   <= xmif.jumpAddr_i;
         xmif.zeroExt_o    <= xmif.zeroExt_i;
         xmif.port_out_o   <= xmif.port_out_i;
         xmif.rs1_o        <= xmif.rs1_i;
@@ -77,8 +83,10 @@ begin
     else if (xmif.flush)
     begin
         xmif.npc_o        <= 32'b0;
+        xmif.curr_pc_o    <= 32'b0;
         xmif.rdat2_o      <= 32'b0;
         xmif.branchAddr_o <= 32'b0;
+        xmif.jumpAddr_o   <= 32'b0;
         xmif.zeroExt_o    <= 32'b0;
         xmif.port_out_o   <= 32'b0;
         xmif.rs1_o        <= 5'b0;

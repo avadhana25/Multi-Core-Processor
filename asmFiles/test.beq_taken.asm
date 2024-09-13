@@ -11,6 +11,9 @@
   addi $5, $0, 15         #failure symbol
   addi $6, $0, 12          #success symbol
   beq $3, $4, taken
+  nop
+  nop
+  nop
   sw $5, 0($10)           #if branch not taken store failure
   halt
 
