@@ -2,11 +2,17 @@
 # RISC-V Assembly
 #----------------------------------------------------------
 #--------------------------------------
-# Test data hazard add
+# Test structural hazard lw
 #--------------------------------------
   org 0x0000
   addi $10, $0, 0x28      #memory
-  add $5,$0,$0
-  addi $6,$5,10 //data hazard
+  ori $4,$0,0xF0
+  lw  $5,0($4)
+  addi $7,$0,10
+  addi $7,$0,10
+  addi $6,$5,100 //structural hazard
   sw $6,0($10)
   halt
+
+  org   0x00F0
+  cfw   0x7337
