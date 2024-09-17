@@ -13,7 +13,6 @@
   bgeu $3, $4, taken
   nop
   nop
-  nop
   sw $5, 0($10)           #if branch not taken store failure
   halt
 
