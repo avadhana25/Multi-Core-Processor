@@ -87,7 +87,7 @@ module datapath (
   assign fdif.npc_i     = pcif.npc;
   assign fdif.curr_pc_i = pcif.curr_pc;
   assign fdif.en        = dpif.ihit;
-  //assign fdif.flush   =      
+  assign fdif.flush   = '0;  
 
 
   //set up decode execute latch
@@ -107,7 +107,7 @@ module datapath (
   assign dxif.pcSrc_i   = cuif.pcSrc;
   assign dxif.halt_i    = cuif.halt;
   assign dxif.en        = dpif.ihit;
-  //assign dxif.flush   =
+  assign dxif.flush   = '0;
 
 
   //set up execute memory latch
@@ -131,7 +131,7 @@ module datapath (
   assign xmif.jumpAddr_i   = jumpAddr;
   assign xmif.dhit         = dpif.dhit;
   assign xmif.en           = dpif.ihit;
-  //assign xmif.flush      =
+  assign xmif.flush      = '0;
 
 
   //set memory writeback latch
@@ -148,7 +148,7 @@ module datapath (
   assign mwif.rdSel_i    = xmif.rdSel_o;
   assign mwif.dhit       = dpif.dhit;
   assign mwif.en         = dpif.ihit;
-  //assign mwif.flush    =
+  assign mwif.flush    = '0;
 
 
 
