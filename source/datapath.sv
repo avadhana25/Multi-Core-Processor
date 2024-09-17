@@ -16,6 +16,7 @@
 `include "id_ex_if.vh"
 `include "ex_mem_if.vh"
 `include "mem_wb_if.vh"
+`include "forwarding_unit_if.vh"
 
 
 
@@ -39,6 +40,7 @@ module datapath (
   id_ex_if           dxif();
   ex_mem_if          xmif();
   mem_wb_if          mwif();
+  forwarding_unit_if fuif();
 
 
   //DUTS
@@ -50,6 +52,7 @@ module datapath (
   id_ex           IDEX     (CLK, nRST, dxif);
   ex_mem          EXMEM    (CLK, nRST, xmif);
   mem_wb          MEMWB    (CLK, nRST, mwif);
+  forwarding_unit FRWDU    (fuif);
 
 
 
