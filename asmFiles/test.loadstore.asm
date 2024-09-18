@@ -10,15 +10,9 @@
   ori   $4,$0,0xF0
    ori   $10,$0,0x80
    lui   $15,0xdeadb
-   nop
-   nop
   ori   $15,$15,0x7ef
   addi $7, $0, 7
-  nop
-  nop
    slli $7, $7, 8
-   nop
-   nop
    add $15, $15, $7
   lui $16, 0x00008 
 

@@ -42,7 +42,6 @@ begin
   cuif.aluSrc = 1'b0;
   cuif.pcSrc  = 2'b0;
   cuif.rdSel  = 3'b0;         //0: alu_out  1: d_memload  2:JAL or JALR  3: LUI  4:AUIPC
-  cuif.shift  = 1'b0;
   cuif.jpSel  = 1'b0;
   cuif.halt   = 1'b0;
   cuif.aluOp  = ALU_ADD;
@@ -61,7 +60,6 @@ begin
     cuif.aluSrc = 1'b0;         //use rs1 and rs2 for alu
     cuif.pcSrc  = 2'b0;         //PC = PC + 4
     cuif.rdSel  = 3'b0;         //take alu_output line
-    cuif.shift  = 1'b0;         //use full imm value
     
     //func-specific control signals
     casez (func3)
@@ -95,13 +93,11 @@ begin
 
     SLL:
     begin
-      cuif.shift = 1'b1;        //use first five bits of second alu input
       cuif.aluOp = ALU_SLL;
     end
 
     SRL_SRA:
     begin
-      cuif.shift = 1'b1;              //use first five bits of second alu input
       if (func7 == 7'b0000000)         //SRL INSTRUCTION
       begin
         cuif.aluOp = ALU_SRL;
@@ -162,13 +158,11 @@ begin
 
     SLLI:
     begin 
-      cuif.shift = 1'b1;                    //use first five bits of second alu input
       cuif.aluOp = ALU_SLL;
     end
 
     SRLI_SRAI:
     begin
-      cuif.shift = 1'b1;                     //use first five bits of second alu input
       if (cuif.imm[11:5] == 7'b0000000)        //SRLI
       begin
         cuif.aluOp = ALU_SRL;

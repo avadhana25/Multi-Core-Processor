@@ -16,7 +16,7 @@ decode_execute latch source file
 module id_ex(input logic CLK, nRST, id_ex_if.idex dxif);
 
 word_t next_instr, next_npc, next_curr_pc, next_rdat1, next_rdat2; 
-logic next_regWr, next_dWEN, next_dREN, next_shift, next_jpSel, next_aluSrc;
+logic next_regWr, next_dWEN, next_dREN, next_jpSel, next_aluSrc;
 aluop_t next_aluOp; 
 logic [2:0] next_rdSel; 
 logic [1:0] next_pcSrc; 
@@ -34,7 +34,6 @@ begin
         dxif.regWr_o   <= 1'b0;
         dxif.dWEN_o    <= 1'b0;
         dxif.dREN_o    <= 1'b0;
-        dxif.shift_o   <= 1'b0;
         dxif.jpSel_o   <= 1'b0;
         dxif.aluSrc_o  <= 1'b0;
         dxif.aluOp_o   <= ALU_SLL;
@@ -52,7 +51,6 @@ begin
         dxif.regWr_o   <= next_regWr;
         dxif.dWEN_o    <= next_dWEN;
         dxif.dREN_o    <= next_dREN;
-        dxif.shift_o   <= next_shift;
         dxif.jpSel_o   <= next_jpSel;
         dxif.aluSrc_o  <= next_aluSrc;
         dxif.aluOp_o   <= next_aluOp;
@@ -71,7 +69,6 @@ always_comb begin
     next_regWr = dxif.regWr_o; 
     next_dWEN = dxif.dWEN_o; 
     next_dREN = dxif.dREN_o;
-    next_shift = dxif.shift_o; 
     next_jpSel = dxif.jpSel_o; 
     next_aluSrc = dxif.aluSrc_o; 
     next_aluOp = dxif.aluOp_o; 
@@ -87,7 +84,6 @@ always_comb begin
         next_regWr = '0; 
         next_dWEN = '0; 
         next_dREN = '0;
-        next_shift = '0; 
         next_jpSel = '0; 
         next_aluSrc = '0; 
         next_aluOp = ALU_SLL; 
@@ -104,7 +100,6 @@ always_comb begin
         next_regWr = dxif.regWr_i;
         next_dWEN = dxif.dWEN_i;
         next_dREN = dxif.dREN_i;
-        next_shift = dxif.shift_i;
         next_jpSel = dxif.jpSel_i;
         next_aluSrc = dxif.aluSrc_i;
         next_aluOp  = dxif.aluOp_i;

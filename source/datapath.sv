@@ -64,12 +64,15 @@ module datapath (
   //logic instantiation
   word_t jumpAddr, branchAddr, signExt, zeroExt;
   funct3_b_t func3;
+  word_t xm_auipc_dest, mw_aupic_dest, xm_replace, mw_replace;
 
   //func3 for branch
   assign func3 = funct3_b_t'(dxif.instr_o[14:12]);
   logic branch;
 
   //Setup Immediate values
+  assign xm_auipc_dest = xmif.curr_pc_o + xmif.zeroExt_o;
+  assign wm_auipc_dest = mwif.curr_pc_o + mwif.zeroExt_o;
   assign jumpAddr = (dxif.instr_o[31] == 1) ? {19'h7ffff, dxif.instr_o[31], dxif.instr_o[19:12], dxif.instr_o[20], dxif.instr_o[30:21], 1'b0} : {19'h0, dxif.instr_o[31], dxif.instr_o[19:12], dxif.instr_o[20], dxif.instr_o[30:21], 1'b0};
   assign branchAddr = (dxif.instr_o[31] == 1) ? {19'h7ffff, dxif.instr_o[31], dxif.instr_o[7], dxif.instr_o[30:25], dxif.instr_o[11:8], 1'b0} : {19'h0, dxif.instr_o[31], dxif.instr_o[7], dpif.imemload[30:25], dxif.instr_o[11:8], 1'b0};
   assign zeroExt = {dxif.instr_o[31:12], 12'b0};    //for u type
@@ -85,12 +88,82 @@ module datapath (
     end
   end
 
+  //set up forwarding replacement values
+  always_comb
+  begin
+
+    //default values
+    xm_replace = '0;
+    mw_replace = '0;
+
+        casez (xmif.rdSel_o)
+
+          3'h0:
+          begin
+            xm_replace = xmif.port_out_o;
+          end
+
+          3'h1:
+          begin
+            xm_replace = '0;           //this case should never happen
+          end
+
+          3'h2:
+          begin
+            xm_replace = xmif.npc_o;
+          end
+
+          3'h3:
+          begin
+            xm_replace = xmif.zeroExt_o;
+          end
+
+          3'h4:
+          begin
+            xm_replace = xmif.curr_pc_o + xmif.zeroExt_o;
+          end
+
+          endcase
+
+
+          casez (mwif.rdSel_o)
+
+          3'h0:
+          begin
+            mw_replace = mwif.port_out_o;
+          end
+
+          3'h1:
+          begin
+            mw_replace = mwif.dmemload_o;           
+          end
+
+          3'h2:
+          begin
+            mw_replace = mwif.npc_o;
+          end
+
+          3'h3:
+          begin
+            mw_replace = mwif.zeroExt_o;
+          end
+
+          3'h4:
+          begin
+            mw_replace = mwif.curr_pc_o + mwif.zeroExt_o;
+          end
+
+          endcase
+    end
+
+
+
   //setup fetch decode latch
   assign fdif.instr_i   = dpif.imemload;
   assign fdif.npc_i     = pcif.npc;
   assign fdif.curr_pc_i = pcif.curr_pc;
   assign fdif.en        = dpif.ihit;
-  assign fdif.flush   = '0;  
+  assign fdif.flush     = 1'b0;      
 
 
   //set up decode execute latch
@@ -102,7 +175,6 @@ module datapath (
   assign dxif.regWr_i   = cuif.regWr;
   assign dxif.dWEN_i    = cuif.dWEN;
   assign dxif.dREN_i    = cuif.dREN;
-  assign dxif.shift_i   = cuif.shift;
   assign dxif.jpSel_i   = cuif.jpSel;
   assign dxif.aluSrc_i  = cuif.aluSrc;
   assign dxif.aluOp_i   = cuif.aluOp;
@@ -110,7 +182,7 @@ module datapath (
   assign dxif.pcSrc_i   = cuif.pcSrc;
   assign dxif.halt_i    = cuif.halt;
   assign dxif.en        = dpif.ihit;
-  assign dxif.flush   = '0;
+  assign dxif.flush     = 1'b0;
 
 
   //set up execute memory latch
@@ -119,7 +191,23 @@ module datapath (
   assign xmif.npc_i        = dxif.npc_o;
   assign xmif.curr_pc_i    = dxif.curr_pc_o;
   assign xmif.port_out_i   = aluif.port_out;
-  assign xmif.rdat2_i      = dxif.rdat2_o;
+  always_comb
+  begin
+    //default
+    xmif.rdat2_i      = dxif.rdat2_o;
+
+    //forwarding exception
+      if (fuif.forwardB == 2'b10)          //forward from xm latch
+      begin
+        xmif.rdat2_i = xm_replace;
+      end
+
+      else if (fuif.forwardB == 2'b01)        //forward from mw latch     
+      begin
+        xmif.rdat2_i = mw_replace;
+      end
+  end
+  
   assign xmif.rs1_i        = regbits_t'(dxif.instr_o[19:15]);
   assign xmif.rs2_i        = regbits_t'(dxif.instr_o[24:20]);
   assign xmif.rd_i         = regbits_t'(dxif.instr_o[11:7]);
@@ -134,7 +222,7 @@ module datapath (
   assign xmif.jumpAddr_i   = jumpAddr;
   assign xmif.dhit         = dpif.dhit;
   assign xmif.en           = dpif.ihit;
-  assign xmif.flush      = '0;
+  assign xmif.flush        = 1'b0;
 
 
   //set memory writeback latch
@@ -151,8 +239,17 @@ module datapath (
   assign mwif.rdSel_i    = xmif.rdSel_o;
   assign mwif.dhit       = dpif.dhit;
   assign mwif.en         = dpif.ihit;
-  assign mwif.flush    = '0;
+  assign mwif.flush      = 1'b0;
 
+
+
+  //connect forwarding unit
+  assign fuif.xm_rd    = xmif.rd_o;
+  assign fuif.mw_rd    = mwif.rd_o;
+  assign fuif.xm_regWr = xmif.regWr_o;
+  assign fuif.mw_regWr = mwif.regWr_o;
+  assign fuif.dx_rs1   = regbits_t'(dxif.instr_o[19:15]);
+  assign fuif.dx_rs2   = regbits_t'(dxif.instr_o[24:20]);
 
 
 
@@ -201,36 +298,51 @@ module datapath (
 
   //connect alu
   assign aluif.aluOp  = dxif.aluOp_o;
-  assign aluif.port_a = dxif.rdat1_o;
-  always_comb
+
+  always_comb //porta logic
   begin
     //default
-    aluif.port_b = dxif.rdat2_o;
+    aluif.port_a = dxif.rdat1_o;
+
+    //forward logic
+    if (fuif.forwardA == 2'b10)          //forward from xm latch
+    begin
+      aluif.port_a = xm_replace;
+    end
+
+    else if (fuif.forwardA == 2'b01)        //forward from mw latch     
+    begin
+      aluif.port_a = mw_replace;
+    end
+  end
+
+
+  always_comb  //portb logic
+  begin
 
     //logic
     if (dxif.aluSrc_o)
     begin
-      if (dxif.shift_o)
-      begin
-        aluif.port_b = {27'b0, signExt[4:0]};
-      end
-      else
-      begin
         aluif.port_b = signExt;
-      end
     end
-    else
-    begin
-      if (dxif.shift_o)
-      begin
-        aluif.port_b = {27'b0, dxif.rdat2_o[4:0]};
-      end
+
       else
       begin
+        //no hazard
         aluif.port_b = dxif.rdat2_o;
+
+        //forward logic
+        if (fuif.forwardB == 2'b10)          //forward from xm latch
+        begin
+          aluif.port_b = xm_replace;
+        end
+        else if (fuif.forwardB == 2'b01)        //forward from mw latch     
+        begin
+          aluif.port_b = mw_replace;
+        end
+
       end
     end
-  end
 
   //connect control unit
   assign cuif.instr = fdif.instr_o;

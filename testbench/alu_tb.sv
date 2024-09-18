@@ -34,7 +34,7 @@ test PROG ();
     .\alu.negative (alu.negative),
     .\alu.overflow (alu.overflow),
     .\alu.zero (alu.zero),
-    .\alu.ALUOP (alu.ALUOP),
+    .\alu.aluOp (alu.aluOp),
     .\alu.port_out (alu.port_out),
     .\alu.port_a (alu.port_a),
     .\alu.port_b (alu.port_b)
@@ -66,7 +66,7 @@ program test;
     testdesc = "ADD TEST CASES";
 
 
-    alu.ALUOP = ALU_ADD;
+    alu.aluOp = ALU_ADD;
 
     testcases(testcase, testdesc);
     
@@ -89,7 +89,7 @@ program test;
     testcase = 2;
     testdesc = "SUB TEST CASES";
 
-    alu.ALUOP = ALU_SUB;
+    alu.aluOp = ALU_SUB;
 
     testcases(testcase, testdesc);
     
@@ -112,7 +112,7 @@ program test;
     testcase = 3;
     testdesc = "SHIFT LOGIC LEFT TEST CASES";
 
-    alu.ALUOP = ALU_SLL;
+    alu.aluOp = ALU_SLL;
 
     testcases(testcase, testdesc);
 
@@ -135,7 +135,7 @@ program test;
     testcase = 4;
     testdesc = "SHIFT LOGIC RIGHT TEST CASES";
 
-    alu.ALUOP = ALU_SRL;
+    alu.aluOp = ALU_SRL;
 
     testcases(testcase, testdesc);
 
@@ -158,7 +158,7 @@ program test;
     testcase = 5;
     testdesc = "SHIFT ARITHMETIC RIGHT TEST CASES";
 
-    alu.ALUOP = ALU_SRA;
+    alu.aluOp = ALU_SRA;
 
     testcases(testcase, testdesc);
 
@@ -182,7 +182,7 @@ program test;
     testcase = 6;
     testdesc = "AND TEST CASES";
 
-    alu.ALUOP = ALU_AND;
+    alu.aluOp = ALU_AND;
 
     testcases(testcase, testdesc);
     
@@ -205,7 +205,7 @@ program test;
     testcase = 7;
     testdesc = "OR TEST CASES";
 
-    alu.ALUOP = ALU_OR;
+    alu.aluOp = ALU_OR;
 
     testcases(testcase, testdesc);
     
@@ -228,7 +228,7 @@ program test;
     testcase = 8;
     testdesc = "XOR TEST CASES";
 
-    alu.ALUOP = ALU_XOR;
+    alu.aluOp = ALU_XOR;
 
     testcases(testcase, testdesc);
     
@@ -251,7 +251,7 @@ program test;
     testcase = 9;
     testdesc = "SET LESS THAN SIGNED TEST CASES";
 
-    alu.ALUOP = ALU_SLT;
+    alu.aluOp = ALU_SLT;
 
     testcases(testcase, testdesc);
     
@@ -274,7 +274,7 @@ program test;
     testcase = 10;
     testdesc = "SET LESS THAN UNSIGNED TEST CASES";
 
-    alu.ALUOP = ALU_SLTU;
+    alu.aluOp = ALU_SLTU;
 
     testcases(testcase, testdesc);
     
@@ -300,7 +300,7 @@ program test;
 
     testcases(testcase, testdesc);
 
-    alu.ALUOP = ALU_ADD;
+    alu.aluOp = ALU_ADD;
 
     alu.port_a = 32'h0FFFFFFF;
     alu.port_b = 32'h7FF00000;
@@ -316,7 +316,7 @@ program test;
         $display("Test Case 1 for OVERFLOW Failed (ADD): %b", alu.port_out);
     end
 
-    alu.ALUOP = ALU_SUB;
+    alu.aluOp = ALU_SUB;
 
     alu.port_a = 32'h80000000;
     alu.port_b = 32'h1;
@@ -339,7 +339,7 @@ program test;
 
     testcases(testcase, testdesc);
 
-    alu.ALUOP = ALU_SUB;
+    alu.aluOp = ALU_SUB;
 
     alu.port_a = 0;
     alu.port_b = 1000;
@@ -359,7 +359,7 @@ program test;
 
     testcases(testcase, testdesc);
 
-    alu.ALUOP = ALU_SUB;
+    alu.aluOp = ALU_SUB;
 
     alu.port_a = 1000;
     alu.port_b = 1000;

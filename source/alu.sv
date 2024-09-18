@@ -51,19 +51,19 @@ begin
         //SHIFT LOGIC LEFT LOGIC
         ALU_SLL:
         begin
-            alu.port_out = alu.port_a << alu.port_b;
+            alu.port_out = alu.port_a << alu.port_b[4:0];
         end
 
         //SHIFT LOGIC RIGHT LOGIC
         ALU_SRL:
         begin
-            alu.port_out = alu.port_a >> alu.port_b;
+            alu.port_out = alu.port_a >> alu.port_b[4:0];
         end
 
         //SHIFT ARITHMETIC RIGHT LOGIC
         ALU_SRA:
         begin
-            alu.port_out = $signed(alu.port_a) >>> alu.port_b;
+            alu.port_out = $signed(alu.port_a) >>> alu.port_b[4:0];
         end
 
         //AND LOGIC
