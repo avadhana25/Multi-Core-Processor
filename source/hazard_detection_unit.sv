@@ -10,10 +10,8 @@ module hazard_detection_unit
     hazard_detection_unit_if.hdu hduif
 );
 
-assign hduif.freeze = hduif.memRead == 1'b1 && (hduif.rd == hduif.rs1 || hduif.rd == hduif.rs2);
+assign hduif.freeze = hduif.memRead == 1'b1 && (hduif.dx_rd == hduif.fd_rs1 || hduif.dx_rd == hduif.fd_rs2);
 assign hduif.threeInstrFlush = hduif.branch | hduif.jump;
-
-//evaluate if branch, jalr, or jal true, then flush previous 3 instructions
 
 endmodule
 

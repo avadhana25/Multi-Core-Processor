@@ -12,17 +12,17 @@ interface hazard_detection_unit_if;
   import cpu_types_pkg::*;
 
   logic memRead, freeze, branch, jump, threeInstrFlush;
-  regbits_t rs1, rs2, rd;
+  regbits_t fd_rs1, fd_rs2, dx_rd;
   //hdu port
 
   modport hdu (
-    input memRead, rs1, rs2, rd, branch, jump,
+    input memRead, rs1, rs2, dx_rd, branch, jump,
     output freeze, threeInstrFlush
   );
 
   modport tb (
     input freeze, threeInstrFlush,
-    output memRead, rs1, rs2, rd, branch, jump
+    output memRead, fd_rs1, fd_rs2, dx_rd, branch, jump
   )
   endinterface
 
