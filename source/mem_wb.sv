@@ -77,7 +77,11 @@ always_comb begin
         next_halt = '0;
         next_rdSel = '0;
     end
-    else if (mwif.en || mwif.dhit) begin
+ //   else if (mwif.dhit)
+ //   begin
+ //       next_dmemload = mwif.dmemload_i;
+ //   end
+    else if (mwif.en) begin
         next_npc = mwif.npc_i; 
         next_curr_pc = mwif.curr_pc_i; 
         next_port_out = mwif.port_out_i; 

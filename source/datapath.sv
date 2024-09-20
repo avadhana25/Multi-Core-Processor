@@ -229,7 +229,23 @@ module datapath (
   assign mwif.port_out_i = xmif.port_out_o;
   assign mwif.npc_i      = xmif.npc_o;
   assign mwif.curr_pc_i  = xmif.curr_pc_o;
-  assign mwif.dmemload_i = dpif.dmemload;
+
+  //latch dmemload
+  always_ff @( posedge CLK, negedge nRST )
+  begin
+    if (!nRST)
+    begin
+      mwif.dmemload_i <= 32'b0;
+    end
+    else
+    begin
+      if (dpif.dmemload != 0)
+      begin
+        mwif.dmemload_i <= dpif.dmemload;
+      end
+    end
+  end
+ // assign mwif.dmemload_i = dpif.dmemload;
   assign mwif.zeroExt_i  = xmif.zeroExt_o;
   assign mwif.rs1_i      = xmif.rs1_o;
   assign mwif.rs2_i      = xmif.rs2_o;

@@ -27,8 +27,6 @@ add wave -noupdate /system_tb/DUT/CPU/DP/dxif/dWEN_i
 add wave -noupdate /system_tb/DUT/CPU/DP/dxif/dWEN_o
 add wave -noupdate /system_tb/DUT/CPU/DP/dxif/dREN_i
 add wave -noupdate /system_tb/DUT/CPU/DP/dxif/dREN_o
-add wave -noupdate /system_tb/DUT/CPU/DP/dxif/shift_i
-add wave -noupdate /system_tb/DUT/CPU/DP/dxif/shift_o
 add wave -noupdate /system_tb/DUT/CPU/DP/dxif/jpSel_i
 add wave -noupdate /system_tb/DUT/CPU/DP/dxif/jpSel_o
 add wave -noupdate /system_tb/DUT/CPU/DP/dxif/aluSrc_i
@@ -107,8 +105,17 @@ add wave -noupdate /system_tb/DUT/CPU/DP/mwif/halt_i
 add wave -noupdate /system_tb/DUT/CPU/DP/mwif/halt_o
 add wave -noupdate /system_tb/DUT/CPU/DP/mwif/rdSel_i
 add wave -noupdate /system_tb/DUT/CPU/DP/mwif/rdSel_o
+add wave -noupdate -divider {fourwarding unit}
+add wave -noupdate /system_tb/DUT/CPU/DP/fuif/xm_rd
+add wave -noupdate /system_tb/DUT/CPU/DP/fuif/mw_rd
+add wave -noupdate /system_tb/DUT/CPU/DP/fuif/dx_rs1
+add wave -noupdate /system_tb/DUT/CPU/DP/fuif/dx_rs2
+add wave -noupdate /system_tb/DUT/CPU/DP/fuif/xm_regWr
+add wave -noupdate /system_tb/DUT/CPU/DP/fuif/mw_regWr
+add wave -noupdate /system_tb/DUT/CPU/DP/fuif/forwardA
+add wave -noupdate /system_tb/DUT/CPU/DP/fuif/forwardB
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {1311551537 ps} 0}
+WaveRestoreCursors {{Cursor 1} {245163 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 150
 configure wave -valuecolwidth 100
@@ -124,4 +131,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {1311538350 ps} {1311645350 ps}
+WaveRestoreZoom {181900 ps} {288900 ps}
