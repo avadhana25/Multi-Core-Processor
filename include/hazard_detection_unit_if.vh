@@ -16,14 +16,14 @@ interface hazard_detection_unit_if;
   //hdu port
 
   modport hdu (
-    input memRead, rs1, rs2, dx_rd, branch, jump,
+    input memRead, fd_rs1, fd_rs2, dx_rd, branch, jump,
     output freeze, threeInstrFlush
   );
 
   modport tb (
     input freeze, threeInstrFlush,
     output memRead, fd_rs1, fd_rs2, dx_rd, branch, jump
-  )
+  );
   endinterface
 
   `endif //HAZARD_DETECTION_UNIT INTERFACE

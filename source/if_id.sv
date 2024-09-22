@@ -39,7 +39,12 @@ always_comb begin
     next_instr = fdif.instr_o;
     next_npc = fdif.npc_o;
     next_curr_pc = fdif.curr_pc_o;
-    if(fdif.flush) begin
+    if(fdif.freeze) begin
+        next_instr = fdif.instr_o;
+        next_npc = fdif.npc_o;
+        next_curr_pc = fdif.curr_pc_o;
+    end
+    else if(fdif.flush) begin
         next_instr = '0;
         next_npc = '0;
         next_curr_pc = '0;

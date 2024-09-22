@@ -15,12 +15,12 @@ interface if_id_if;
   import cpu_types_pkg::*;
 
   word_t instr_i, npc_i, curr_pc_i, instr_o, npc_o, curr_pc_o;
-  logic en, flush;
+  logic en, flush, freeze;
 
   //ifid port
 
   modport ifid (
-    input instr_i, npc_i, curr_pc_i, en, flush,
+    input instr_i, npc_i, curr_pc_i, en, flush, freeze,
     output instr_o, npc_o, curr_pc_o
   );
   endinterface

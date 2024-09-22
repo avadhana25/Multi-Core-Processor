@@ -17,6 +17,7 @@
 `include "ex_mem_if.vh"
 `include "mem_wb_if.vh"
 `include "forwarding_unit_if.vh"
+`include "hazard_detection_unit_if.vh"
 
 
 
@@ -41,6 +42,7 @@ module datapath (
   ex_mem_if          xmif();
   mem_wb_if          mwif();
   forwarding_unit_if fuif();
+  hazard_detection_unit_if hduif();
 
 
   //DUTS
@@ -53,6 +55,7 @@ module datapath (
   ex_mem          EXMEM    (CLK, nRST, xmif);
   mem_wb          MEMWB    (CLK, nRST, mwif);
   forwarding_unit FRWDU    (fuif);
+  hazard_detection_unit HDU (CLK, nRST, hduif);
 
 
 
@@ -74,7 +77,7 @@ module datapath (
   assign xm_auipc_dest = xmif.curr_pc_o + xmif.zeroExt_o;
   assign wm_auipc_dest = mwif.curr_pc_o + mwif.zeroExt_o;
   assign jumpAddr = (dxif.instr_o[31] == 1) ? {19'h7ffff, dxif.instr_o[31], dxif.instr_o[19:12], dxif.instr_o[20], dxif.instr_o[30:21], 1'b0} : {19'h0, dxif.instr_o[31], dxif.instr_o[19:12], dxif.instr_o[20], dxif.instr_o[30:21], 1'b0};
-  assign branchAddr = (dxif.instr_o[31] == 1) ? {19'h7ffff, dxif.instr_o[31], dxif.instr_o[7], dxif.instr_o[30:25], dxif.instr_o[11:8], 1'b0} : {19'h0, dxif.instr_o[31], dxif.instr_o[7], dpif.imemload[30:25], dxif.instr_o[11:8], 1'b0};
+  assign branchAddr = (dxif.instr_o[31] == 1) ? {19'h7ffff, dxif.instr_o[31], dxif.instr_o[7], dxif.instr_o[30:25], dxif.instr_o[11:8], 1'b0} : {19'h0, dxif.instr_o[31], dxif.instr_o[7], dxif.instr_o[30:25], dxif.instr_o[11:8], 1'b0};
   assign zeroExt = {dxif.instr_o[31:12], 12'b0};    //for u type
   always_comb
   begin
@@ -163,8 +166,8 @@ module datapath (
   assign fdif.npc_i     = pcif.npc;
   assign fdif.curr_pc_i = pcif.curr_pc;
   assign fdif.en        = dpif.ihit;
-  assign fdif.flush     = 1'b0;      
-
+  assign fdif.flush     = hduif.threeInstrFlush;
+  assign fdif.freeze    = hduif.freeze;      
 
   //set up decode execute latch
   assign dxif.instr_i   = fdif.instr_o;
@@ -182,8 +185,7 @@ module datapath (
   assign dxif.pcSrc_i   = cuif.pcSrc;
   assign dxif.halt_i    = cuif.halt;
   assign dxif.en        = dpif.ihit;
-  assign dxif.flush     = 1'b0;
-
+  assign dxif.flush     = hduif.threeInstrFlush;
 
   //set up execute memory latch
   assign xmif.branchAddr_i = branchAddr;
@@ -222,7 +224,7 @@ module datapath (
   assign xmif.jumpAddr_i   = jumpAddr;
   assign xmif.dhit         = dpif.dhit;
   assign xmif.en           = dpif.ihit;
-  assign xmif.flush        = 1'b0;
+  assign xmif.flush        = hduif.threeInstrFlush;;
 
 
   //set memory writeback latch
@@ -267,7 +269,14 @@ module datapath (
   assign fuif.dx_rs1   = regbits_t'(dxif.instr_o[19:15]);
   assign fuif.dx_rs2   = regbits_t'(dxif.instr_o[24:20]);
 
-
+  //connect hazard detection unit
+  assign hduif.memRead = dxif.dREN_o;
+  assign hduif.fd_rs1 = regbits_t'(fdif.instr_o[19:15]);
+  assign hduif.fd_rs2 = regbits_t'(fdif.instr_o[24:20]);
+  assign hduif.dx_rd = regbits_t'(dxif.instr_o[11:7]);
+  assign hduif.branch = xmif.pcSrc_o == 2'b1 & xmif.branch_o;
+  //assign hduif.branch = 1'b0;
+  assign hduif.jump = dxif.jpSel_o;
 
   //connect register file
   assign rfif.wen   = mwif.regWr_o;
@@ -389,7 +398,7 @@ module datapath (
   end
 
   //connect program counter
-  assign pcif.en = dpif.ihit;
+  assign pcif.en = dpif.ihit & ~hduif.freeze;
   always_comb
   begin
     //default

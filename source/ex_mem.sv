@@ -87,7 +87,27 @@ always_comb begin
     next_rdSel = xmif.rdSel_o;
     next_pcSrc = xmif.pcSrc_o;
     next_halt = xmif.halt_o;
-    if(xmif.dhit | xmif.flush) begin
+    if(xmif.flush) begin
+        next_npc = '0; 
+        next_curr_pc = '0;
+        next_rdat2 = '0; 
+        next_branchAddr = '0; 
+        next_jumpAddr = '0; 
+        next_zeroExt = '0; 
+        next_port_out = '0;
+        next_rs1 = '0; 
+        next_rs2 = '0; 
+        next_rd = '0;
+        next_branch = '0; 
+        next_regWr = '0; 
+        next_dWEN = '0; 
+        next_dREN = '0; 
+        next_jpSel = '0;
+        next_rdSel = '0;
+        next_pcSrc = '0;
+        next_halt = '0;
+    end
+    if(xmif.dhit) begin
         next_dWEN = '0; 
         next_dREN = '0; 
     end

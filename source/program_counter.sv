@@ -14,6 +14,7 @@ program counter source file
 
 module program_counter(input logic CLK, nRST, program_counter_if.pc pcif);
 
+word_t next_pc;
 //constant pc + 4 value
 assign pcif.npc = pcif.curr_pc + 4;
 
@@ -24,9 +25,16 @@ begin
     begin
         pcif.curr_pc <= '0;
     end
-    else if (pcif.en)
+    else
     begin
-        pcif.curr_pc <= pcif.new_pc;
+        pcif.curr_pc <= next_pc;
+    end
+end
+
+always_comb begin
+    next_pc = pcif.curr_pc;
+    if(pcif.en) begin
+        next_pc = pcif.new_pc;
     end
 end
 

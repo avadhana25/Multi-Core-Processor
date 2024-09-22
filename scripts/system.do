@@ -13,6 +13,8 @@ add wave -noupdate /system_tb/DUT/CPU/DP/fdif/curr_pc_o
 add wave -noupdate /system_tb/DUT/CPU/DP/fdif/en
 add wave -noupdate /system_tb/DUT/CPU/DP/fdif/flush
 add wave -noupdate -divider decode_execute
+add wave -noupdate /system_tb/DUT/CPU/DP/dxif/instr_i
+add wave -noupdate /system_tb/DUT/CPU/DP/dxif/instr_o
 add wave -noupdate /system_tb/DUT/CPU/DP/dxif/rdat1_i
 add wave -noupdate /system_tb/DUT/CPU/DP/dxif/rdat1_o
 add wave -noupdate /system_tb/DUT/CPU/DP/dxif/rdat2_i
@@ -114,8 +116,17 @@ add wave -noupdate /system_tb/DUT/CPU/DP/fuif/xm_regWr
 add wave -noupdate /system_tb/DUT/CPU/DP/fuif/mw_regWr
 add wave -noupdate /system_tb/DUT/CPU/DP/fuif/forwardA
 add wave -noupdate /system_tb/DUT/CPU/DP/fuif/forwardB
+add wave -noupdate -divider {hazard detection unit}
+add wave -noupdate /system_tb/DUT/CPU/DP/hduif/memRead
+add wave -noupdate /system_tb/DUT/CPU/DP/hduif/freeze
+add wave -noupdate /system_tb/DUT/CPU/DP/hduif/branch
+add wave -noupdate /system_tb/DUT/CPU/DP/hduif/jump
+add wave -noupdate /system_tb/DUT/CPU/DP/hduif/threeInstrFlush
+add wave -noupdate /system_tb/DUT/CPU/DP/hduif/fd_rs1
+add wave -noupdate /system_tb/DUT/CPU/DP/hduif/fd_rs2
+add wave -noupdate /system_tb/DUT/CPU/DP/hduif/dx_rd
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {245163 ps} 0}
+WaveRestoreCursors {{Cursor 1} {328576 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 150
 configure wave -valuecolwidth 100
@@ -131,4 +142,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {181900 ps} {288900 ps}
+WaveRestoreZoom {90950 ps} {197950 ps}
