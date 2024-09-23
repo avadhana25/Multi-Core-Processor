@@ -55,7 +55,7 @@ module datapath (
   ex_mem          EXMEM    (CLK, nRST, xmif);
   mem_wb          MEMWB    (CLK, nRST, mwif);
   forwarding_unit FRWDU    (fuif);
-  hazard_detection_unit HDU (CLK, nRST, hduif);
+  hazard_detection_unit HDU (hduif);
 
 
 

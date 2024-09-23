@@ -192,10 +192,6 @@ program test(hazard_detection_unit_if.tb hduif);
 
 
 
-
-
-
-
     end
 
 endprogram
