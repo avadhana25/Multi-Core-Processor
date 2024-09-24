@@ -224,7 +224,7 @@ module datapath (
   assign xmif.jumpAddr_i   = jumpAddr;
   assign xmif.dhit         = dpif.dhit;
   assign xmif.en           = dpif.ihit;
-  assign xmif.flush        = hduif.threeInstrFlush;;
+  assign xmif.flush        = hduif.threeInstrFlush;
 
 
   //set memory writeback latch
@@ -276,7 +276,7 @@ module datapath (
   assign hduif.dx_rd = regbits_t'(dxif.instr_o[11:7]);
   assign hduif.branch = xmif.pcSrc_o == 2'b1 & xmif.branch_o;
   //assign hduif.branch = 1'b0;
-  assign hduif.jump = dxif.jpSel_o;
+  assign hduif.jump = xmif.jpSel_o;
 
   //connect register file
   assign rfif.wen   = mwif.regWr_o;

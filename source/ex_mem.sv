@@ -107,7 +107,7 @@ always_comb begin
         next_pcSrc = '0;
         next_halt = '0;
     end
-    if(xmif.dhit) begin
+    else if(xmif.dhit) begin
         next_dWEN = '0; 
         next_dREN = '0; 
     end

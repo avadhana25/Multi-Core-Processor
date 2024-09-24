@@ -206,6 +206,7 @@ begin
     cuif.rdSel  = 3'h2;      //load npc into rd
     cuif.pcSrc  = 2'h2;      //PC = alu output
     cuif.aluOp  = ALU_ADD;   //always add for jalr
+    cuif.jpSel  = 1'b1;
   end
 
   STYPE:           //SW
