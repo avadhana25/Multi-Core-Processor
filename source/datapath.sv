@@ -225,6 +225,11 @@ module datapath (
   assign xmif.dhit         = dpif.dhit;
   assign xmif.en           = dpif.ihit;
   assign xmif.flush        = hduif.threeInstrFlush;
+  assign xmif.instr_i      = dxif.instr_o;
+  assign xmif.func3_i      = dxif.instr_o[14:12];
+  assign xmif.func7_i      = dxif.instr_o[31:25];
+  assign xmif.opcode_i     = opcode_t'(dxif.instr_o[6:0]);
+  assign xmif.imm_i        = signExt;
 
 
   //set memory writeback latch
@@ -258,6 +263,13 @@ module datapath (
   assign mwif.dhit       = dpif.dhit;
   assign mwif.en         = dpif.ihit;
   assign mwif.flush      = 1'b0;
+  assign mwif.jumpAddr_i = xmif.jumpAddr_o;
+  assign mwif.branchAddr_i = xmif.branchAddr_o;
+  assign mwif.instr_i = xmif.instr_o;
+  assign mwif.func3_i = xmif.func3_o;
+  assign mwif.func7_i = xmif.func7_o;
+  assign mwif.opcode_i = xmif.opcode_o;
+  assign mwif.imm_i = xmif.imm_o;
 
 
 

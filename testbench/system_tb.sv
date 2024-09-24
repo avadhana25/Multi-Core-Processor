@@ -85,29 +85,29 @@ module system_tb;
   //dhit signal
   .dhit(DUT.CPU.DP.dpif.dhit),
   //funct3 field
-  .funct_3(DUT.CPU.DP.CTRLU.func3),
+  .funct_3(DUT.CPU.DP.mwif.func3_o),
   //funct7 field
-  .funct_7(DUT.CPU.DP.CTRLU.func7),
+  .funct_7(DUT.CPU.DP.mwif.func7_o),
   //funct7 opcode
-  .opcode(DUT.CPU.DP.CTRLU.opcode),
+  .opcode(DUT.CPU.DP.mwif.opcode_o),
   // The 'rs1' portion of an instruction
-  .rs1(DUT.CPU.DP.cuif.rs1),
+  .rs1(DUT.CPU.DP.mwif.rs1_o),
   // The 'rs2' portion of an instruction
-  .rs2(DUT.CPU.DP.cuif.rs2),
+  .rs2(DUT.CPU.DP.mwif.rs2_o),
   //write select from reg. file
   .wsel(DUT.CPU.DP.rfif.wsel),
   //Instruction loaded from memory
-  .instr(DUT.CPU.DP.dpif.imemload),
+  .instr(DUT.CPU.DP.mwif.instr_o),
   // Connect the PC to this
-  .pc(DUT.CPU.DP.pcif.curr_pc),
+  .pc(DUT.CPU.DP.mwif.curr_pc_o),
   // Connect the next PC to this
-  .next_pc_val(DUT.CPU.DP.pcif.npc),
+  .next_pc_val(DUT.CPU.DP.mwif.npc_o),
   // Connect branch addr
-  .branch_addr(DUT.CPU.DP.branchAddr),
+  .branch_addr(DUT.CPU.DP.mwif.branchAddr_o),
   // Connect jump addr
-  .jump_addr(DUT.CPU.DP.jumpAddr),
+  .jump_addr(DUT.CPU.DP.mwif.jumpAddr_o),
   // This means it should already be shifted/extended/whatever
-  .imm(DUT.CPU.DP.signExt),
+  .imm(DUT.CPU.DP.mwif.imm_o),
   //Pre shifted bits from U-type inst.
   .lui_pre_shift(DUT.CPU.DP.dpif.imemload[31:12]),
   //Data to store to memory
@@ -115,7 +115,7 @@ module system_tb;
   //Data to write to reg. file
   .reg_dat(DUT.CPU.DP.rfif.wdat),
   //Data loaded from memory
-  .load_dat(DUT.CPU.DP.dpif.dmemload),
+  .load_dat(DUT.CPU.DP.mwif.dmemload_o),
   //Addr. to load/store from/to memory
   .dat_addr(DUT.CPU.DP.dpif.dmemaddr)
   );
