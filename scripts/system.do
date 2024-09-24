@@ -125,8 +125,13 @@ add wave -noupdate /system_tb/DUT/CPU/DP/hduif/threeInstrFlush
 add wave -noupdate /system_tb/DUT/CPU/DP/hduif/fd_rs1
 add wave -noupdate /system_tb/DUT/CPU/DP/hduif/fd_rs2
 add wave -noupdate /system_tb/DUT/CPU/DP/hduif/dx_rd
+add wave -noupdate -divider {Program Counter}
+add wave -noupdate /system_tb/DUT/CPU/DP/pcif/curr_pc
+add wave -noupdate /system_tb/DUT/CPU/DP/pcif/new_pc
+add wave -noupdate /system_tb/DUT/CPU/DP/pcif/npc
+add wave -noupdate /system_tb/DUT/CPU/DP/pcif/en
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {328576 ps} 0}
+WaveRestoreCursors {{Cursor 1} {254208 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 150
 configure wave -valuecolwidth 100
@@ -142,4 +147,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {90950 ps} {197950 ps}
+WaveRestoreZoom {224700 ps} {331700 ps}
