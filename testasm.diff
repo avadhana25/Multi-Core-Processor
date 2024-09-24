@@ -11,98 +11,31 @@ processing file asmFiles/test.bltu_taken.asm (10 of 24)
 processing file asmFiles/test.bne_ntaken.asm (11 of 24)
 processing file asmFiles/test.bne_taken.asm (12 of 24)
 processing file asmFiles/test.branchjump1.asm (13 of 24)
---- memsim.hex	2024-09-20 16:27:40.948285429 -0400
-+++ memcpu.hex	2024-09-20 16:27:40.929284710 -0400
-@@ -16,6 +16,8 @@
+--- memsim.hex	2024-09-23 17:25:53.196213491 -0400
++++ memcpu.hex	2024-09-23 17:25:53.174212657 -0400
+@@ -16,6 +16,5 @@
  :04000F00004526235F
  :04001000FEB094E3C7
  :04001100FFFFFFFFEF
-+:040020000000BA5CC6
-+:040021000000BA5CC5
- :0400220000000024B6
+-:0400220000000024B6
 -:040024000000003C9C
-+:040023000000BA5CC3
++:040020000000BA5CC6
  :00000001FF
 processing file asmFiles/test.cfhazard_beq.asm (14 of 24)
---- memsim.hex	2024-09-20 16:27:42.311337079 -0400
-+++ memcpu.hex	2024-09-20 16:27:42.289336246 -0400
-@@ -6,5 +6,5 @@
- :04000500FFFFFFFFFB
- :04000600005520235E
- :04000700FFFFFFFFF9
--:04000A000000000AE8
-+:04000A0000000014DE
- :00000001FF
 processing file asmFiles/test.dhazard_add.asm (15 of 24)
 processing file asmFiles/test.dhazard_lw.asm (16 of 24)
---- memsim.hex	2024-09-20 16:27:45.105442956 -0400
-+++ memcpu.hex	2024-09-20 16:27:45.081442046 -0400
-@@ -4,6 +4,6 @@
- :04000300064283131B
- :040004000065202350
- :04000500FFFFFFFFFB
--:04000A000000739BE4
-+:04000A00000000648E
- :04003C000000733716
- :00000001FF
 processing file asmFiles/test.halt.asm (17 of 24)
 processing file asmFiles/test.jal.asm (18 of 24)
 processing file asmFiles/test.jalr.asm (19 of 24)
-processing file asmFiles/test.ldst1.asm (20 of 24)
-processing file asmFiles/test.ldst2.asm (21 of 24)
-processing file asmFiles/test.loadstore.asm (22 of 24)
-processing file asmFiles/test.rtype.asm (23 of 24)
-processing file asmFiles/test.shazard_lw.asm (24 of 24)
-processing file asmFiles/test.beq_ntaken.asm (1 of 24)
-processing file asmFiles/test.beq_taken.asm (2 of 24)
-processing file asmFiles/test.bge_ntaken.asm (3 of 24)
-processing file asmFiles/test.bge_taken.asm (4 of 24)
-processing file asmFiles/test.bgeu_ntaken.asm (5 of 24)
-processing file asmFiles/test.bgeu_taken.asm (6 of 24)
-processing file asmFiles/test.blt_ntaken.asm (7 of 24)
-processing file asmFiles/test.blt_taken.asm (8 of 24)
-processing file asmFiles/test.bltu_ntaken.asm (9 of 24)
-processing file asmFiles/test.bltu_taken.asm (10 of 24)
-processing file asmFiles/test.bne_ntaken.asm (11 of 24)
-processing file asmFiles/test.bne_taken.asm (12 of 24)
-processing file asmFiles/test.branchjump1.asm (13 of 24)
---- memsim.hex	2024-09-20 16:28:36.100375293 -0400
-+++ memcpu.hex	2024-09-20 16:28:36.085374725 -0400
-@@ -16,6 +16,8 @@
- :04000F00004526235F
- :04001000FEB094E3C7
- :04001100FFFFFFFFEF
-+:040020000000BA5CC6
-+:040021000000BA5CC5
- :0400220000000024B6
--:040024000000003C9C
-+:040023000000BA5CC3
+--- memsim.hex	2024-09-23 17:26:01.190516510 -0400
++++ memcpu.hex	2024-09-23 17:26:01.163515486 -0400
+@@ -7,5 +7,5 @@
+ :04000600000080E78F
+ :04000700005520235D
+ :04000800FFFFFFFFF8
+-:04000A000000000CE6
++:04000A000000000FE3
  :00000001FF
-processing file asmFiles/test.cfhazard_beq.asm (14 of 24)
---- memsim.hex	2024-09-20 16:28:37.491428004 -0400
-+++ memcpu.hex	2024-09-20 16:28:37.472427284 -0400
-@@ -6,5 +6,5 @@
- :04000500FFFFFFFFFB
- :04000600005520235E
- :04000700FFFFFFFFF9
--:04000A000000000AE8
-+:04000A0000000014DE
- :00000001FF
-processing file asmFiles/test.dhazard_add.asm (15 of 24)
-processing file asmFiles/test.dhazard_lw.asm (16 of 24)
---- memsim.hex	2024-09-20 16:28:40.180529902 -0400
-+++ memcpu.hex	2024-09-20 16:28:40.162529220 -0400
-@@ -4,6 +4,6 @@
- :04000300064283131B
- :040004000065202350
- :04000500FFFFFFFFFB
--:04000A000000739BE4
-+:04000A00000000648E
- :04003C000000733716
- :00000001FF
-processing file asmFiles/test.halt.asm (17 of 24)
-processing file asmFiles/test.jal.asm (18 of 24)
-processing file asmFiles/test.jalr.asm (19 of 24)
 processing file asmFiles/test.ldst1.asm (20 of 24)
 processing file asmFiles/test.ldst2.asm (21 of 24)
 processing file asmFiles/test.loadstore.asm (22 of 24)

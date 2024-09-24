@@ -7,7 +7,6 @@
 
 module hazard_detection_unit
 (
-    input logic CLK, nRST,
     hazard_detection_unit_if.hdu hduif
 );
 
