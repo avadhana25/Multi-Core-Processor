@@ -246,7 +246,7 @@ module datapath (
     end
     else
     begin
-      if (dpif.dmemload != 0)
+      if (xmif.dREN_o)
       begin
         mwif.dmemload_i <= dpif.dmemload;
       end
