@@ -131,6 +131,8 @@ always_comb begin
         next_pcSrc = xmif.pcSrc_i;
         next_halt = xmif.halt_i;
     end
+    
+    
 end
 
 endmodule

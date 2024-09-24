@@ -229,7 +229,7 @@ module datapath (
 
   //set memory writeback latch
   assign mwif.port_out_i = xmif.port_out_o;
-  assign mwif.npc_i      = xmif.npc_o;
+  assign mwif.npc_i = xmif.npc_o;
   assign mwif.curr_pc_i  = xmif.curr_pc_o;
 
   //latch dmemload
