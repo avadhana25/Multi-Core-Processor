@@ -75,7 +75,7 @@ always_comb begin
     next_rdSel = dxif.rdSel_o; 
     next_pcSrc = dxif.pcSrc_o; 
     next_halt = dxif.halt_o;
-    if(dxif.flush) begin
+    if(dxif.flush | dxif.freeze) begin
         next_instr = '0;
         next_npc = '0;
         next_curr_pc = '0; 
