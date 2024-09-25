@@ -81,9 +81,9 @@ module system_tb;
   // No need to change this
   .CLK(DUT.CPU.DP.CLK),
   // Since single cycle, this is just PC enable
-  .wb_stall(~DUT.CPU.DP.pcif.en),
+  .wb_stall(DUT.CPU.DP.hduif.freeze),
   //dhit signal
-  .dhit(DUT.CPU.DP.dpif.dhit),
+  .dhit(DUT.CPU.DP.mwif.dhit_o),
   //funct3 field
   .funct_3(DUT.CPU.DP.mwif.func3_o),
   //funct7 field
@@ -109,15 +109,15 @@ module system_tb;
   // This means it should already be shifted/extended/whatever
   .imm(DUT.CPU.DP.mwif.imm_o),
   //Pre shifted bits from U-type inst.
-  .lui_pre_shift(DUT.CPU.DP.dpif.imemload[31:12]),
+  .lui_pre_shift(DUT.CPU.DP.mwif.instr_o[31:12]),
   //Data to store to memory
-  .store_dat(DUT.CPU.DP.dpif.dmemstore),
+  .store_dat(DUT.CPU.DP.mwif.dmemstore_o),
   //Data to write to reg. file
   .reg_dat(DUT.CPU.DP.rfif.wdat),
   //Data loaded from memory
   .load_dat(DUT.CPU.DP.mwif.dmemload_o),
   //Addr. to load/store from/to memory
-  .dat_addr(DUT.CPU.DP.dpif.dmemaddr)
+  .dat_addr(DUT.CPU.DP.mwif.port_out_o)
   );
 `else
   system                              DUT (,,,,//for altera debug ports

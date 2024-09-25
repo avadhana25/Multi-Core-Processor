@@ -15,9 +15,9 @@ memory_writeback latch source file
 
 module mem_wb(input logic CLK, nRST, mem_wb_if.memwb mwif);
 
-word_t next_npc, next_curr_pc, next_port_out, next_dmemload, next_zeroExt, next_jumpAddr, next_branchAddr, next_instr, next_imm;
+word_t next_npc, next_curr_pc, next_port_out, next_dmemload, next_zeroExt, next_jumpAddr, next_branchAddr, next_instr, next_imm, next_dmemstore;
 logic [4:0] next_rs1, next_rs2, next_rd;
-logic next_regWr, next_halt;
+logic next_regWr, next_halt, next_dhit;
 logic [2:0] next_rdSel, next_func3;
 logic [6:0] next_func7;
 opcode_t next_opcode;
@@ -43,7 +43,9 @@ begin
         mwif.func3_o      <= 3'b0;
         mwif.func7_o      <= 7'b0;
         mwif.opcode_o     <= RTYPE;
-        mwif.imm_o        <= 32'b0; 
+        mwif.imm_o        <= 32'b0;
+        mwif.dmemstore_o   <= 32'b0;
+        mwif.dhit_o       <= 1'b0; 
     end
     else
     begin
@@ -65,6 +67,8 @@ begin
         mwif.func7_o      <= next_func7;
         mwif.opcode_o     <= next_opcode;
         mwif.imm_o        <= next_imm; 
+        mwif.dmemstore_o  <= next_dmemstore;
+        mwif.dhit_o       <= next_dhit;
     end
 end
 
@@ -87,6 +91,8 @@ always_comb begin
     next_func7 = mwif.func7_o;
     next_opcode = mwif.opcode_o;
     next_imm = mwif.imm_o;
+    next_dmemstore = mwif.dmemstore_o;
+    next_dhit = mwif.dhit_o;
     if(mwif.flush) begin
         next_npc = '0; 
         next_curr_pc = '0; 
@@ -106,6 +112,8 @@ always_comb begin
         next_func7 = '0;
         next_opcode = RTYPE;
         next_imm = '0;
+        next_dmemstore = '0;
+        next_dhit = '0;
     end
  //   else if (mwif.dhit)
  //   begin
@@ -130,6 +138,8 @@ always_comb begin
         next_func7 = mwif.func7_i;
         next_opcode = mwif.opcode_i;
         next_imm = mwif.imm_i;
+        next_dmemstore = mwif.dmemstore_i;
+        next_dhit = mwif.dhit;
     end
 end
 

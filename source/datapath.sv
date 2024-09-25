@@ -231,6 +231,7 @@ module datapath (
   assign xmif.func7_i      = dxif.instr_o[31:25];
   assign xmif.opcode_i     = opcode_t'(dxif.instr_o[6:0]);
   assign xmif.imm_i        = signExt;
+  assign xmif.dmemstore_i  = dxif.rdat2_o;
 
 
   //set memory writeback latch
@@ -271,6 +272,7 @@ module datapath (
   assign mwif.func7_i = xmif.func7_o;
   assign mwif.opcode_i = xmif.opcode_o;
   assign mwif.imm_i = xmif.imm_o;
+  assign mwif.dmemstore_i = xmif.dmemstore_o;
 
 
 
