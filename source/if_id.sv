@@ -15,9 +15,7 @@ fetch_decode latch source file
 
 module if_id(input logic CLK, nRST, if_id_if.ifid fdif);
 
-logic [31:0] next_instr;
-logic [31:0] next_npc;
-logic [31:0] next_curr_pc;
+logic [31:0] next_instr, next_npc, next_curr_pc;
 
 always_ff @(posedge CLK, negedge nRST)
 begin
