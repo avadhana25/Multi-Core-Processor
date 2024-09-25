@@ -186,6 +186,7 @@ module datapath (
   assign dxif.halt_i    = cuif.halt;
   assign dxif.en        = dpif.ihit;
   assign dxif.flush     = hduif.threeInstrFlush;
+  assign dxif.freeze    = hduif.freeze;
 
   //set up execute memory latch
   assign xmif.branchAddr_i = branchAddr;
