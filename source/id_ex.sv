@@ -75,7 +75,23 @@ always_comb begin
     next_rdSel = dxif.rdSel_o; 
     next_pcSrc = dxif.pcSrc_o; 
     next_halt = dxif.halt_o;
-    if(dxif.flush | dxif.freeze) begin
+    if(dxif.flush) begin
+        next_instr = '0;
+        next_npc = '0;
+        next_curr_pc = '0; 
+        next_rdat1 = '0; 
+        next_rdat2 = '0; 
+        next_regWr = '0; 
+        next_dWEN = '0; 
+        next_dREN = '0;
+        next_jpSel = '0; 
+        next_aluSrc = '0; 
+        next_aluOp = ALU_SLL; 
+        next_rdSel = '0; 
+        next_pcSrc = '0; 
+        next_halt = '0;
+    end
+    else if(dxif.freeze & dxif.en) begin
         next_instr = '0;
         next_npc = '0;
         next_curr_pc = '0; 
