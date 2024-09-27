@@ -43,8 +43,8 @@ always_comb begin
         next_curr_pc = fdif.curr_pc_o;
     end
     else if(fdif.flush) begin
-        next_instr = '0;
-        next_npc = '0;
+        next_instr   = '0;
+        next_npc     = '0;
         next_curr_pc = '0;
     end
     else if(fdif.en) begin

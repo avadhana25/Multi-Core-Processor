@@ -7,6 +7,7 @@
   org 0x0000
   addi $10, $0, 0x28      #memory
   ori $4,$0,0xF0
+  lw  $7,0($4)
   lw  $5,0($4)
   addi $6,$5,100 //data hazard
   sw $6,0($10)
