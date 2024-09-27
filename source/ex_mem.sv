@@ -107,7 +107,7 @@ always_comb begin
     next_imm = xmif.imm_o;
     next_opcode = xmif.opcode_o;
     next_dmemstore = xmif.dmemstore_o;
-    if(xmif.flush) begin
+    if(xmif.flush & xmif.en) begin
         next_npc = '0; 
         next_curr_pc = '0;
         next_rdat2 = '0; 

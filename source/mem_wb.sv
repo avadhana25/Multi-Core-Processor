@@ -93,7 +93,7 @@ always_comb begin
     next_imm = mwif.imm_o;
     next_dmemstore = mwif.dmemstore_o;
     next_dhit = mwif.dhit_o;
-    if(mwif.flush) begin
+    if(mwif.flush & mwif.en) begin
         next_npc = '0; 
         next_curr_pc = '0; 
         next_port_out = '0; 
