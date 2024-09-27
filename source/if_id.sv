@@ -37,15 +37,15 @@ always_comb begin
     next_instr = fdif.instr_o;
     next_npc = fdif.npc_o;
     next_curr_pc = fdif.curr_pc_o;
-    if(fdif.freeze & fdif.en) begin
-        next_instr = fdif.instr_o;
-        next_npc = fdif.npc_o;
-        next_curr_pc = fdif.curr_pc_o;
-    end
-    else if(fdif.flush & fdif.en) begin
+    if(fdif.flush & fdif.en) begin
         next_instr   = '0;
         next_npc     = '0;
         next_curr_pc = '0;
+    end
+    else if(fdif.freeze & fdif.en) begin
+        next_instr = fdif.instr_o;
+        next_npc = fdif.npc_o;
+        next_curr_pc = fdif.curr_pc_o;
     end
     else if(fdif.en) begin
         next_instr = fdif.instr_i;

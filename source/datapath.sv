@@ -413,7 +413,7 @@ module datapath (
   end
 
   //connect program counter
-  assign pcif.en = dpif.ihit & ~hduif.freeze;
+  assign pcif.en = dpif.ihit & ~(hduif.freeze & ~hduif.threeInstrFlush);
   always_comb
   begin
     //default
