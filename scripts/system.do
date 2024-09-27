@@ -55,6 +55,7 @@ add wave -noupdate /system_tb/DUT/CPU/DP/xmif/port_out_i
 add wave -noupdate /system_tb/DUT/CPU/DP/xmif/port_out_o
 add wave -noupdate /system_tb/DUT/CPU/DP/xmif/rdat2_i
 add wave -noupdate /system_tb/DUT/CPU/DP/xmif/rdat2_o
+add wave -noupdate /system_tb/DUT/CPU/DP/ALU/alu/port_a
 add wave -noupdate /system_tb/DUT/CPU/DP/xmif/curr_pc_i
 add wave -noupdate /system_tb/DUT/CPU/DP/xmif/curr_pc_o
 add wave -noupdate /system_tb/DUT/CPU/DP/xmif/rs1_i
@@ -134,7 +135,7 @@ add wave -noupdate /system_tb/DUT/CPU/DP/pcif/en
 add wave -noupdate -divider {Register File}
 add wave -noupdate -expand /system_tb/DUT/CPU/DP/REGFILE/register
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {254208 ps} 0}
+WaveRestoreCursors {{Cursor 1} {1725351 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 150
 configure wave -valuecolwidth 100
@@ -150,4 +151,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {176550 ps} {283550 ps}
+WaveRestoreZoom {1689865 ps} {1761488 ps}

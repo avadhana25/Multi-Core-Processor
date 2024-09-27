@@ -58,7 +58,6 @@ insertion_sort:
    lw    $30, 0($31)
  is_inner:
   beq   $31, $12, is_inner_end
-  nop
    lw    $16, -4($31)
    slt   $4, $30, $16
    beq   $4, $0, is_inner_end
@@ -106,7 +105,7 @@ m_3a:
    addi $15, $15, -1
    j     m_1
 m_4:  #left copy
-nop
+
   lw    $6, 0($12)
    sw    $6, 0($5)
    addi $5, $5, 4
