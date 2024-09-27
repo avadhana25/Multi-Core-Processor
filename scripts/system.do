@@ -5,6 +5,7 @@ add wave -noupdate /system_tb/nRST
 add wave -noupdate /system_tb/DUT/CPU/DP/CLK
 add wave -noupdate -divider fetch_decode
 add wave -noupdate /system_tb/DUT/CPU/DP/fdif/instr_i
+add wave -noupdate /system_tb/DUT/CPU/DP/fdif/instr_o
 add wave -noupdate /system_tb/DUT/CPU/DP/fdif/npc_i
 add wave -noupdate /system_tb/DUT/CPU/DP/fdif/curr_pc_i
 add wave -noupdate /system_tb/DUT/CPU/DP/fdif/instr_o
@@ -130,16 +131,10 @@ add wave -noupdate /system_tb/DUT/CPU/DP/pcif/curr_pc
 add wave -noupdate /system_tb/DUT/CPU/DP/pcif/new_pc
 add wave -noupdate /system_tb/DUT/CPU/DP/pcif/npc
 add wave -noupdate /system_tb/DUT/CPU/DP/pcif/en
-add wave -noupdate -divider alu
-add wave -noupdate /system_tb/DUT/CPU/DP/ALU/alu/negative
-add wave -noupdate /system_tb/DUT/CPU/DP/ALU/alu/zero
-add wave -noupdate /system_tb/DUT/CPU/DP/ALU/alu/overflow
-add wave -noupdate /system_tb/DUT/CPU/DP/ALU/alu/aluOp
-add wave -noupdate /system_tb/DUT/CPU/DP/ALU/alu/port_a
-add wave -noupdate /system_tb/DUT/CPU/DP/ALU/alu/port_b
-add wave -noupdate /system_tb/DUT/CPU/DP/ALU/alu/port_out
+add wave -noupdate -divider {Register File}
+add wave -noupdate -expand /system_tb/DUT/CPU/DP/REGFILE/register
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {3303050 ps} 0}
+WaveRestoreCursors {{Cursor 1} {254208 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 150
 configure wave -valuecolwidth 100
@@ -155,4 +150,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {0 ps} {151817 ps}
+WaveRestoreZoom {176550 ps} {283550 ps}
