@@ -6,8 +6,14 @@
 #Author Adam Hendrickson ahendri@purdue.edu
 
 org 0x0000
-  ori   $8, $0, 0xFFFC
-   ori   $2, $0, 0xFFFC
+  ori   $8, $0, 0xFFC
+   ori   $2, $0, 0xFFC
+   lui $3, 0xffff7  
+  sub $2, $2, $3
+  sub $8, $8, $3
+  lui $3, 0x00007
+  add $2, $2, $3
+  add $8, $8, $3
    ori   $12, $0, data
    lw    $24, size($0)
    ori   $6, $0, 1
