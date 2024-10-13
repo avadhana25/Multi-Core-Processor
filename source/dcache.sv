@@ -16,8 +16,8 @@ typedef enum logic [3:0] {IDLE, STORE1_STORE_ONE, STORE1_STORE_TWO, STORE2_STORE
 
 dcache_frame [15:0] data_store1;
 dcache_frame [15:0] data_store2;
-dcache_frame next_data_store1;
-dcache_frame next_data_store2;
+dcache_frame [15:0] next_data_store1;
+dcache_frame [15:0] next_data_store2;
 dcachef_t cache_addr;
 logic [15:0] LRU_tracker, next_LRU_tracker;
 logic miss;
@@ -35,19 +35,17 @@ always_ff @(posedge CLK, negedge n_rst) begin
         end
     end
     else begin
+        //TODO: Invalidate cache blocks on halt
         state <= next_state;
         LRU_tracker <= next_LRU_tracker;
-        data_store1[cache_addr.idx] <= next_data_store1;
-        data_store2[cache_addr.idx] <= next_data_store2;
+        for(int i = 0; i < 16; i++) begin
+            data_store1[i] <= next_data_store1[i];
+            data_store2[i] <= next_data_store2[i];
+        end
     end
 end
 
 assign cache_addr = dcachef_t'(dcif.dmemaddr);
-
-always_comb begin : hit_miss_logic
-    
-    
-end
 
 always_comb begin : next_state_logic
     next_state = state;
@@ -118,8 +116,8 @@ always_comb begin : output_logic
     cif.dstore = '0;
 
     //new cache values
-    next_data_store1 = data_store1[cache_addr.idx];
-    next_data_store2 = data_store2[cache_addr.idx];
+    next_data_store1 = data_store1;
+    next_data_store2 = data_store2;
 
     //hit/miss outputs
     dcif.dhit = '0;
@@ -129,7 +127,13 @@ always_comb begin : output_logic
 
     casez(state) 
         IDLE : begin
-            if(dcif.dmemREN == 1'b1 && data_store1[cache_addr.idx].tag == cache_addr.tag && data_store1[cache_addr.idx].valid == 1'b1) begin
+            if(dcif.halt == 1'b1) begin
+                for(int i = 0; i < 16; i++) begin
+                    next_data_store1[i].valid = 1'b0;
+                    next_data_store2[i].valid = 1'b0;
+                end
+            end
+            else if(dcif.dmemREN == 1'b1 && data_store1[cache_addr.idx].tag == cache_addr.tag && data_store1[cache_addr.idx].valid == 1'b1) begin
                 dcif.dhit = 1'b1;
                 dcif.dmemload = data_store1[cache_addr.idx].data[cache_addr.blkoff];
                 next_LRU_tracker[cache_addr.idx] = 1'b0;
@@ -141,18 +145,18 @@ always_comb begin : output_logic
             end
             else if(dcif.dmemWEN == 1'b1 && data_store1[cache_addr.idx].tag == cache_addr.tag && data_store1[cache_addr.idx].valid == 1'b1) begin
                 dcif.dhit = 1'b1;
-                next_data_store1.valid = 1'b1;
-                next_data_store1.dirty = 1'b1;
-                next_data_store1.tag = cache_addr.idx;
-                next_data_store1.data[cache_addr.blkoff] = dcif.dmemstore;
+                next_data_store1[cache_addr.idx].valid = 1'b1;
+                next_data_store1[cache_addr.idx].dirty = 1'b1;
+                next_data_store1[cache_addr.idx].tag = cache_addr.idx;
+                next_data_store1[cache_addr.idx].data[cache_addr.blkoff] = dcif.dmemstore;
                 next_LRU_tracker[cache_addr.idx] = 1'b0;
             end
             else if (dcif.dmemWEN == 1'b1 && data_store2[cache_addr.idx].tag == cache_addr.tag && data_store2[cache_addr.idx].valid == 1'b1) begin
                 dcif.dhit = 1'b1;
-                next_data_store2.valid = 1'b1;
-                next_data_store2.dirty = 1'b1;
-                next_data_store2.tag = cache_addr.idx;
-                next_data_store2.data[cache_addr.blkoff] = dcif.dmemstore;
+                next_data_store2[cache_addr.idx].valid = 1'b1;
+                next_data_store2[cache_addr.idx].dirty = 1'b1;
+                next_data_store2[cache_addr.idx].tag = cache_addr.idx;
+                next_data_store2[cache_addr.idx].data[cache_addr.blkoff] = dcif.dmemstore;
                 next_LRU_tracker[cache_addr.idx] = 1'b1;
             end
             else if(dcif.dmemREN == 1'b1 || dcif.dmemWEN == 1'b1) begin
@@ -185,16 +189,16 @@ always_comb begin : output_logic
         end
         LOAD_ONE : begin
             if(LRU_tracker[cache_addr.idx] == 1'b1) begin
-                next_data_store1.valid = 1'b0;
-                next_data_store1.dirty = 1'b0;
-                next_data_store1.tag = cache_addr.tag;
-                next_data_store1.data[0] = cif.dload;
+                next_data_store1[cache_addr.idx].valid = 1'b0;
+                next_data_store1[cache_addr.idx].dirty = 1'b0;
+                next_data_store1[cache_addr.idx].tag = cache_addr.tag;
+                next_data_store1[cache_addr.idx].data[0] = cif.dload;
             end
             else begin
-                next_data_store2.valid = 1'b0;
-                next_data_store2.dirty = 1'b0;
-                next_data_store2.tag = cache_addr.tag;
-                next_data_store2.data[0] = cif.dload;
+                next_data_store2[cache_addr.idx].valid = 1'b0;
+                next_data_store2[cache_addr.idx].dirty = 1'b0;
+                next_data_store2[cache_addr.idx].tag = cache_addr.tag;
+                next_data_store2[cache_addr.idx].data[0] = cif.dload;
             end
         end
         MEMORY_TWO : begin
@@ -203,30 +207,30 @@ always_comb begin : output_logic
         end
         LOAD_TWO : begin
             if(LRU_tracker[cache_addr.idx] == 1'b1) begin
-                next_data_store1.valid = 1'b1;
-                next_data_store1.dirty = 1'b0;
-                next_data_store1.tag = cache_addr.tag;
-                next_data_store1.data[1] = cif.dload;
+                next_data_store1[cache_addr.idx].valid = 1'b1;
+                next_data_store1[cache_addr.idx].dirty = 1'b0;
+                next_data_store1[cache_addr.idx].tag = cache_addr.tag;
+                next_data_store1[cache_addr.idx].data[1] = cif.dload;
             end
             else begin
-                next_data_store2.valid = 1'b1;
-                next_data_store2.dirty = 1'b0;
-                next_data_store2.tag = cache_addr.tag;
-                next_data_store2.data[1] = cif.dload;
+                next_data_store2[cache_addr.idx].valid = 1'b1;
+                next_data_store2[cache_addr.idx].dirty = 1'b0;
+                next_data_store2[cache_addr.idx].tag = cache_addr.tag;
+                next_data_store2[cache_addr.idx].data[1] = cif.dload;
             end
         end
         UPDATE : begin
             if(LRU_tracker[cache_addr.idx] == 1'b1) begin
-                next_data_store1.valid = 1'b1;
-                next_data_store1.dirty = 1'b1;
-                next_data_store1.tag = cache_addr.tag;
-                next_data_store1.data[cache_addr.blkoff] = dcif.dmemstore;
+                next_data_store1[cache_addr.idx].valid = 1'b1;
+                next_data_store1[cache_addr.idx].dirty = 1'b1;
+                next_data_store1[cache_addr.idx].tag = cache_addr.tag;
+                next_data_store1[cache_addr.idx].data[cache_addr.blkoff] = dcif.dmemstore;
             end
             else begin
-                next_data_store2.valid = 1'b1;
-                next_data_store2.dirty = 1'b1;
-                next_data_store2.tag = cache_addr.tag;
-                next_data_store2.data[cache_addr.blkoff] = dcif.dmemstore;
+                next_data_store2[cache_addr.idx].valid = 1'b1;
+                next_data_store2[cache_addr.idx].dirty = 1'b1;
+                next_data_store2[cache_addr.idx].tag = cache_addr.tag;
+                next_data_store2[cache_addr.idx].data[cache_addr.blkoff] = dcif.dmemstore;
             end
         end
     endcase
