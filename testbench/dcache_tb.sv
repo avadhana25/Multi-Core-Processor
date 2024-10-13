@@ -52,6 +52,23 @@ module dcache_tb;
         end
     endtask
 
+    task reset_inputs;
+        begin
+            dcif.halt = 0;
+            dcif.dmemREN = 0;
+            dcif.dmemWEN = 0;
+            dcif.datomic = 0;
+            dcif.dmemstore = 0;
+            dcif.dmemaddr = 0;
+            cif.dwait = 1;
+            cif.dload = 0;
+            cif.ccwait = 0;
+            cif.ccinv = 0;
+            cif.ccsnoopaddr = 0;
+        end
+    endtask
+
+
     task testcases;
         input  integer testcase;
         input  string testdesc;
@@ -74,12 +91,74 @@ program test;
 
     reset_dut;
 
+    //set inputs
+    reset_inputs;
+
+
     //TESTCASE 1: LOAD FROM 0x30 AND MISS
     testcase = 1;
     testdesc = "LOAD FROM 0x30 AND MISS";
 
     testcases(testcase, testdesc);
-    
+
+    dcif.dmemWEN  = 0;
+    dcif.dmemREN  = 1;
+    dcif.dmemaddr = {29'h30, 1'h0, 2'h0};
+    #(PERIOD * 2)
+    if (!dcif.dhit && cif.dREN && cif.daddr == dcif.dmemaddr)
+    begin
+        $display("Initial Miss: Accessing Memory for First Set Element");
+    end
+    #(PERIOD*2)
+    cif.dwait = 0;
+    cif.dload = 32'h333;
+    #(PERIOD * 2)
+    if (!dcif.dhit && cif.dREN && cif.daddr == dcif.dmemaddr + 4)
+    begin
+        $display("Initial Miss: Accessing Memory for Second Set Element");
+    end
+    #(PERIOD*2)
+    cif.dwait = 0;
+    cif.dload = 32'h444;
+    #(PERIOD*2)
+
+   
+
+    //TESTCASE 2: READ FROM 0x30 AND HIT
+    testcase += 1;
+    testdesc = "READ FROM 0x30 AND HIT";
+
+    testcases(testcase, testdesc);
+
+    reset_inputs;
+
+    dcif.dmemWEN = 0;
+    dcif.dmemREN = 1;
+    dcif.dmemaddr = {29'h30, 1'h0, 2'h0};
+    #(PERIOD*2)
+    if (dcif.dhit)
+    begin
+        $display("Succesful Hit at 0x30, dmemload: %0d", dcif.dmemload);
+    end
+
+    //TESTCASE 3: READ FROM 0x31 AND HIT
+    testcase += 1;
+    testdesc = "READ FROM 0x31 AND HIT";
+
+    testcases(testcase, testdesc);
+    reset_inputs;
+
+    dcif.dmemWEN = 0;
+    dcif.dmemREN = 1;
+    dcif.dmemaddr = {29'h30, 1'h1, 2'h0};
+    #(PERIOD*2)
+    if (dcif.dhit)
+    begin
+        $display("Succesful Hit at 0x31, dmemload: %0d", dcif.dmemload);
+    end
+
+
+
 
 
 
