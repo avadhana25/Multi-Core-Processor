@@ -59,6 +59,21 @@ begin
     end
 end
 
+//hit logic
+always_comb
+begin
+    //default values
+    dcif.ihit = 0;
+    dcif.imemload = 0;
+
+    //exeption logic
+    if ((cache[cache_addr.idx].tag == cache_addr.tag) && cache[cache_addr.idx].valid)
+        begin
+            dcif.ihit = 1;
+            dcif.imemload = cache[cache_addr.idx].data;
+        end
+end
+
 //next state logic
 always_comb
 begin
@@ -121,14 +136,9 @@ begin
     begin
     end
 
-    COMPARE:                   //if tag matches and value is valid, send cache data and assert ihit. else assert miss
+    COMPARE:                   //if tag doesnt match or value is not valid, assert miss
     begin
-        if ((cache[cache_addr.idx].tag == cache_addr.tag) && cache[cache_addr.idx].valid)
-        begin
-            dcif.ihit = 1;
-            dcif.imemload = cache[cache_addr.idx].data;
-        end
-        else
+        if ((cache[cache_addr.idx].tag != cache_addr.tag) || !cache[cache_addr.idx].valid)
         begin
             miss = 1;
         end
