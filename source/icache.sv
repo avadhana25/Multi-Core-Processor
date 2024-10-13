@@ -123,8 +123,6 @@ end
 always_comb
 begin
     //default values
-    dcif.ihit     = 0;
-    dcif.imemload = 0;
     cif.iREN      = 0;
     cif.iaddr     = 0;
     miss          = 0;
@@ -153,15 +151,6 @@ begin
     endcase
 
 end
-
-
-
-
-
-
-
-
-
 
 
 
