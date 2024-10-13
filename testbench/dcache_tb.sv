@@ -27,7 +27,7 @@ module dcache_tb;
 
     // interfaces
     caches_if cif();
-    datapath_caches_if dcif();
+    datapath_cache_if dcif();
 
     //test program
     test #(.PERIOD(PERIOD)) PROG ();
@@ -36,7 +36,7 @@ module dcache_tb;
     always #(PERIOD/2) CLK++;
 
     //DUT
-    dcache DUT (CLK, nRST, dcif, cif)
+    dcache DUT (CLK, nRST, dcif, cif);
 
     //tasks
     task reset_dut;
