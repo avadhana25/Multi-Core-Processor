@@ -35,6 +35,7 @@ always_ff @(posedge CLK, negedge n_rst) begin
         end
     end
     else begin
+        //TODO: Invalidate cache blocks on halt
         state <= next_state;
         LRU_tracker <= next_LRU_tracker;
         data_store1[cache_addr.idx] <= next_data_store1;
@@ -43,11 +44,6 @@ always_ff @(posedge CLK, negedge n_rst) begin
 end
 
 assign cache_addr = dcachef_t'(dcif.dmemaddr);
-
-always_comb begin : hit_miss_logic
-    
-    
-end
 
 always_comb begin : next_state_logic
     next_state = state;
