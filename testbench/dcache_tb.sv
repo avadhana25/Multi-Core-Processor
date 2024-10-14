@@ -30,7 +30,7 @@ module dcache_tb;
     datapath_cache_if dcif();
 
     //test program
-    test #(.PERIOD(PERIOD)) PROG ();
+    test #(.PERIOD(PERIOD)) PROG (CLK);
 
     // clock
     always #(PERIOD/2) CLK++;
@@ -81,7 +81,7 @@ module dcache_tb;
 
 endmodule
 
-program test;
+program test(input logic CLK);
   parameter PERIOD = 10;
   integer testcase;
   string testdesc;
@@ -105,20 +105,26 @@ program test;
     dcif.dmemREN  = 1;
     dcif.dmemaddr = {29'h30, 1'h0, 2'h0};
     cif.dwait = 0;
-    #(PERIOD)
+    @(posedge CLK);
     if (!dcif.dhit && cif.dREN && cif.daddr == dcif.dmemaddr)
     begin
         $display("Initial Miss: Accessing Memory for First Set Element");
     end
-    #(PERIOD)
+    @(posedge CLK);
     cif.dload = 32'h444;
-    #(PERIOD)
+    @(posedge CLK);
     if (!dcif.dhit && cif.dREN && cif.daddr == dcif.dmemaddr + 4)
     begin
         $display("Initial Miss: Accessing Memory for Second Set Element");
     end
-    #(PERIOD)
-    cif.dload = 32'h444;
+    @(posedge CLK);
+    cif.dload = 32'h152;
+    @(posedge CLK);
+    @(posedge CLK);
+    if (dcif.dhit && !cif.dREN && cif.daddr == dcif.dmemaddr + 4)
+    begin
+        $display("Dhit high, memload = block 0");
+    end
 
 
    

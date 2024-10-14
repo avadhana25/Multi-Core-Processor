@@ -35,7 +35,6 @@ always_ff @(posedge CLK, negedge n_rst) begin
         end
     end
     else begin
-        //TODO: Invalidate cache blocks on halt
         state <= next_state;
         LRU_tracker <= next_LRU_tracker;
         for(int i = 0; i < 16; i++) begin
@@ -140,7 +139,7 @@ always_comb begin : output_logic
             end
             else if(dcif.dmemREN == 1'b1 && data_store2[cache_addr.idx].tag == cache_addr.tag && data_store2[cache_addr.idx].valid == 1'b1) begin
                 dcif.dhit = 1'b1;
-                dcif.dmemload = data_store1[cache_addr.idx].data[cache_addr.blkoff];
+                dcif.dmemload = data_store2[cache_addr.idx].data[cache_addr.blkoff];
                 next_LRU_tracker[cache_addr.idx] = 1'b1;
             end
             else if(dcif.dmemWEN == 1'b1 && data_store1[cache_addr.idx].tag == cache_addr.tag && data_store1[cache_addr.idx].valid == 1'b1) begin
