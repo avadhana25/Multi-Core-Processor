@@ -77,6 +77,30 @@ module dcache_tb;
         end
     endtask
 
+    task check_access;
+    input word_t first_load;
+    input word_t second_load;
+    begin
+        cif.dwait = 0;
+        @(posedge CLK);
+        if (!dcif.dhit && cif.dREN && cif.daddr == dcif.dmemaddr)
+        begin
+            $display("Initial Miss: Accessing Memory for First Block Element");
+        end
+        @(posedge CLK);
+        cif.dload = first_load;
+        @(posedge CLK);
+        if (!dcif.dhit && cif.dREN && cif.daddr == dcif.dmemaddr + 4)
+        begin
+            $display("Initial Miss: Accessing Memory for Second Block Element");
+        end
+        @(posedge CLK);
+        cif.dload = second_load;
+        @(posedge CLK);
+        @(posedge CLK);
+    end
+    endtask
+
 
 
 endmodule
@@ -103,31 +127,9 @@ program test(input logic CLK);
 
     dcif.dmemWEN  = 0;
     dcif.dmemREN  = 1;
-    dcif.dmemaddr = {29'h30, 1'h0, 2'h0};
-    cif.dwait = 0;
-    @(posedge CLK);
-    if (!dcif.dhit && cif.dREN && cif.daddr == dcif.dmemaddr)
-    begin
-        $display("Initial Miss: Accessing Memory for First Set Element");
-    end
-    @(posedge CLK);
-    cif.dload = 32'h444;
-    @(posedge CLK);
-    if (!dcif.dhit && cif.dREN && cif.daddr == dcif.dmemaddr + 4)
-    begin
-        $display("Initial Miss: Accessing Memory for Second Set Element");
-    end
-    @(posedge CLK);
-    cif.dload = 32'h152;
-    @(posedge CLK);
-    @(posedge CLK);
-    if (dcif.dhit && !cif.dREN && cif.daddr == dcif.dmemaddr + 4)
-    begin
-        $display("Dhit high, memload = block 0");
-    end
-
-
-   
+    dcif.dmemaddr = {25'h3, 4'h0, 1'h0, 2'h0};
+    check_access(32'h444, 32'h152);
+    
 
     //TESTCASE 2: READ FROM 0x30 AND HIT
     testcase += 1;
@@ -139,11 +141,11 @@ program test(input logic CLK);
 
     dcif.dmemWEN = 0;
     dcif.dmemREN = 1;
-    dcif.dmemaddr = {29'h30, 1'h0, 2'h0};
+    dcif.dmemaddr = {25'h3, 4'h0, 1'h0, 2'h0};
     #(PERIOD)
-    if (dcif.dhit)
+    if (dcif.dhit && dcif.dmemload == 32'h444)
     begin
-        $display("Succesful Hit at 0x30, dmemload: %0d", dcif.dmemload);
+        $display("Succesful Hit at 0x30, loaded value: %0x", dcif.dmemload);
     end
 
     //TESTCASE 3: READ FROM 0x31 AND HIT
@@ -155,12 +157,103 @@ program test(input logic CLK);
 
     dcif.dmemWEN = 0;
     dcif.dmemREN = 1;
-    dcif.dmemaddr = {29'h30, 1'h1, 2'h0};
+    dcif.dmemaddr = {25'h3, 4'h0, 1'h1, 2'h0};
     #(PERIOD*2)
-    if (dcif.dhit)
+    if (dcif.dhit && dcif.dmemload == 32'h152)
     begin
-        $display("Succesful Hit at 0x31, dmemload: %0d", dcif.dmemload);
+        $display("Succesful Hit at 0x31, loaded value: %0x", dcif.dmemload);
     end
+
+    //TESTCASE 4: LOAD FROM SAME SET AND MISS
+    testcase += 1;
+    testdesc = "LOAD FROM SAME SET AND MISS (0x50)";
+
+    testcases(testcase, testdesc);
+    reset_inputs;
+
+    dcif.dmemREN = 1;
+    dcif.dmemaddr = {25'h5, 4'h0, 1'h0, 2'h0};
+    check_access(32'h555, 32'h352);
+
+    //TESTCASE 5: READ FROM 0x50 AND HIT
+    testcase += 1;
+    testdesc = "READ FROM 0x50 AND HIT";
+
+    testcases(testcase, testdesc);
+
+    reset_inputs;
+
+    dcif.dmemWEN = 0;
+    dcif.dmemREN = 1;
+    dcif.dmemaddr = {25'h5, 4'h0, 1'h0, 2'h0};
+    #(PERIOD)
+    if (dcif.dhit && dcif.dmemload == 32'h555)
+    begin
+        $display("Succesful Hit at 0x50, loaded value: %0x", dcif.dmemload);
+    end
+
+    //TESTCASE 6: READ FROM 0x51 AND HIT
+    testcase += 1;
+    testdesc = "READ FROM 0x51 AND HIT";
+
+    testcases(testcase, testdesc);
+    reset_inputs;
+
+    dcif.dmemWEN = 0;
+    dcif.dmemREN = 1;
+    dcif.dmemaddr = {25'h5, 4'h0, 1'h1, 2'h0};
+    #(PERIOD*2)
+    if (dcif.dhit && dcif.dmemload == 32'h352)
+    begin
+        $display("Succesful Hit at 0x51, loaded value: %0x", dcif.dmemload);
+    end
+
+    //TESTCASE 7: LOAD FROM SAME INDEX AND REPLACE TAG 3 (LRU)
+    testcase += 1;
+    testdesc = "LOAD FROM SAME INDEX AND REPLACE TAG 3 (LRU), READING TAG 3 WILL MISS";
+
+    testcases(testcase, testdesc);
+    reset_inputs;
+
+    dcif.dmemREN = 1;
+    dcif.dmemaddr = {25'h6, 4'h0, 1'h0, 2'h0};
+    check_access(32'h666, 32'h652);
+
+    reset_inputs;
+
+    dcif.dmemWEN = 0;
+    dcif.dmemREN = 1;
+    dcif.dmemaddr = {25'h3, 4'h0, 1'h0, 2'h0};
+    #(PERIOD)
+    if (!dcif.dhit)
+    begin
+        $display("Succesful Miss at 0x30");
+    end
+
+    //INDEX 0 now has tags 6 and 3
+
+    //TESTCASE 8: READ FROM 0x50 AND MISS
+    testcase += 1;
+    testdesc = "READ FROM 0x50 AND MISS: TAG 5 REPLACED BY TAG 3 ABOVE";
+
+    testcases(testcase, testdesc);
+    reset_inputs;
+
+    dcif.dmemWEN = 0;
+    dcif.dmemREN = 1;
+    dcif.dmemaddr = {25'h5, 4'h0, 1'h0, 2'h0};
+    #(PERIOD)
+    if (!dcif.dhit)
+    begin
+        $display("Succesful Miss at 0x50");
+    end
+
+
+
+
+
+
+
 
 
 
