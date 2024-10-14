@@ -25,8 +25,8 @@ aquire:
   lr.w    $t0, ($a0)         # load lock location
    bne   $t0, $31, aquire     # wait on lock to be open
    addi $t0, $0, 0
-   sc.w     $t0, ($a0)
-   beq   $t0, $31, lock       # if sc.w failed retry (In case of SC failuer, rs gets written 1)
+   sc.w  $t3, $t0, ($a0)
+   beq   $t3, $31, lock       # if sc.w failed retry (In case of SC failuer, rs gets written 1)
    jr    $ra
  
 
