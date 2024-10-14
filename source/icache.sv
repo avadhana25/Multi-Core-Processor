@@ -105,12 +105,12 @@ begin
     end
 
     ALLOCATE:                                                         //update cache with tag, valid and data from memory, return to compare once value has been retreived
-    begin
-        next_cache[cache_addr.idx].valid = 1;
+    begin 
         next_cache[cache_addr.idx].tag   = cache_addr.tag;
-        next_cache[cache_addr.idx].data  = cif.iload;
         if (!cif.iwait)                                            //memory access
         begin
+            next_cache[cache_addr.idx].valid = 1;
+            next_cache[cache_addr.idx].data  = cif.iload;
             next_state = COMPARE;
         end
     end
