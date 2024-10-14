@@ -67,7 +67,7 @@ begin
     dcif.imemload = 0;
 
     //exeption logic
-    if ((dcif.imemREN && !dcif.halt && cache[cache_addr.idx].tag == cache_addr.tag) && cache[cache_addr.idx].valid)
+    if ((dcif.imemREN && cache[cache_addr.idx].tag == cache_addr.tag) && cache[cache_addr.idx].valid)
         begin
             dcif.ihit = 1;
             dcif.imemload = cache[cache_addr.idx].data;
@@ -86,7 +86,7 @@ begin
 
     IDLE:                                                                      //move to compare if only imemREN asserted and not halted
     begin
-        if (dcif.imemREN && !dcif.halt)
+        if (dcif.imemREN)
         begin
             next_state = COMPARE;
         end

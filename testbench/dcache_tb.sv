@@ -111,7 +111,7 @@ program test;
         $display("Initial Miss: Accessing Memory for First Set Element");
     end
     #(PERIOD)
-    cif.dload = 32'h444;
+    cif.dload = 32'h333;
     #(PERIOD)
     if (!dcif.dhit && cif.dREN && cif.daddr == dcif.dmemaddr + 4)
     begin

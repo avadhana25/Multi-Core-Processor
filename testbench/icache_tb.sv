@@ -87,7 +87,7 @@ program test(datapath_cache_if.icache dcif, caches_if.icache cif);
 
     dcif.imemREN = 1'b1;
     dcif.imemaddr = 32'h00000ff0 ;
-    #(1);
+    #(2*PERIOD);
     if(cif.iREN != 1'b1) begin
         $display("iREN not asserted!");
     end
@@ -95,7 +95,7 @@ program test(datapath_cache_if.icache dcif, caches_if.icache cif);
         $display("iaddr incorrect!");
     end
 
-    #(PERIOD);
+    //#(PERIOD);
 
     cif.iwait = 1'b0;
     cif.iload = 32'h92a7b913;
