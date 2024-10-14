@@ -104,23 +104,22 @@ program test;
     dcif.dmemWEN  = 0;
     dcif.dmemREN  = 1;
     dcif.dmemaddr = {29'h30, 1'h0, 2'h0};
-    #(PERIOD * 2)
+    cif.dwait = 0;
+    #(PERIOD)
     if (!dcif.dhit && cif.dREN && cif.daddr == dcif.dmemaddr)
     begin
         $display("Initial Miss: Accessing Memory for First Set Element");
     end
-    #(PERIOD*2)
-    cif.dwait = 0;
-    cif.dload = 32'h333;
-    #(PERIOD * 2)
+    #(PERIOD)
+    cif.dload = 32'h444;
+    #(PERIOD)
     if (!dcif.dhit && cif.dREN && cif.daddr == dcif.dmemaddr + 4)
     begin
         $display("Initial Miss: Accessing Memory for Second Set Element");
     end
-    #(PERIOD*2)
-    cif.dwait = 0;
+    #(PERIOD)
     cif.dload = 32'h444;
-    #(PERIOD*2)
+
 
    
 
@@ -135,7 +134,7 @@ program test;
     dcif.dmemWEN = 0;
     dcif.dmemREN = 1;
     dcif.dmemaddr = {29'h30, 1'h0, 2'h0};
-    #(PERIOD*2)
+    #(PERIOD)
     if (dcif.dhit)
     begin
         $display("Succesful Hit at 0x30, dmemload: %0d", dcif.dmemload);
