@@ -14,12 +14,12 @@ module dcache
 
 typedef enum logic [3:0] {IDLE, STORE1_STORE_ONE, STORE1_STORE_TWO, STORE2_STORE_ONE, STORE2_STORE_TWO, MEMORY_ONE, LOAD_ONE, MEMORY_TWO, LOAD_TWO, UPDATE, COUNTER_WRITE, DONE} state_t;
 
-dcache_frame [15:0] data_store1;
-dcache_frame [15:0] data_store2;
-dcache_frame [15:0] next_data_store1;
-dcache_frame [15:0] next_data_store2;
+dcache_frame [7:0] data_store1;
+dcache_frame [7:0] data_store2;
+dcache_frame [7:0] next_data_store1;
+dcache_frame [7:0] next_data_store2;
 dcachef_t cache_addr;
-logic [15:0] LRU_tracker, next_LRU_tracker;
+logic [7:0] LRU_tracker, next_LRU_tracker;
 logic miss, real_hit, next_real_hit;
 state_t state, next_state;
 word_t hit_counter, next_hit_counter;
@@ -29,7 +29,7 @@ always_ff @(posedge CLK, negedge n_rst) begin
     if(!n_rst) begin
         state <= IDLE;
         LRU_tracker <= '0;
-        for(int i = 0; i < 16; i++) begin
+        for(int i = 0; i < 8; i++) begin
             data_store1[i] <= '0;
             data_store2[i] <= '0;
         end
@@ -39,7 +39,7 @@ always_ff @(posedge CLK, negedge n_rst) begin
     else begin
         state <= next_state;
         LRU_tracker <= next_LRU_tracker;
-        for(int i = 0; i < 16; i++) begin
+        for(int i = 0; i < 8; i++) begin
             data_store1[i] <= next_data_store1[i];
             data_store2[i] <= next_data_store2[i];
         end
@@ -145,7 +145,7 @@ always_comb begin : output_logic
     casez(state) 
         IDLE : begin
             if(dcif.halt == 1'b1) begin
-                for(int i = 0; i < 16; i++) begin
+                for(int i = 0; i < 8; i++) begin
                     next_data_store1[i].valid = 1'b0;
                     next_data_store2[i].valid = 1'b0;
                 end
@@ -186,27 +186,27 @@ always_comb begin : output_logic
         end
         STORE1_STORE_ONE : begin
             cif.dWEN = 1'b1;
-            cif.daddr = dcif.dmemaddr;
+            cif.daddr = cache_addr.blkoff == 1'b0 ? dcif.dmemaddr : dcif.dmemaddr - 4;
             cif.dstore = data_store1[cache_addr.idx].data[0];
         end
         STORE1_STORE_TWO : begin
             cif.dWEN = 1'b1;
-            cif.daddr = dcif.dmemaddr + 4;
+            cif.daddr = cache_addr.blkoff == 1'b0 ? dcif.dmemaddr + 4: dcif.dmemaddr;
             cif.dstore = data_store1[cache_addr.idx].data[1];
         end
         STORE2_STORE_ONE : begin
             cif.dWEN = 1'b1;
-            cif.daddr = dcif.dmemaddr;
+            cif.daddr = cache_addr.blkoff == 1'b0 ? dcif.dmemaddr : dcif.dmemaddr - 4;
             cif.dstore = data_store2[cache_addr.idx].data[0];
         end
         STORE2_STORE_TWO : begin
             cif.dWEN = 1'b1;
-            cif.daddr = dcif.dmemaddr;
+            cif.daddr = cache_addr.blkoff == 1'b0 ? dcif.dmemaddr + 4: dcif.dmemaddr;
             cif.dstore = data_store2[cache_addr.idx].data[1];
         end
         MEMORY_ONE : begin
             cif.dREN = 1'b1;
-            cif.daddr = dcif.dmemaddr;
+            cif.daddr = cache_addr.blkoff == 1'b0 ? dcif.dmemaddr : dcif.dmemaddr - 4;
         end
         LOAD_ONE : begin
             if(LRU_tracker[cache_addr.idx] == 1'b1) begin
@@ -224,7 +224,7 @@ always_comb begin : output_logic
         end
         MEMORY_TWO : begin
             cif.dREN = 1'b1;
-            cif.daddr = dcif.dmemaddr + 4;
+            cif.daddr = cache_addr.blkoff == 1'b0 ? dcif.dmemaddr + 4 : dcif.dmemaddr;
         end
         LOAD_TWO : begin
             next_real_hit = 1'b0;
