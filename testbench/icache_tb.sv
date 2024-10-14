@@ -30,7 +30,7 @@ module icache_tb;
     datapath_cache_if dcif();
 
     //test program
-    test #(.PERIOD(PERIOD)) PROG (dcif, cif);
+    test #(.PERIOD(PERIOD)) PROG (CLK, dcif, cif);
 
     // clock
     always #(PERIOD/2) CLK++;
@@ -64,7 +64,7 @@ module icache_tb;
 
 endmodule
 
-program test(datapath_cache_if.icache dcif, caches_if.icache cif);
+program test(input logic CLK, datapath_cache_if.icache dcif, caches_if.icache cif);
   parameter PERIOD = 10;
   integer testcase;
   string testdesc;
@@ -75,7 +75,7 @@ program test(datapath_cache_if.icache dcif, caches_if.icache cif);
     //initialize values
     dcif.imemREN = '0;
     dcif.imemaddr = '0;
-    cif.iwait = '0;
+    cif.iwait = '1;
     cif.iload = '0;
 
     reset_dut;
@@ -86,27 +86,30 @@ program test(datapath_cache_if.icache dcif, caches_if.icache cif);
     testcases(testcase, testdesc);
 
     dcif.imemREN = 1'b1;
-    dcif.imemaddr = 32'h00000ff0 ;
-    #(1);
+    dcif.imemaddr = {26'haa,4'h5,2'b0} ;
+    @(posedge CLK);
+    @(posedge CLK);
     if(cif.iREN != 1'b1) begin
         $display("iREN not asserted!");
     end
-    if(cif.iaddr != 32'h00000ff0) begin
+    if(cif.iaddr != {26'haa,4'h5,2'b0}) begin
         $display("iaddr incorrect!");
     end
 
-    #(PERIOD);
+    @(posedge CLK);
 
     cif.iwait = 1'b0;
     cif.iload = 32'h92a7b913;
 
-    #(PERIOD);
+    @(posedge CLK);
+    @(posedge CLK)
     if(dcif.ihit != 1'b1) begin
         $display("ihit not asserted!");
     end
     if(dcif.imemload != 32'h92a7b913) begin
         $display("incorrect instruction!");
     end
+    #(5);
 
   end
 
