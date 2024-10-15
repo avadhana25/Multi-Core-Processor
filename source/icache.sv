@@ -16,9 +16,9 @@
 module icache (input logic CLK, nRST, datapath_cache_if.icache dcif, caches_if.icache cif);
 
 
-typedef enum logic [1:0] 
+typedef enum logic  
 {
-    IDLE, COMPARE, ALLOCATE
+    IDLE, ALLOCATE
 }state_t;
 
 
@@ -49,11 +49,6 @@ begin
     end
     else
     begin
-        /*
-        cache[cache_addr.idx].valid <= next_cache[cache_addr.idx].valid;
-        cache[cache_addr.idx].tag   <= next_cache[cache_addr.idx].tag;
-        cache[cache_addr.idx].data  <= next_cache[cache_addr.idx].data;
-        */
         cache[cache_addr.idx] <= next_cache[cache_addr.idx];
         state <= next_state;
     end
@@ -64,14 +59,19 @@ always_comb
 begin
     //default values
     dcif.ihit = 0;
-    dcif.imemload = 0;
+    dcif.imemload = cache[cache_addr.idx].data;
+    miss = 0;
 
     //exeption logic
     if ((dcif.imemREN && cache[cache_addr.idx].tag == cache_addr.tag) && cache[cache_addr.idx].valid)
-        begin
-            dcif.ihit = 1;
-            dcif.imemload = cache[cache_addr.idx].data;
-        end
+    begin
+        dcif.ihit = 1;
+    end
+    else
+    begin
+        miss = 1;
+    end
+
 end
 
 //next state logic
@@ -86,32 +86,21 @@ begin
 
     IDLE:                                                                      //move to compare if only imemREN asserted and not halted
     begin
-        if (dcif.imemREN)
-        begin
-            next_state = COMPARE;
-        end
-    end
-
-    COMPARE:                                                                   //if cache miss move to allocate, if not return to idle
-    begin
-        if (miss)
+        if (dcif.imemREN && miss)
         begin
             next_state = ALLOCATE;
         end
-        else
-        begin
-            next_state = IDLE;
-        end
     end
+
 
     ALLOCATE:                                                         //update cache with tag, valid and data from memory, return to compare once value has been retreived
     begin 
-        next_cache[cache_addr.idx].tag   = cache_addr.tag;
         if (!cif.iwait)                                            //memory access
         begin
+            next_cache[cache_addr.idx].tag   = cache_addr.tag;
             next_cache[cache_addr.idx].valid = 1;
             next_cache[cache_addr.idx].data  = cif.iload;
-            next_state = COMPARE;
+            next_state = IDLE;
         end
     end
 
@@ -125,7 +114,7 @@ begin
     //default values
     cif.iREN      = 0;
     cif.iaddr     = 0;
-    miss          = 0;
+
 
     //exception logic
     casez (state)
@@ -134,13 +123,6 @@ begin
     begin
     end
 
-    COMPARE:                   //if tag doesnt match or value is not valid, assert miss
-    begin
-        if ((cache[cache_addr.idx].tag != cache_addr.tag) || !cache[cache_addr.idx].valid)
-        begin
-            miss = 1;
-        end
-    end
 
     ALLOCATE:                   //enable talking to memory
     begin
