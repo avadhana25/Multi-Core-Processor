@@ -371,7 +371,7 @@ program test(input logic CLK);
                   //7
     #(PERIOD)
     
-    cif.dwait =0;
+    cif.dwait = 0;
     if (cif.dWEN && cif.daddr == 32'h3100)
     begin
         $display("Hit Counter: %0d", cif.dstore);

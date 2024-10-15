@@ -170,7 +170,8 @@ program test;
     reset_dut;
 
     //inputs
-    cif0.iREN = 1'b1;
+    cif0.iREN = 1'b1;    dcif.ihit     = 0;
+    dcif.imemload = 0;
     cif0.dREN = 1'b0;
     cif0.dWEN = 1'b0;
     cif0.iaddr = '0;
