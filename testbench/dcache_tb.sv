@@ -233,6 +233,7 @@ program test(input logic CLK);
     dcif.dmemWEN = 0;
     dcif.dmemREN = 1;
     dcif.dmemaddr = {26'h3, 3'b000, 1'b0, 2'h0};
+    #(PERIOD)
     if (!dcif.dhit)
     begin
         $display("Succesful Miss at 0x30");
@@ -253,6 +254,7 @@ program test(input logic CLK);
     dcif.dmemWEN = 0;
     dcif.dmemREN = 1;
     dcif.dmemaddr = {26'h5, 3'b000, 1'b0, 2'h0};
+    #(PERIOD)
     if (!dcif.dhit)
     begin
         $display("Succesful Miss at 0x50");
