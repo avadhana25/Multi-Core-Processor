@@ -97,14 +97,12 @@ module dcache_tb;
         begin
             $display("Initial Miss: Accessing Memory for First Block Element");
         end
-        @(posedge CLK);
         cif.dload = first_load;
         @(posedge CLK);
         if (!dcif.dhit && cif.dREN && cif.daddr == start_addr + 4)
         begin
             $display("Initial Miss: Accessing Memory for Second Block Element");
         end
-        @(posedge CLK);
         cif.dload = second_load;
         @(posedge CLK);
         @(posedge CLK);
@@ -235,11 +233,13 @@ program test(input logic CLK);
     dcif.dmemWEN = 0;
     dcif.dmemREN = 1;
     dcif.dmemaddr = {26'h3, 3'b000, 1'b0, 2'h0};
-    #(PERIOD)
     if (!dcif.dhit)
     begin
         $display("Succesful Miss at 0x30");
     end
+    check_access(32'h333, 32'h652);
+  
+
 
     //INDEX 0 now has tags 6 and 3
 
@@ -253,11 +253,12 @@ program test(input logic CLK);
     dcif.dmemWEN = 0;
     dcif.dmemREN = 1;
     dcif.dmemaddr = {26'h5, 3'b000, 1'b0, 2'h0};
-    #(PERIOD)
     if (!dcif.dhit)
     begin
         $display("Succesful Miss at 0x50");
     end
+    check_access(32'h555, 32'h652);
+
 
     //INDEX 0 now has tags 6 and 5
 
@@ -290,13 +291,13 @@ program test(input logic CLK);
 
     testcases(testcase, testdesc);
     reset_inputs;
-/*
+
     dcif.dmemREN = 1;
     dcif.dmemaddr = {26'h4, 3'b001, 1'b0, 2'h0};
    
-    //check_access(32'h1234, 32'h5678);
+    check_access(32'h1234, 32'h5678);
 
-    */
+    
 
     reset_inputs;
 
@@ -314,7 +315,7 @@ program test(input logic CLK);
     begin
         $display("Correct Value Successfully Written Back To Memory");
     end
-    #(5*PERIOD)
+    #(4*PERIOD)
 
     
     
@@ -332,7 +333,7 @@ program test(input logic CLK);
     
 
     dcif.halt = 1;
-    #(2*PERIOD)
+    #(PERIOD)
     if (cif.dWEN && cif.daddr == 32'h3100)
     begin
         $display("Hit Counter: %0d", cif.dstore);
