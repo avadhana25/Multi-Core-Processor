@@ -54,25 +54,6 @@ begin
     end
 end
 
-//hit logic
-always_comb
-begin
-    //default values
-    dcif.ihit = 0;
-    dcif.imemload = cache[cache_addr.idx].data;
-    miss = 0;
-
-    //exeption logic
-    if ((dcif.imemREN && cache[cache_addr.idx].tag == cache_addr.tag) && cache[cache_addr.idx].valid)
-    begin
-        dcif.ihit = 1;
-    end
-    else
-    begin
-        miss = 1;
-    end
-
-end
 
 //next state logic
 always_comb
@@ -114,13 +95,24 @@ begin
     //default values
     cif.iREN      = 0;
     cif.iaddr     = 0;
+    dcif.ihit     = 0;
+    dcif.imemload = cache[cache_addr.idx].data;
+    miss          = 0;
 
 
     //exception logic
     casez (state)
 
-    IDLE:                      //stays default
+    IDLE:                      //hit logic
     begin
+        if ((dcif.imemREN && cache[cache_addr.idx].tag == cache_addr.tag) && cache[cache_addr.idx].valid)
+        begin
+            dcif.ihit = 1;
+        end
+        else
+        begin
+            miss = 1;
+        end
     end
 
 
