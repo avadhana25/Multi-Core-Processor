@@ -130,18 +130,6 @@ always_comb begin : output_logic
 
     casez(state) 
         IDLE : begin
-            if(dcif.dmemWEN == 1'b1 && LRU_tracker[cache_addr.idx] == 1'b1) begin
-                next_data_store1[cache_addr.idx].valid = 1'b1;
-                next_data_store1[cache_addr.idx].dirty = 1'b1;
-                next_data_store1[cache_addr.idx].tag = cache_addr.tag;
-                next_data_store1[cache_addr.idx].data[cache_addr.blkoff] = dcif.dmemstore;
-            end
-            else if(dcif.dmemWEN == 1'b1 && LRU_tracker[cache_addr.idx] == 1'b0) begin
-                next_data_store2[cache_addr.idx].valid = 1'b1;
-                next_data_store2[cache_addr.idx].dirty = 1'b1;
-                next_data_store2[cache_addr.idx].tag = cache_addr.tag;
-                next_data_store2[cache_addr.idx].data[cache_addr.blkoff] = dcif.dmemstore;
-            end
             if(dcif.halt == 1'b1) begin
                 for(int i = 0; i < 8; i++) begin
                     next_data_store1[i].valid = 1'b0;
@@ -238,16 +226,18 @@ always_comb begin : output_logic
             end
             else if(cif.dwait == 1'b0 && dcif.dmemWEN == 1'b1) begin
                 if(LRU_tracker[cache_addr.idx] == 1'b1) begin
-                    next_data_store1[cache_addr.idx].valid = 1'b0;
-                    next_data_store1[cache_addr.idx].dirty = 1'b0;
+                    next_data_store1[cache_addr.idx].valid = 1'b1;
+                    next_data_store1[cache_addr.idx].dirty = 1'b1;
                     next_data_store1[cache_addr.idx].tag = cache_addr.tag;
                     next_data_store1[cache_addr.idx].data[1] = cif.dload;
+                    next_data_store1[cache_addr.idx].data[cache_addr.blkoff] = dcif.dmemstore;
                 end
                 else begin
-                    next_data_store2[cache_addr.idx].valid = 1'b0;
-                    next_data_store2[cache_addr.idx].dirty = 1'b0;
+                    next_data_store2[cache_addr.idx].valid = 1'b1;
+                    next_data_store2[cache_addr.idx].dirty = 1'b1;
                     next_data_store2[cache_addr.idx].tag = cache_addr.tag;
                     next_data_store2[cache_addr.idx].data[1] = cif.dload;
+                    next_data_store2[cache_addr.idx].data[cache_addr.blkoff] = dcif.dmemstore;
                 end
             end
         end
