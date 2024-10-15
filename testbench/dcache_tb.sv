@@ -323,7 +323,7 @@ program test(input logic CLK);
 
     dcif.halt = 1;
     #(PERIOD)
-    if (cif.dWEN && cif.daddr == 32'h3100)
+    if (cif.dWEN && cif.daddr == 32'h3100 && cif.dstore == 3'h4)
     begin
         $display("Hit Counter Successfully Wrote");
     end
