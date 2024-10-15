@@ -319,56 +319,65 @@ program test(input logic CLK);
     end
     #(4*PERIOD)
 
-    
-    
-
-
 
     //TESTCASE 11: TEST HALT
     testcase += 1;
     testdesc = "TEST HALT";
 
-
-
+   
+    reset_inputs;
     testcases(testcase, testdesc);
+
+    dcif.dmemWEN = 1;
+    dcif.dmemREN = 0;
+    dcif.dmemaddr = {26'h4, 3'b011, 1'b0, 2'h0};
+    dcif.dmemstore = 32'h444;
+    check_access(32'h0, 32'h12);
+    $display("Value Stored: %0x", dcif.dmemstore);
+
+
+
+    
     reset_inputs;
     
 
     dcif.halt = 1;
+    #(PERIOD)        
+                            //DIRTY_CHECK index 0
     #(PERIOD)
+                            //DIRTY_CHECK index 1
+    #(PERIOD)
+                            //DIRTY_CHECK index 2
+    #(PERIOD)
+                            //DIRTY_CHECK index 3
+    #(PERIOD)
+    cif.dwait = 0;            //STORE_2_FLUSH_ONE
+    if (cif.dWEN && cif.daddr == {26'h4, 3'b011, 1'b0, 2'h0} && cif.dstore == 32'h444)
+    begin
+        $display("Correct Value Successfully Written Back To Memory During Flush");
+    end
+    #(PERIOD)
+    if (cif.dWEN && cif.daddr == {26'h4, 3'b011, 1'b1, 2'h0} && cif.dstore == 32'h12)
+    begin
+        $display("Correct Value Successfully Written Back To Memory During Flush");
+    end
+    #(PERIOD)
+    cif.dwait = 1;         //DIRTY_CHECK index 4
+    #(PERIOD)
+                     //5
+    #(PERIOD)
+                  //6
+    #(PERIOD)
+                  //7
+    #(PERIOD)
+    
+    cif.dwait =0;
     if (cif.dWEN && cif.daddr == 32'h3100)
     begin
         $display("Hit Counter: %0d", cif.dstore);
     end
+    #(2*PERIOD);
     
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
   end
 
