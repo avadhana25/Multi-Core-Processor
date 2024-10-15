@@ -107,6 +107,9 @@ always_comb begin : next_state_logic
             else if(data_store2[index].dirty == 1'b1) begin
                 next_state = STORE2_FLUSH_ONE;
             end
+            else if(index == 3'b111) begin
+                next_state = COUNTER_WRITE;
+            end
         end
         STORE1_FLUSH_ONE : begin
             if(cif.dwait == 1'b0) begin
@@ -281,6 +284,11 @@ always_comb begin : output_logic
                     next_data_store2[cache_addr.idx].data[cache_addr.blkoff] = dcif.dmemstore;
                     next_LRU_tracker[cache_addr.idx] = 1'b1;
                 end
+            end
+        end
+        DIRTY_CHECK : begin
+            if(data_store1[index].dirty == 1'b0 && data_store2[index].dirty == 1'b0 && index != 3'b111) begin
+                next_index = next_index + 1;
             end
         end
         STORE1_FLUSH_ONE : begin
