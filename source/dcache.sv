@@ -12,7 +12,7 @@ module dcache
     caches_if.dcache cif
 );
 
-typedef enum logic [3:0] {IDLE, STORE1_STORE_ONE, STORE1_STORE_TWO, STORE2_STORE_ONE, STORE2_STORE_TWO, MEMORY_ONE, LOAD_ONE, MEMORY_TWO, LOAD_TWO, UPDATE, COUNTER_WRITE, DONE} state_t;
+typedef enum logic [3:0] {IDLE, STORE1_STORE_ONE, STORE1_STORE_TWO, STORE2_STORE_ONE, STORE2_STORE_TWO, MEMORY_ONE, MEMORY_TWO, COUNTER_WRITE, DONE} state_t;
 
 dcache_frame [7:0] data_store1;
 dcache_frame [7:0] data_store2;
@@ -89,27 +89,13 @@ always_comb begin : next_state_logic
         end
         MEMORY_ONE : begin
             if(cif.dwait == 1'b0) begin
-                next_state = LOAD_ONE;
+                next_state = MEMORY_TWO;
             end
-        end
-        LOAD_ONE : begin
-            next_state = MEMORY_TWO;
         end
         MEMORY_TWO : begin
             if(cif.dwait == 1'b0) begin
-                next_state = LOAD_TWO;
-            end
-        end
-        LOAD_TWO : begin
-            if(dcif.dmemREN) begin
                 next_state = IDLE;
             end
-            else if(dcif.dmemWEN) begin
-                next_state = UPDATE;
-            end
-        end
-        UPDATE : begin
-            next_state = IDLE;
         end
         COUNTER_WRITE : begin
             if(cif.dwait == 1'b0) begin
@@ -144,6 +130,18 @@ always_comb begin : output_logic
 
     casez(state) 
         IDLE : begin
+            if(dcif.dmemWEN == 1'b1 && LRU_tracker[cache_addr.idx] == 1'b1) begin
+                next_data_store1[cache_addr.idx].valid = 1'b1;
+                next_data_store1[cache_addr.idx].dirty = 1'b1;
+                next_data_store1[cache_addr.idx].tag = cache_addr.tag;
+                next_data_store1[cache_addr.idx].data[cache_addr.blkoff] = dcif.dmemstore;
+            end
+            else if(dcif.dmemWEN == 1'b1 && LRU_tracker[cache_addr.idx] == 1'b0) begin
+                next_data_store2[cache_addr.idx].valid = 1'b1;
+                next_data_store2[cache_addr.idx].dirty = 1'b1;
+                next_data_store2[cache_addr.idx].tag = cache_addr.tag;
+                next_data_store2[cache_addr.idx].data[cache_addr.blkoff] = dcif.dmemstore;
+            end
             if(dcif.halt == 1'b1) begin
                 for(int i = 0; i < 8; i++) begin
                     next_data_store1[i].valid = 1'b0;
@@ -207,15 +205,13 @@ always_comb begin : output_logic
         MEMORY_ONE : begin
             cif.dREN = 1'b1;
             cif.daddr = cache_addr.blkoff == 1'b0 ? dcif.dmemaddr : dcif.dmemaddr - 4;
-        end
-        LOAD_ONE : begin
-            if(LRU_tracker[cache_addr.idx] == 1'b1) begin
+            if(cif.dwait == 1'b0 && LRU_tracker[cache_addr.idx] == 1'b1) begin
                 next_data_store1[cache_addr.idx].valid = 1'b0;
                 next_data_store1[cache_addr.idx].dirty = 1'b0;
                 next_data_store1[cache_addr.idx].tag = cache_addr.tag;
                 next_data_store1[cache_addr.idx].data[0] = cif.dload;
             end
-            else begin
+            else if(cif.dwait == 1'b0 && LRU_tracker[cache_addr.idx] == 1'b0) begin
                 next_data_store2[cache_addr.idx].valid = 1'b0;
                 next_data_store2[cache_addr.idx].dirty = 1'b0;
                 next_data_store2[cache_addr.idx].tag = cache_addr.tag;
@@ -225,10 +221,8 @@ always_comb begin : output_logic
         MEMORY_TWO : begin
             cif.dREN = 1'b1;
             cif.daddr = cache_addr.blkoff == 1'b0 ? dcif.dmemaddr + 4 : dcif.dmemaddr;
-        end
-        LOAD_TWO : begin
             next_real_hit = 1'b0;
-            if(dcif.dmemREN == 1'b1) begin
+            if(cif.dwait == 1'b0 && dcif.dmemREN == 1'b1) begin
                 if(LRU_tracker[cache_addr.idx] == 1'b1) begin
                     next_data_store1[cache_addr.idx].valid = 1'b1;
                     next_data_store1[cache_addr.idx].dirty = 1'b0;
@@ -242,7 +236,7 @@ always_comb begin : output_logic
                     next_data_store2[cache_addr.idx].data[1] = cif.dload;
                 end
             end
-            else if(dcif.dmemWEN == 1'b1) begin
+            else if(cif.dwait == 1'b0 && dcif.dmemWEN == 1'b1) begin
                 if(LRU_tracker[cache_addr.idx] == 1'b1) begin
                     next_data_store1[cache_addr.idx].valid = 1'b0;
                     next_data_store1[cache_addr.idx].dirty = 1'b0;
@@ -255,22 +249,6 @@ always_comb begin : output_logic
                     next_data_store2[cache_addr.idx].tag = cache_addr.tag;
                     next_data_store2[cache_addr.idx].data[1] = cif.dload;
                 end
-
-            end
-        end
-        UPDATE : begin
-            next_real_hit = 1'b0;
-            if(LRU_tracker[cache_addr.idx] == 1'b1) begin
-                next_data_store1[cache_addr.idx].valid = 1'b1;
-                next_data_store1[cache_addr.idx].dirty = 1'b1;
-                next_data_store1[cache_addr.idx].tag = cache_addr.tag;
-                next_data_store1[cache_addr.idx].data[cache_addr.blkoff] = dcif.dmemstore;
-            end
-            else begin
-                next_data_store2[cache_addr.idx].valid = 1'b1;
-                next_data_store2[cache_addr.idx].dirty = 1'b1;
-                next_data_store2[cache_addr.idx].tag = cache_addr.tag;
-                next_data_store2[cache_addr.idx].data[cache_addr.blkoff] = dcif.dmemstore;
             end
         end
         COUNTER_WRITE : begin
