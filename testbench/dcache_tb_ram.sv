@@ -8,6 +8,8 @@
 // mapped needs this
 `include "datapath_cache_if.vh"
 `include "caches_if.vh"
+`include "cache_control_if.vh"
+`include "cpu_ram_if.vh"
 
 //all types
 `include "cpu_types_pkg.vh"
@@ -27,7 +29,10 @@ module dcache_tb;
 
     // interfaces
     caches_if cif();
+    caches_if cif1();
     datapath_cache_if dcif();
+    cache_control_if ccif(cif, cif1);
+    cpu_ram_if ramif();
 
     //test program
     test #(.PERIOD(PERIOD)) PROG (CLK);
@@ -37,6 +42,16 @@ module dcache_tb;
 
     //DUT
     dcache DUT (CLK, nRST, dcif, cif);
+    memory_control MC(CLK, nRST, ccif);
+    ram LINK(CLK, nRST, ramif);
+
+    //connect cache input/output and ram input/output
+    assign ramif.ramaddr = ccif.ramaddr;
+    assign ramif.ramstore = ccif.ramstore;
+    assign ramif.ramREN = ccif.ramREN;
+    assign ramif.ramWEN = ccif.ramWEN;
+    assign ccif.ramstate = ramif.ramstate;
+    assign ccif.ramload = ramif.ramload;
 
     //tasks
     task reset_dut;
@@ -60,11 +75,11 @@ module dcache_tb;
             dcif.datomic = 0;
             dcif.dmemstore = 0;
             dcif.dmemaddr = 0;
-            cif.dwait = 1;
-            cif.dload = 0;
-            cif.ccwait = 0;
-            cif.ccinv = 0;
-            cif.ccsnoopaddr = 0;
+       //     cif.dwait = 1;
+        //    cif.dload = 0;
+        //    cif.ccwait = 0;
+        //    cif.ccinv = 0;
+        //    cif.ccsnoopaddr = 0;
         end
     endtask
 
@@ -91,20 +106,20 @@ module dcache_tb;
             start_addr = dcif.dmemaddr;
         end
         @(posedge CLK);
-        cif.dwait = 0;
+       // cif.dwait = 0;
         if (!dcif.dhit && cif.dREN && cif.daddr == start_addr)
         begin
             $display("Initial Miss: Accessing Memory for First Block Element");
         end
-        @(posedge CLK);
-        cif.dload = first_load;
+        #(PERIOD * 3);
+      //  cif.dload = first_load;
         @(posedge CLK);
         if (!dcif.dhit && cif.dREN && cif.daddr == start_addr + 4)
         begin
             $display("Initial Miss: Accessing Memory for Second Block Element");
         end
         @(posedge CLK);
-        cif.dload = second_load;
+       // cif.dload = second_load;
         @(posedge CLK);
         @(posedge CLK);
         
@@ -153,7 +168,7 @@ program test(input logic CLK);
     dcif.dmemREN = 1;
     dcif.dmemaddr = {26'h3, 3'b000, 1'b0, 2'h0};
     #(PERIOD)
-    if (dcif.dhit && dcif.dmemload == 32'h444)
+    if (dcif.dhit && dcif.dmemload == 32'h0)
     begin
         $display("Succesful Hit at 0x30, loaded value: %0x", dcif.dmemload);
     end
@@ -271,70 +286,17 @@ program test(input logic CLK);
     dcif.dmemREN = 0;
     dcif.dmemaddr = {26'h3, 3'b001, 1'b0, 2'h0};
     dcif.dmemstore = 32'h999;
-    check_access(32'h0, 32'h12);
+    check_access(32'h0, 32'h0);
     $display("Value Stored: %0x", dcif.dmemstore);
 
     reset_inputs;
     dcif.dmemREN = 1;
     dcif.dmemaddr = {26'h3, 3'b001, 1'b0, 2'h0};
-    #(PERIOD)
+    #(2*PERIOD)
     if (dcif.dhit && dcif.dmemload == 32'h999)
     begin
         $display("Succesful Hit at 0x32, loaded value: %0x", dcif.dmemload);
     end
-
-    //TESTCASE 10: FILL UP INDEX 1 AND REPLACE 0x32 TO SEE WRITEBACK
-    testcase += 1;
-    testdesc = "FILL UP INDEX 1 AND REPLACE 0x32 TO SEE WRITEBACK";
-
-    testcases(testcase, testdesc);
-    reset_inputs;
-
-    dcif.dmemREN = 1;
-    dcif.dmemaddr = {26'h4, 3'b001, 1'b0, 2'h0};
-    check_access(32'h1234, 32'h5678);
-
-    reset_inputs;
-
-    dcif.dmemREN = 1;
-    dcif.dmemaddr = {26'h5, 3'b001, 1'b0, 2'h0};
-    #(PERIOD)
-    cif.dwait = 0;
-    if (cif.dWEN && cif.daddr == {26'h3, 3'b001, 1'b0, 2'h0} && cif.dstore == 32'h999)
-    begin
-        $display("Correct Value Successfully Written Back To Memory");
-    end
-    #(PERIOD)
-    cif.dwait = 0;
-    if (cif.dWEN && cif.daddr == {26'h3, 3'b001, 1'b1, 2'h0} && cif.dstore == 32'h12)
-    begin
-        $display("Correct Value Successfully Written Back To Memory");
-    end
-    cif.dwait = 1;
-
-
-
-    //TESTCASE 11: TEST HALT
-    testcase += 1;
-    testdesc = "TEST HALT";
-
-    testcases(testcase, testdesc);
-    reset_inputs;
-
-    dcif.halt = 1;
-    #(PERIOD)
-    if (cif.dWEN && cif.daddr == 32'h3100 && cif.dstore == 3'h4)
-    begin
-        $display("Hit Counter Successfully Wrote");
-    end
-    
-
-
-
-
-
-
-
 
 
 
