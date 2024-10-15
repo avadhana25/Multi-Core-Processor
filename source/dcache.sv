@@ -186,22 +186,22 @@ always_comb begin : output_logic
         end
         STORE1_STORE_ONE : begin
             cif.dWEN = 1'b1;
-            cif.daddr = cache_addr.blkoff == 1'b0 ? dcif.dmemaddr : dcif.dmemaddr - 4;
+            cif.daddr = {data_store1[cache_addr.idx].tag,cache_addr.idx,3'b0}; //piece together old address
             cif.dstore = data_store1[cache_addr.idx].data[0];
         end
         STORE1_STORE_TWO : begin
             cif.dWEN = 1'b1;
-            cif.daddr = cache_addr.blkoff == 1'b0 ? dcif.dmemaddr + 4: dcif.dmemaddr;
+            cif.daddr = {data_store1[cache_addr.idx].tag,cache_addr.idx,3'b100}; //block offset 1
             cif.dstore = data_store1[cache_addr.idx].data[1];
         end
         STORE2_STORE_ONE : begin
             cif.dWEN = 1'b1;
-            cif.daddr = cache_addr.blkoff == 1'b0 ? dcif.dmemaddr : dcif.dmemaddr - 4;
+            cif.daddr = {data_store2[cache_addr.idx].tag,cache_addr.idx,3'b0};
             cif.dstore = data_store2[cache_addr.idx].data[0];
         end
         STORE2_STORE_TWO : begin
             cif.dWEN = 1'b1;
-            cif.daddr = cache_addr.blkoff == 1'b0 ? dcif.dmemaddr + 4: dcif.dmemaddr;
+            cif.daddr =  {data_store2[cache_addr.idx].tag,cache_addr.idx,3'b100};
             cif.dstore = data_store2[cache_addr.idx].data[1];
         end
         MEMORY_ONE : begin
