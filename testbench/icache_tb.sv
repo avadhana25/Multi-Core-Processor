@@ -73,7 +73,7 @@ program test(input logic CLK, datapath_cache_if.icache dcif, caches_if.icache ci
 
 
     //initialize values
-    dcif.imemREN = '1;
+    dcif.imemREN = '0;
     dcif.imemaddr = '0;
     cif.iwait = '1;
     cif.iload = '0;
@@ -87,7 +87,7 @@ program test(input logic CLK, datapath_cache_if.icache dcif, caches_if.icache ci
 
     dcif.imemREN = 1'b1;
     dcif.imemaddr = {26'haa,4'h5,2'b0} ;
-    @(posedge CLK);
+   // @(posedge CLK);
     @(posedge CLK);
     if(cif.iREN != 1'b1) begin
         $display("iREN not asserted!");
@@ -112,7 +112,7 @@ program test(input logic CLK, datapath_cache_if.icache dcif, caches_if.icache ci
     end
 
     //reset values
-    dcif.imemREN = '1;
+    dcif.imemREN = '0;
     dcif.imemaddr = '0;
     cif.iwait = '1;
     cif.iload = '0;
@@ -142,7 +142,7 @@ program test(input logic CLK, datapath_cache_if.icache dcif, caches_if.icache ci
     #(10);
     
     //reset values
-    dcif.imemREN = '1;
+    dcif.imemREN = '0;
     dcif.imemaddr = '0;
     cif.iwait = '1;
     cif.iload = '0;
@@ -156,7 +156,7 @@ program test(input logic CLK, datapath_cache_if.icache dcif, caches_if.icache ci
 
     dcif.imemREN = 1'b1;
     dcif.imemaddr = {26'hbb,4'ha,2'b0} ;
-    @(posedge CLK);
+  //  @(posedge CLK);
     @(posedge CLK);
     if(cif.iREN != 1'b1) begin
         $display("iREN not asserted!");
@@ -181,7 +181,7 @@ program test(input logic CLK, datapath_cache_if.icache dcif, caches_if.icache ci
     end
 
     //reset values
-    dcif.imemREN = '1;
+    dcif.imemREN = '0;
     dcif.imemaddr = '0;
     cif.iwait = '1;
     cif.iload = '0;
@@ -195,7 +195,7 @@ program test(input logic CLK, datapath_cache_if.icache dcif, caches_if.icache ci
 
     dcif.imemREN = 1'b1;
     dcif.imemaddr = {26'hcc,4'h5,2'b0} ;
-    @(posedge CLK);
+  //  @(posedge CLK);
     @(posedge CLK);
     if(cif.iREN != 1'b1) begin
         $display("iREN not asserted!");
@@ -220,7 +220,7 @@ program test(input logic CLK, datapath_cache_if.icache dcif, caches_if.icache ci
     end
 
     //reset values
-    dcif.imemREN = '1;
+    dcif.imemREN = '0;
     dcif.imemaddr = '0;
     cif.iwait = '1;
     cif.iload = '0;
@@ -234,7 +234,7 @@ program test(input logic CLK, datapath_cache_if.icache dcif, caches_if.icache ci
 
     dcif.imemREN = 1'b1;
     dcif.imemaddr = {26'haa,4'h7,2'b0} ;
-    @(posedge CLK);
+  //  @(posedge CLK);
     @(posedge CLK);
     if(cif.iREN != 1'b1) begin
         $display("iREN not asserted!");
