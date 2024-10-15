@@ -57,10 +57,10 @@ always_comb begin : next_state_logic
             if(dcif.halt == 1'b1) begin
                 next_state = COUNTER_WRITE;
             end
-            else if(miss == 1'b1 && data_store1[cache_addr.idx].dirty == 1'b1) begin
+            else if(miss == 1'b1 && LRU_tracker[cache_addr.idx] == 1'b1 && data_store1[cache_addr.idx].dirty == 1'b1 && data_store2[cache_addr.idx].valid == 1'b1) begin
                 next_state = STORE1_STORE_ONE;
             end
-            else if(miss == 1'b1 && data_store2[cache_addr.idx].dirty == 1'b1) begin
+            else if(miss == 1'b1 && LRU_tracker[cache_addr.idx] == 1'b0 && data_store2[cache_addr.idx].dirty == 1'b1 && data_store1[cache_addr.idx].valid == 1'b1) begin
                 next_state = STORE2_STORE_ONE;
             end
             else if(miss == 1'b1) begin
