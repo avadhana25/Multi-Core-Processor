@@ -13,7 +13,7 @@
   import cpu_types_pkg::*;
 
 
-module icache (input logic CLK, nRST, datapath_cache_if.cache dcif, caches_if.icache cif);
+module icache (input logic CLK, nRST, datapath_cache_if dcif, caches_if.icache cif);
 
 
 typedef enum logic  

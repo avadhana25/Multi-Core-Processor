@@ -5,10 +5,10 @@
   this block holds the i and d cache
 */
 
-
+//removed the .cache after datapath_cache_if so icache and dcache didnt have to be passed the .cache
 module caches (
   input logic CLK, nRST,
-  datapath_cache_if.cache dcif,
+  datapath_cache_if dcif,
   caches_if cif
 );
 

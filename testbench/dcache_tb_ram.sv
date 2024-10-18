@@ -92,11 +92,12 @@ module dcache_tb;
         end
     endtask
 
-    task check_access;
+task check_access;
     input word_t first_load;
     input word_t second_load;
     begin
         word_t start_addr;
+        
         if (dcif.dmemaddr[2])
         begin
             start_addr = dcif.dmemaddr - 4;
@@ -106,20 +107,18 @@ module dcache_tb;
             start_addr = dcif.dmemaddr;
         end
         @(posedge CLK);
-       // cif.dwait = 0;
+        cif.dwait = 0;
         if (!dcif.dhit && cif.dREN && cif.daddr == start_addr)
         begin
             $display("Initial Miss: Accessing Memory for First Block Element");
         end
-        #(PERIOD * 3);
-      //  cif.dload = first_load;
+        cif.dload = first_load;
         @(posedge CLK);
         if (!dcif.dhit && cif.dREN && cif.daddr == start_addr + 4)
         begin
             $display("Initial Miss: Accessing Memory for Second Block Element");
         end
-        @(posedge CLK);
-       // cif.dload = second_load;
+        cif.dload = second_load;
         @(posedge CLK);
         @(posedge CLK);
         
@@ -168,7 +167,7 @@ program test(input logic CLK);
     dcif.dmemREN = 1;
     dcif.dmemaddr = {26'h3, 3'b000, 1'b0, 2'h0};
     #(PERIOD)
-    if (dcif.dhit && dcif.dmemload == 32'h0)
+    if (dcif.dhit && dcif.dmemload == 32'h444)
     begin
         $display("Succesful Hit at 0x30, loaded value: %0x", dcif.dmemload);
     end
@@ -254,6 +253,9 @@ program test(input logic CLK);
     begin
         $display("Succesful Miss at 0x30");
     end
+    check_access(32'h333, 32'h652);
+  
+
 
     //INDEX 0 now has tags 6 and 3
 
@@ -272,6 +274,8 @@ program test(input logic CLK);
     begin
         $display("Succesful Miss at 0x50");
     end
+    check_access(32'h555, 32'h652);
+
 
     //INDEX 0 now has tags 6 and 5
 
@@ -286,38 +290,109 @@ program test(input logic CLK);
     dcif.dmemREN = 0;
     dcif.dmemaddr = {26'h3, 3'b001, 1'b0, 2'h0};
     dcif.dmemstore = 32'h999;
-    check_access(32'h0, 32'h0);
+    check_access(32'h0, 32'h12);
     $display("Value Stored: %0x", dcif.dmemstore);
 
     reset_inputs;
     dcif.dmemREN = 1;
     dcif.dmemaddr = {26'h3, 3'b001, 1'b0, 2'h0};
-    #(2*PERIOD)
+    #(PERIOD)
     if (dcif.dhit && dcif.dmemload == 32'h999)
     begin
         $display("Succesful Hit at 0x32, loaded value: %0x", dcif.dmemload);
     end
 
+    //TESTCASE 10: FILL UP INDEX 1 AND REPLACE 0x32 TO SEE WRITEBACK
+    testcase += 1;
+    testdesc = "FILL UP INDEX 1 AND REPLACE 0x32 TO SEE WRITEBACK";
+
+    testcases(testcase, testdesc);
+    reset_inputs;
+
+    dcif.dmemREN = 1;
+    dcif.dmemaddr = {26'h4, 3'b001, 1'b0, 2'h0};
+   
+    check_access(32'h1234, 32'h5678);
+
+    
+
+    reset_inputs;
+
+    dcif.dmemREN = 1;
+    dcif.dmemaddr = {26'h5, 3'b001, 1'b0, 2'h0};
+    #(PERIOD)
+    cif.dwait = 0;
+    if (cif.dWEN && cif.daddr == {26'h3, 3'b001, 1'b0, 2'h0} && cif.dstore == 32'h999)
+    begin
+        $display("Correct Value Successfully Written Back To Memory");
+    end
+    #(PERIOD)
+    cif.dwait = 0;
+    if (cif.dWEN && cif.daddr == {26'h3, 3'b001, 1'b1, 2'h0} && cif.dstore == 32'h12)
+    begin
+        $display("Correct Value Successfully Written Back To Memory");
+    end
+    #(4*PERIOD)
+
+
+    //TESTCASE 11: TEST HALT
+    testcase += 1;
+    testdesc = "TEST HALT";
+
+   
+    reset_inputs;
+    testcases(testcase, testdesc);
+
+    dcif.dmemWEN = 1;
+    dcif.dmemREN = 0;
+    dcif.dmemaddr = {26'h4, 3'b011, 1'b0, 2'h0};
+    dcif.dmemstore = 32'h444;
+    check_access(32'h0, 32'h12);
+    $display("Value Stored: %0x", dcif.dmemstore);
 
 
 
+    
+    reset_inputs;
+    
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    dcif.halt = 1;
+    #(PERIOD)        
+                            //DIRTY_CHECK index 0
+    #(PERIOD)
+                            //DIRTY_CHECK index 1
+    #(PERIOD)
+                            //DIRTY_CHECK index 2
+    #(PERIOD)
+                            //DIRTY_CHECK index 3
+    #(PERIOD)
+    cif.dwait = 0;            //STORE_2_FLUSH_ONE
+    if (cif.dWEN && cif.daddr == {26'h4, 3'b011, 1'b0, 2'h0} && cif.dstore == 32'h444)
+    begin
+        $display("Correct Value Successfully Written Back To Memory During Flush");
+    end
+    #(PERIOD)
+    if (cif.dWEN && cif.daddr == {26'h4, 3'b011, 1'b1, 2'h0} && cif.dstore == 32'h12)
+    begin
+        $display("Correct Value Successfully Written Back To Memory During Flush");
+    end
+    #(PERIOD)
+    cif.dwait = 1;         //DIRTY_CHECK index 4
+    #(PERIOD)
+                     //5
+    #(PERIOD)
+                  //6
+    #(PERIOD)
+                  //7
+    #(PERIOD)
+    
+    cif.dwait = 0;
+    if (cif.dWEN && cif.daddr == 32'h3100)
+    begin
+        $display("Hit Counter: %0d", cif.dstore);
+    end
+    #(2*PERIOD);
+    
 
   end
 

@@ -133,9 +133,18 @@ add wave -noupdate /system_tb/DUT/CPU/DP/pcif/new_pc
 add wave -noupdate /system_tb/DUT/CPU/DP/pcif/npc
 add wave -noupdate /system_tb/DUT/CPU/DP/pcif/en
 add wave -noupdate -divider {Register File}
-add wave -noupdate -expand /system_tb/DUT/CPU/DP/REGFILE/register
+add wave -noupdate /system_tb/DUT/CPU/DP/REGFILE/register
+add wave -noupdate -divider DCACHE
+add wave -noupdate /system_tb/DUT/CPU/CM/DCACHE/data_store1
+add wave -noupdate /system_tb/DUT/CPU/CM/DCACHE/data_store2
+add wave -noupdate /system_tb/DUT/CPU/CM/DCACHE/cache_addr
+add wave -noupdate /system_tb/DUT/CPU/CM/DCACHE/LRU_tracker
+add wave -noupdate /system_tb/DUT/CPU/CM/DCACHE/miss
+add wave -noupdate /system_tb/DUT/CPU/CM/DCACHE/state
+add wave -noupdate /system_tb/DUT/CPU/CM/DCACHE/hit_counter
+add wave -noupdate /system_tb/DUT/CPU/CM/DCACHE/index
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {1725351 ps} 0}
+WaveRestoreCursors {{Cursor 1} {1789658450 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 150
 configure wave -valuecolwidth 100
@@ -151,4 +160,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {1689865 ps} {1761488 ps}
+WaveRestoreZoom {1789651959 ps} {1789723582 ps}

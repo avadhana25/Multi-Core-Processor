@@ -184,12 +184,14 @@ always_comb begin : output_logic
             else if(dcif.dmemREN == 1'b1 && data_store1[cache_addr.idx].tag == cache_addr.tag && data_store1[cache_addr.idx].valid == 1'b1) begin
                 dcif.dhit = 1'b1;
                 dcif.dmemload = data_store1[cache_addr.idx].data[cache_addr.blkoff];
-                next_hit_counter = next_hit_counter + 1;
+                next_hit_counter = hit_counter + 1;
+                next_LRU_tracker[cache_addr.idx] = 1'b0;
             end
             else if(dcif.dmemREN == 1'b1 && data_store2[cache_addr.idx].tag == cache_addr.tag && data_store2[cache_addr.idx].valid == 1'b1) begin
                 dcif.dhit = 1'b1;
                 dcif.dmemload = data_store2[cache_addr.idx].data[cache_addr.blkoff];
-                next_hit_counter = next_hit_counter + 1;
+                next_hit_counter = hit_counter + 1;
+                next_LRU_tracker[cache_addr.idx] = 1'b1;
             end
             else if(dcif.dmemWEN == 1'b1 && data_store1[cache_addr.idx].tag == cache_addr.tag && data_store1[cache_addr.idx].valid == 1'b1) begin
                 dcif.dhit = 1'b1;
@@ -197,7 +199,8 @@ always_comb begin : output_logic
                 next_data_store1[cache_addr.idx].dirty = 1'b1;
                 next_data_store1[cache_addr.idx].tag = cache_addr.tag;
                 next_data_store1[cache_addr.idx].data[cache_addr.blkoff] = dcif.dmemstore;
-                next_hit_counter = next_hit_counter + 1;
+                next_hit_counter = hit_counter + 1;
+                next_LRU_tracker[cache_addr.idx] = 1'b0;
             end
             else if (dcif.dmemWEN == 1'b1 && data_store2[cache_addr.idx].tag == cache_addr.tag && data_store2[cache_addr.idx].valid == 1'b1) begin
                 dcif.dhit = 1'b1;
@@ -205,11 +208,12 @@ always_comb begin : output_logic
                 next_data_store2[cache_addr.idx].dirty = 1'b1;
                 next_data_store2[cache_addr.idx].tag = cache_addr.tag;
                 next_data_store2[cache_addr.idx].data[cache_addr.blkoff] = dcif.dmemstore;
-                next_hit_counter = next_hit_counter + 1;
+                next_hit_counter = hit_counter + 1;
+                next_LRU_tracker[cache_addr.idx] = 1'b1;
             end
             else if(dcif.dmemREN == 1'b1 || dcif.dmemWEN == 1'b1) begin
                 miss = 1'b1;
-                next_hit_counter = next_hit_counter - 1;
+                next_hit_counter = hit_counter - 1;
             end
         end
         STORE1_STORE_ONE : begin
@@ -289,7 +293,7 @@ always_comb begin : output_logic
         end
         DIRTY_CHECK : begin
             if(data_store1[index].dirty == 1'b0 && data_store2[index].dirty == 1'b0 && index != 3'b111) begin
-                next_index = next_index + 1;
+                next_index = index + 1;
             end
         end
         STORE1_FLUSH_ONE : begin
@@ -302,7 +306,7 @@ always_comb begin : output_logic
             cif.daddr = {data_store1[index].tag,index,3'b100}; //piece together old address
             cif.dstore = data_store1[index].data[1];
             if(cif.dwait == 1'b0 && data_store2[index].dirty == 1'b0 && index != 3'b111) begin
-                next_index = next_index + 1;
+                next_index = index + 1;
             end
         end
         STORE2_FLUSH_ONE : begin
@@ -315,7 +319,7 @@ always_comb begin : output_logic
             cif.daddr = {data_store2[index].tag,index,3'b100}; //piece together old address
             cif.dstore = data_store2[index].data[1];
             if(index != 3'b111) begin
-                next_index = next_index + 1;
+                next_index = index + 1;
             end
         end
         COUNTER_WRITE : begin

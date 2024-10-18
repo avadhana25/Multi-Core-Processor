@@ -14,30 +14,84 @@ ori   $8, $0, 0xFFC
    srl  $13,$24,$6
    or    $9, $0, $12
    or    $18, $0, $13
-   jal   insertion_sort
+ #  jal   insertion_sort
+   ori   $6, $0, 1
+   srl  $5,$24,$6
+   sub  $13, $24, $5
+   ori   $6, $0, 2
+   sll  $5,$5,$6
+   ori   $12, $0, data
+   add  $12, $12, $5
+   or    $19, $0, $12
+   or    $20, $0, $13
+  # jal   insertion_sort
+   or    $12, $0, $9
+   or    $13, $0, $18
+   or    $14, $0, $19
+   or    $15, $0, $20
+   ori   $5, $0, sorted
+   push  $5
+   jal   merge
+  addi $2, $2, 4
+   halt
 
   
-insertion_sort:
-  ori   $5, $0, 4
-   ori   $7, $0, 2
-   sll  $6,$13,$7
- is_outer:
-  sltu  $4, $5, $6
-   beq   $4, $0, is_inner_end
-   add  $31, $12, $5
-   lw    $30, 0($31)
-is_inner:
-  beq   $31, $12, is_inner_end
-   lw    $16, -4($31)
-   slt   $4, $30, $16
-   beq   $4, $0, is_inner_end
-   sw    $16, 0($31)
-   addi $31, $31, -4
-   j     is_inner
-is_inner_end:
-  sw    $30, 0($31)
+
+
+#void merge(int* $a0, int $a1, int* $a2, int $a3, int* dst)
+# $a0 : pointer to list 1
+# $a1 : size of list 1
+# $a2 : pointer to list 2
+# $a3 : size of list 2
+# dst [$sp+4] : pointer to merged list location
+#--------------------------------------
+merge:
+addi $15, $0, 23            #22, passes #23, fails
+addi $13, $0, 23
+  lw    $5, 0($2)
+ m_1:
+  bne   $13, $0, m_3
+ m_2:
+  bne   $15, $0, m_3
+   j     m_end
+m_3:
+  beq   $15, $0, m_4
+   beq   $13, $0, m_5
+   lw    $6, 0($12)
+   lw    $7, 0($14)
+   slt   $4, $6, $7
+   beq   $4, $0, m_3a
+   sw    $6, 0($5)
    addi $5, $5, 4
-   halt
+   addi $12, $12, 4
+   addi $13, $13, -1
+   
+   j     m_1
+m_3a:
+  sw    $7, 0($5)
+   addi $5, $5, 4
+   addi $14, $14, 4
+   addi $15, $15, -1
+   j     m_1
+m_4:  #left copy
+  lw    $6, 0($12)
+   sw    $6, 0($5)
+   addi $5, $5, 4
+   addi $13, $13, -1
+   addi $12, $12, 4
+   beq   $13, $0, m_end
+   j     m_4
+m_5:  # right copy
+  lw    $7, 0($14)
+   sw    $7, 0($5)
+   addi $5, $5, 4
+   addi $15, $15, -1
+   addi $14, $14, 4
+   beq   $15, $0, m_end
+   j     m_5
+m_end:
+  jr    $1
+ #--------------------------------------
 
 org 0x300
 size:
