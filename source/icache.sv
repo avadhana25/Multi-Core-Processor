@@ -13,7 +13,7 @@
   import cpu_types_pkg::*;
 
 
-module icache (input logic CLK, nRST, datapath_cache_if.icache dcif, caches_if.icache cif);
+module icache (input logic CLK, nRST, datapath_cache_if.cache dcif, caches_if.icache cif);
 
 
 typedef enum logic  
@@ -67,7 +67,7 @@ begin
 
     IDLE:                                                                      //move to compare if only imemREN asserted and not halted
     begin
-        if (dcif.imemREN && miss)
+        if (dcif.imemREN && miss && ~dcif.dmemREN && ~dcif.dmemWEN)
         begin
             next_state = ALLOCATE;
         end
@@ -105,7 +105,7 @@ begin
 
     IDLE:                      //hit logic
     begin
-        if ((dcif.imemREN && cache[cache_addr.idx].tag == cache_addr.tag) && cache[cache_addr.idx].valid)
+        if ((dcif.imemREN && cache[cache_addr.idx].tag == cache_addr.tag) && cache[cache_addr.idx].valid && ~dcif.dmemREN && ~dcif.dmemWEN)
         begin
             dcif.ihit = 1;
         end

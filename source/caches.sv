@@ -13,12 +13,14 @@ module caches (
 );
 
   // icache
-  //icache  ICACHE(dcif, cif);
+  icache  ICACHE(CLK, nRST, dcif, cif);
   // dcache
-  //dcache  DCACHE(dcif, cif);
+  dcache  DCACHE(CLK, nRST, dcif, cif);
 
+  /*
   // dcache invalidate before halt handled by dcache when exists
   assign dcif.flushed = dcif.halt;
+
 
   //singlecycle
   assign dcif.ihit = (dcif.imemREN) ? ~cif.iwait : 0;
@@ -27,11 +29,16 @@ module caches (
   assign dcif.dmemload = cif.dload;
 
 
+
   assign cif.iREN = dcif.imemREN;
   assign cif.dREN = dcif.dmemREN;
   assign cif.dWEN = dcif.dmemWEN;
   assign cif.dstore = dcif.dmemstore;
   assign cif.iaddr = dcif.imemaddr;
   assign cif.daddr = dcif.dmemaddr;
+
+  */
+
+  
 
 endmodule

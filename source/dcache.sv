@@ -167,6 +167,7 @@ always_comb begin : output_logic
     miss = '0;
     dcif.dmemload = '0;
     next_LRU_tracker = LRU_tracker;
+    dcif.flushed = 0;
 
     next_hit_counter = hit_counter;
     next_real_hit = 1'b1;
@@ -321,9 +322,11 @@ always_comb begin : output_logic
             cif.dWEN = 1'b1;
             cif.daddr = 32'h3100;
             cif.dstore = hit_counter;
+            
         end
         DONE : begin
             //nothing
+            dcif.flushed = 1;
         end
     endcase
 end

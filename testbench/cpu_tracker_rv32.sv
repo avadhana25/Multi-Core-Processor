@@ -67,7 +67,19 @@ module cpu_tracker_rv32(
   funct7_r_t funct7_r;
   funct7_srla_r_t funct7_srla_r;
   funct3_b_t funct3_b;
-  funct5_atomic_t funct5;
+
+  string upper_instr;
+  string upper_pc;
+  string upper_next_pc_val;
+  string upper_lui;
+  string upper_auipc;
+  string upper_store_dat;
+  string upper_reg_dat;
+  string upper_load_dat;
+  string upper_dat_addr;
+
+  word_t presumed_reserve_addr;
+  string upper_presumed_reserve_addr;
 
   initial begin: INIT_FILE
     fptr = $fopen(`TRACE_FILE_NAME, "w");
@@ -86,17 +98,24 @@ module cpu_tracker_rv32(
       ITYPE: 
       begin
         case(funct3_i_t'(funct_3))
-          SRLI_SRAI, SLLI: $sformat(operands, "%s, %s, %d", dest_str, rs1_str, (imm[4:0]));
-          default: $sformat(operands, "%s, %s, %d", dest_str, rs1_str, signed'(imm));
+          SRLI_SRAI, SLLI: $sformat(operands, "%s, %s, %0d", dest_str, rs1_str, (imm[4:0]));
+          default: $sformat(operands, "%s, %s, %0d", dest_str, rs1_str, signed'(imm));
         endcase
       end
-      LR_SC,ITYPE_LW: $sformat(operands, "%s, %d(%s)", dest_str, signed'(imm), rs1_str);
-      STYPE: $sformat(operands, "%s, %d(%s)", rs2_str, signed'(imm), rs1_str);
-      JALR: $sformat(operands, "%s, %s, %d", dest_str, rs1_str, signed'(imm));
-      BTYPE: $sformat(operands, "%s, %s, %X", rs1_str, rs2_str, branch_addr);
-      JAL: $sformat(operands, "%s, %X", dest_str, jump_addr);
-      LUI:   $sformat(operands,"%s, %d", dest_str, lui_pre_shift);
-      AUIPC: $sformat(operands,"%s, %d", dest_str, lui_pre_shift);
+      ITYPE_LW: $sformat(operands, "%s, %0d(%s)", dest_str, signed'(imm), rs1_str);
+      LR_SC:
+      begin
+        case(funct5_atomic_t'(funct_7[6:2]))
+          LR: $sformat(operands, "%s, (%s)", dest_str, rs1_str);
+          SC: $sformat(operands, "%s, %s, (%s)", dest_str, rs2_str, rs1_str);
+        endcase
+      end
+      STYPE: $sformat(operands, "%s, %0d(%s)", rs2_str, signed'(imm), rs1_str);
+      JALR: $sformat(operands, "%s, %s, %0d", dest_str, rs1_str, signed'(imm));
+      BTYPE: $sformat(operands, "%s, %s, %0d", rs1_str, rs2_str, signed'(branch_addr));
+      JAL: $sformat(operands, "%s, %0d", dest_str, signed'(jump_addr));
+      LUI:   $sformat(operands,"%s, %0d", dest_str, signed'(lui_pre_shift));
+      AUIPC: $sformat(operands,"%s, %0d", dest_str, signed'(lui_pre_shift));
       HALT:  $sformat(operands, "");
     endcase
   end
@@ -136,7 +155,7 @@ module cpu_tracker_rv32(
       end
       LR_SC:
       begin
-        case(funct5_atomic_t'(funct_7[4:0]))
+        case(funct5_atomic_t'(funct_7[6:2]))
           LR:       instr_mnemonic = "LR.W";
           SC:       instr_mnemonic = "SC.W";
         endcase
@@ -173,8 +192,13 @@ module cpu_tracker_rv32(
               SRL: instr_mnemonic = "SRL";
             endcase
           end
-          ADD:  instr_mnemonic = "ADD";
-          SUB:  instr_mnemonic = "SUB";
+          ADD_SUB:  
+          begin
+            case(funct7_r_t'(funct_7))
+              ADD: instr_mnemonic = "ADD";
+              SUB: instr_mnemonic = "SUB";
+            endcase
+          end
           AND:  instr_mnemonic = "AND";
           OR:   instr_mnemonic = "OR";
           XOR:  instr_mnemonic = "XOR";
@@ -223,66 +247,109 @@ module cpu_tracker_rv32(
     endcase
   endfunction
 
-  always_ff @ (posedge CLK) begin
-    if (dhit) begin
-        if (last_opcode == ITYPE_LW) begin
-          $sformat(temp_str, "%X (Core %d): %X", pc, CPUID + 1, instr);
-          $sformat(temp_str, "%s %s %s\n", temp_str, instr_mnemonic, operands);
-          $sformat(ram_str, "    [word read");
-          $sformat(ram_str, "%s from %x]\n", ram_str, {16'h0, dat_addr[15:0]});
-          $sformat(ram_str, "%s    %s", ram_str, dest_str);
-          $sformat(ram_str, "%s <-- %x\n", ram_str, load_dat);
-          $sformat(lw_str, "%s%s\n", temp_str, ram_str);
-          $fwrite(fptr, lw_str);
-        end
-    end
-  end
+  // always_ff @ (posedge CLK) begin
+    // if (dhit) begin
+        // if (last_opcode == ITYPE_LW) begin
+        // if (opcode == ITYPE_LW) begin
+        //   $sformat(temp_str, "%X (Core %d): %X", pc, CPUID + 1, instr);
+        //   $sformat(temp_str, "%s %s %s\n", temp_str, instr_mnemonic, operands);
+        //   $sformat(ram_str, "    [word read");
+        //   $sformat(ram_str, "%s from %x]\n", ram_str, {16'h0, dat_addr[15:0]});
+        //   $sformat(ram_str, "%s    %s", ram_str, dest_str);
+        //   $sformat(ram_str, "%s <-- %x\n", ram_str, load_dat);
+        //   $sformat(lw_str, "%s%s\n", temp_str, ram_str);
+        //   $fwrite(fptr, lw_str);
+        // end
+    // end
+  // end
 
   always_ff @ (posedge CLK) begin
     if (!wb_stall)
       last_opcode <= opcode;
   end
 
+  always_comb begin
+    upper_instr = $sformatf("%X", instr);
+    upper_instr = upper_instr.toupper();
+    upper_pc = $sformatf("%X", pc);
+    upper_pc = upper_pc.toupper();
+    upper_next_pc_val = $sformatf("%X", next_pc_val);
+    upper_next_pc_val = upper_next_pc_val.toupper();
+    upper_lui = $sformatf("%X", {lui_pre_shift, 12'b0});
+    upper_lui = upper_lui.toupper();
+    upper_auipc = $sformatf("%X", pc+(lui_pre_shift<<12));
+    upper_auipc = upper_auipc.toupper();
+    upper_store_dat = $sformatf("%X", store_dat);
+    upper_store_dat = upper_store_dat.toupper();
+    upper_reg_dat = $sformatf("%X", reg_dat);
+    upper_reg_dat = upper_reg_dat.toupper();
+    upper_load_dat = $sformatf("%X", load_dat);
+    upper_load_dat = upper_load_dat.toupper();
+    upper_dat_addr = $sformatf("%X", {16'h0, dat_addr[15:0]});
+    upper_dat_addr = upper_dat_addr.toupper();
+    upper_presumed_reserve_addr = $sformatf("%X", presumed_reserve_addr + 32'h1);
+    upper_presumed_reserve_addr = upper_presumed_reserve_addr.toupper();
+  end
+
   always_ff @ (posedge CLK) begin
-    if (!wb_stall && instr != 0) begin
-      $sformat(temp_str, "%X (Core %d): %X", pc, CPUID + 1, instr);
+    if (!wb_stall && instr != 0 && instr != 32'h00000013) begin
+      $sformat(temp_str, "%s(Core %0d): %s", upper_pc, CPUID + 1, upper_instr);
       $sformat(temp_str, "%s %s %s\n", temp_str, instr_mnemonic, operands);
-      $sformat(temp_str, "%s    PC <-- %X\n", temp_str, next_pc_val);
+      $sformat(temp_str, "%s\tPC <-- %s\n", temp_str, upper_next_pc_val);
       case(opcode)
         RTYPE: 
         begin
-          case(funct3_r_t'(funct_3))
-            SLL:  $sformat(temp_str, "%s    %s <-- %x\n", temp_str, dest_str, reg_dat);
-            SRL_SRA:
-            begin
-              case(funct7_srla_r_t'(funct_7))
-                SRA: $sformat(temp_str, "%s    %s <-- %x\n", temp_str, dest_str, reg_dat);
-                SRL: $sformat(temp_str, "%s    %s <-- %x\n", temp_str, dest_str, reg_dat);
-              endcase
-            end
-            ADD, SUB, AND, OR, XOR, SLT, SLTU: $sformat(temp_str, "%s    %s <-- %x\n", temp_str, dest_str, reg_dat);
-          endcase
+          $sformat(temp_str, "%s\t%s <-- %s\n", temp_str, dest_str, upper_reg_dat);
         end
         ITYPE:
         begin
           case(funct3_i_t'(funct_3))
-            default: $sformat(temp_str, "%s    %s <-- %x\n", temp_str, dest_str, reg_dat);
+            default: $sformat(temp_str, "%s\t%s <-- %s\n", temp_str, dest_str, upper_reg_dat);
           endcase
         end
         BTYPE:
         begin
-          case(funct3_b_t'(funct_3))
-            default: $sformat(temp_str, "%s    %s <-- %x\n", temp_str, dest_str, reg_dat);
+          // pass
+        end
+        JAL, JALR: $sformat(temp_str, "%s\t%s <-- %s\n", temp_str, dest_str, upper_reg_dat);
+        LUI:  $sformat(temp_str, "%s\t%s <-- %s\n", temp_str, dest_str, upper_lui);
+        AUIPC:  $sformat(temp_str, "%s\t%s <-- %s\n", temp_str, dest_str, upper_auipc);
+        STYPE: begin
+              $sformat(temp_str,"%s\t[%s]",temp_str,upper_dat_addr);
+              $sformat(temp_str, "%s <-- %s\n", temp_str, upper_store_dat);
+        end
+        ITYPE_LW:
+        begin
+          $sformat(ram_str, "\t[word read");
+          $sformat(ram_str, "%s from %s]\n", ram_str, upper_dat_addr);
+          $sformat(ram_str, "%s\t%s", ram_str, dest_str);
+          $sformat(ram_str, "%s <-- %s\n", ram_str, upper_load_dat);
+          $sformat(temp_str, "%s%s", temp_str, ram_str);
+        end
+        LR_SC:
+        begin
+          case(funct5_atomic_t'(funct_7[6:2]))
+            LR: begin
+              $sformat(ram_str, "\t[word read");
+              $sformat(ram_str, "%s from %s]\n", ram_str, upper_dat_addr);
+              $sformat(ram_str, "%s\t%s", ram_str, dest_str);
+              $sformat(ram_str, "%s <-- %s\n", ram_str, upper_load_dat);
+              presumed_reserve_addr <= {dat_addr[31:1], 1'b0};
+              $sformat(ram_str, "%s\tRMW <-- %s\n", ram_str, upper_dat_addr);
+              $sformat(temp_str, "%s%s", temp_str, ram_str);
+            end
+            SC: begin
+              if (reg_dat == 0) begin
+                $sformat(temp_str,"%s\t[%s]",temp_str,upper_dat_addr);
+                $sformat(temp_str, "%s <-- %s\n", temp_str, upper_store_dat);
+              end
+              $sformat(temp_str, "%s\t%s <-- %s\n", temp_str, dest_str, upper_reg_dat);
+              if (reg_dat == 0) begin
+                $sformat(temp_str, "%s\tRMW <-- %s\n", temp_str, upper_presumed_reserve_addr);
+              end
+            end
           endcase
         end
-        JAL, JALR: $sformat(temp_str, "%s    %s <-- %x\n", temp_str, dest_str, reg_dat);
-        LUI:  $sformat(temp_str, "%s    %s <-- %x\n", temp_str, dest_str, {lui_pre_shift, 12'b0});
-        AUIPC:  $sformat(temp_str, "%s    %s <-- %x\n", temp_str, dest_str, pc+(lui_pre_shift<<12));
-        STYPE: begin
-              $sformat(temp_str,"%s    [%x]",temp_str,{16'h0, dat_addr[15:0]});
-              $sformat(temp_str, "%s <-- %x\n", temp_str, store_dat);
-        end
-        //TODO: add atomic instructions
         default: $sformat(temp_str, "");
       endcase
       $sformat(output_str, "%s\n", temp_str);
