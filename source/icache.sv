@@ -27,6 +27,7 @@ icachef_t    cache_addr;
 icache_frame cache [15:0];                   //16 frames of 4 byte data - 64 byte cache
 icache_frame next_cache [15:0];
 logic miss;
+logic next_iREN;
 
 
 
@@ -46,11 +47,13 @@ begin
             cache[i].data  <= 0;
         end
         state <= IDLE;
+        cif.iREN <= 0;
     end
     else
     begin
         cache[cache_addr.idx] <= next_cache[cache_addr.idx];
         state <= next_state;
+        cif.iREN <= next_iREN;
     end
 end
 
@@ -61,6 +64,7 @@ begin
     //default
     next_state = state;
     next_cache[cache_addr.idx] = cache[cache_addr.idx];
+    next_iREN = cif.iREN;
 
     //exception logic
     casez (state)
@@ -70,6 +74,7 @@ begin
         if (dcif.imemREN && miss && ~dcif.dmemREN && ~dcif.dmemWEN)
         begin
             next_state = ALLOCATE;
+            next_iREN = dcif.imemREN;
         end
     end
 
@@ -81,6 +86,7 @@ begin
             next_cache[cache_addr.idx].tag   = cache_addr.tag;
             next_cache[cache_addr.idx].valid = 1;
             next_cache[cache_addr.idx].data  = cif.iload;
+            next_iREN = 0;
             next_state = IDLE;
         end
     end
@@ -93,7 +99,7 @@ end
 always_comb
 begin
     //default values
-    cif.iREN      = 0;
+  //  cif.iREN       = 0;
     cif.iaddr     = 0;
     dcif.ihit     = 0;
     dcif.imemload = cache[cache_addr.idx].data;
@@ -122,7 +128,7 @@ begin
 
     ALLOCATE:                   //enable talking to memory
     begin
-        cif.iREN = dcif.imemREN;
+ //       cif.iREN = dcif.imemREN;
         cif.iaddr = dcif.imemaddr;
     end
 
