@@ -99,20 +99,24 @@ begin
     dcif.imemload = cache[cache_addr.idx].data;
     miss          = 0;
 
+    //Hit Logic
+     if ((dcif.imemREN && cache[cache_addr.idx].tag == cache_addr.tag) && cache[cache_addr.idx].valid && ~dcif.dmemREN && ~dcif.dmemWEN)
+    begin
+        dcif.ihit = 1;
+    end
+    else
+    begin
+        miss = 1;
+    end
+
+
 
     //exception logic
     casez (state)
 
     IDLE:                      //hit logic
     begin
-        if ((dcif.imemREN && cache[cache_addr.idx].tag == cache_addr.tag) && cache[cache_addr.idx].valid && ~dcif.dmemREN && ~dcif.dmemWEN)
-        begin
-            dcif.ihit = 1;
-        end
-        else
-        begin
-            miss = 1;
-        end
+       
     end
 
 

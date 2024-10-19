@@ -189,3 +189,262 @@ processing file asmFiles/test.rtype.asm (33 of 34)
  :040C400000000004AC
  :00000001FF
 processing file asmFiles/test.shazard_lw.asm (34 of 34)
+processing file asmFiles/count_days.asm (1 of 34)
+--- memsim.hex	2024-10-19 12:37:26.104412415 -0400
++++ memcpu.hex	2024-10-19 12:37:26.086411712 -0400
+@@ -37,6 +37,4 @@
+ :0400240000A12023F4
+ :0400250000008067F0
+ :040C40000000000AA6
+-:043FFD0000000018A8
+-:043FFE000000223865
+ :00000001FF
+processing file asmFiles/fib.asm (2 of 34)
+--- memsim.hex	2024-10-19 12:37:27.686474146 -0400
++++ memcpu.hex	2024-10-19 12:37:27.669473483 -0400
+@@ -14,28 +14,8 @@
+ :04000D00FE0814E3F2
+ :04000E00FFFFFFFFF2
+ :0400210000000001DA
+-:0400220000000001D9
+-:0400230000000002D7
+-:0400240000000003D5
+-:0400250000000005D2
+-:0400260000000008CE
+-:040027000000000DC8
+-:0400280000000015BF
+-:0400290000000022B1
+-:04002A00000000379B
+-:04002B000000005978
+-:04002C000000009040
+-:04002D00000000E9E6
+-:04002E000000017954
+ :04002F000000026269
+ :04003000000003DBEE
+-:040031000000063D88
+-:0400320000000A18A8
+-:040033000000105564
+-:0400340000001A6D41
+-:0400350000002AC2DB
+-:040036000000452F52
+-:0400370000006FF165
+ :0403C0000000001623
+ :040C4000000000367A
+ :00000001FF
+processing file asmFiles/mergesort.asm (3 of 34)
+--- memsim.hex	2024-10-19 12:37:29.650550784 -0400
++++ memcpu.hex	2024-10-19 12:37:29.625549808 -0400
+@@ -210,11 +210,6 @@
+ :04017800000000592A
+ :040179000000005A28
+ :04017A000000005B26
+-:04017B000000005C24
+-:04017C000000005C23
+-:04017D00000000631B
+-:04017E000000006419
+-:04017F000000006418
+ :040C40000000057437
+ :043FFE0000000500BA
+ :00000001FF
+processing file asmFiles/mult.asm (4 of 34)
+--- memsim.hex	2024-10-19 12:37:31.080606584 -0400
++++ memcpu.hex	2024-10-19 12:37:31.062605882 -0400
+@@ -20,6 +20,4 @@
+ :0400130000A1202305
+ :04001400FFFFFFFFEC
+ :040C400000000003AD
+-:043FFD0000000005BB
+-:043FFE0000000014AB
+ :00000001FF
+processing file asmFiles/mult_procedure.asm (5 of 34)
+--- memsim.hex	2024-10-19 12:37:32.600665896 -0400
++++ memcpu.hex	2024-10-19 12:37:32.582665194 -0400
+@@ -31,8 +31,4 @@
+ :04001E0000A12023FA
+ :04001F00FC1FF06F63
+ :040C40000000000AA6
+-:043FFB0000000004BE
+-:043FFC000000000CB5
+-:043FFD0000000018A8
+-:043FFE0000000018A7
+ :00000001FF
+processing file asmFiles/search.asm (6 of 34)
+processing file asmFiles/test.associativity.asm (7 of 34)
+processing file asmFiles/test.beq_ntaken.asm (8 of 34)
+processing file asmFiles/test.beq_taken.asm (9 of 34)
+processing file asmFiles/test.bge_ntaken.asm (10 of 34)
+processing file asmFiles/test.bge_taken.asm (11 of 34)
+processing file asmFiles/test.bgeu_ntaken.asm (12 of 34)
+processing file asmFiles/test.bgeu_taken.asm (13 of 34)
+processing file asmFiles/test.blt_ntaken.asm (14 of 34)
+processing file asmFiles/test.blt_taken.asm (15 of 34)
+processing file asmFiles/test.bltu_ntaken.asm (16 of 34)
+processing file asmFiles/test.bltu_taken.asm (17 of 34)
+processing file asmFiles/test.bne_ntaken.asm (18 of 34)
+processing file asmFiles/test.bne_taken.asm (19 of 34)
+processing file asmFiles/test.branchjump1.asm (20 of 34)
+--- memsim.hex	2024-10-19 12:37:54.361514997 -0400
++++ memcpu.hex	2024-10-19 12:37:54.342514256 -0400
+@@ -13,9 +13,7 @@
+ :04000C00001065B3C8
+ :04000D000015242393
+ :04000E00008000EF7F
+-:04000F00004526235F
+ :04001000FEB094E3C7
+ :04001100FFFFFFFFEF
+ :0400220000000024B6
+-:040024000000003C9C
+ :00000001FF
+processing file asmFiles/test.cfhazard_beq.asm (21 of 34)
+processing file asmFiles/test.dhazard_add.asm (22 of 34)
+processing file asmFiles/test.dhazard_lw.asm (23 of 34)
+processing file asmFiles/test.dhit_ihit_same_cycle.asm (24 of 34)
+processing file asmFiles/test.halt.asm (25 of 34)
+processing file asmFiles/test.ihit_before_dhit.asm (26 of 34)
+processing file asmFiles/test.jal.asm (27 of 34)
+processing file asmFiles/test.jalr.asm (28 of 34)
+processing file asmFiles/test.ldst1.asm (29 of 34)
+--- memsim.hex	2024-10-19 12:38:08.130052240 -0400
++++ memcpu.hex	2024-10-19 12:38:08.112051538 -0400
+@@ -16,7 +16,5 @@
+ :04003D000000270197
+ :04003E000000133774
+ :040040000000733712
+-:040041000000270193
+-:040042000000133770
+ :040C400000000002AE
+ :00000001FF
+processing file asmFiles/test.ldst2.asm (30 of 34)
+processing file asmFiles/test.loadstore.asm (31 of 34)
+--- memsim.hex	2024-10-19 12:38:10.979163412 -0400
++++ memcpu.hex	2024-10-19 12:38:10.964162826 -0400
+@@ -15,9 +15,6 @@
+ :04000E0000F52623B0
+ :04000F00FFFFFFFFF1
+ :040020000000733732
+-:0400210000002701B3
+-:040022000000133790
+-:04002300DEADBEEFA1
+ :04003C000000733716
+ :04003D000000270197
+ :04003E000000133774
+processing file asmFiles/test.mergesort_debug.asm (32 of 34)
+--- memsim.hex	2024-10-19 12:38:12.691230216 -0400
++++ memcpu.hex	2024-10-19 12:38:12.672229475 -0400
+@@ -163,22 +163,9 @@
+ :04015B000000005C44
+ :04015C00000000415E
+ :04015D00000000207E
+-:04015E000000000994
+-:04015F000000002F6D
+ :040160000000005942
+-:040161000000001189
+-:040162000000000792
+-:040163000000002375
+-:040164000000004453
+-:040165000000002076
+ :040166000000000A8B
+ :04016700000000078D
+-:04016800000000177C
+-:040169000000005C36
+-:04016A000000005B36
+-:04016B000000002868
+-:04016C000000001A75
+-:04016D00000000642A
+ :040C40000000005957
+ :043FFE0000000500BA
+ :00000001FF
+processing file asmFiles/test.rtype.asm (33 of 34)
+--- memsim.hex	2024-10-19 12:38:14.264291596 -0400
++++ memcpu.hex	2024-10-19 12:38:14.246290894 -0400
+@@ -13,7 +13,6 @@
+ :04000C0040A602B355
+ :04000D0000A6C33353
+ :04000E0033F24393F3
+-:04000F0000406F93AB
+ :0400100001F21E33A8
+ :0400110000506F9399
+ :0400120001F25EB3E6
+@@ -27,13 +26,5 @@
+ :04001A00007AAE2397
+ :04001B0003CAA02351
+ :04001C00FFFFFFFFE4
+-:0401C10000001261C7
+-:0401C2000000000930
+-:0401C30000010A5AD3
+-:0401C40000000740F0
+-:0401C500FFFFDA70EE
+-:0401C600000037F806
+-:0401C7000000D1560D
+-:0401C800000D269070
+ :040C400000000004AC
+ :00000001FF
+processing file asmFiles/test.shazard_lw.asm (34 of 34)
+processing file asmFiles/count_days.asm (1 of 34)
+processing file asmFiles/fib.asm (2 of 34)
+processing file asmFiles/mergesort.asm (3 of 34)
+processing file asmFiles/mult.asm (4 of 34)
+processing file asmFiles/mult_procedure.asm (5 of 34)
+processing file asmFiles/search.asm (6 of 34)
+processing file asmFiles/test.associativity.asm (7 of 34)
+processing file asmFiles/test.beq_ntaken.asm (8 of 34)
+processing file asmFiles/test.beq_taken.asm (9 of 34)
+processing file asmFiles/test.bge_ntaken.asm (10 of 34)
+processing file asmFiles/test.bge_taken.asm (11 of 34)
+processing file asmFiles/test.bgeu_ntaken.asm (12 of 34)
+processing file asmFiles/test.bgeu_taken.asm (13 of 34)
+processing file asmFiles/test.blt_ntaken.asm (14 of 34)
+processing file asmFiles/test.blt_taken.asm (15 of 34)
+processing file asmFiles/test.bltu_ntaken.asm (16 of 34)
+processing file asmFiles/test.bltu_taken.asm (17 of 34)
+processing file asmFiles/test.bne_ntaken.asm (18 of 34)
+processing file asmFiles/test.bne_taken.asm (19 of 34)
+processing file asmFiles/test.branchjump1.asm (20 of 34)
+processing file asmFiles/test.cfhazard_beq.asm (21 of 34)
+processing file asmFiles/test.dhazard_add.asm (22 of 34)
+processing file asmFiles/test.dhazard_lw.asm (23 of 34)
+processing file asmFiles/test.dhit_ihit_same_cycle.asm (24 of 34)
+processing file asmFiles/test.halt.asm (25 of 34)
+processing file asmFiles/test.ihit_before_dhit.asm (26 of 34)
+processing file asmFiles/test.jal.asm (27 of 34)
+processing file asmFiles/test.jalr.asm (28 of 34)
+processing file asmFiles/test.ldst1.asm (29 of 34)
+processing file asmFiles/test.ldst2.asm (30 of 34)
+processing file asmFiles/test.loadstore.asm (31 of 34)
+processing file asmFiles/test.mergesort_debug.asm (32 of 34)
+processing file asmFiles/test.rtype.asm (33 of 34)
+processing file asmFiles/test.shazard_lw.asm (34 of 34)
+processing file asmFiles/count_days.asm (1 of 34)
+processing file asmFiles/fib.asm (2 of 34)
+processing file asmFiles/mergesort.asm (3 of 34)
+processing file asmFiles/mult.asm (4 of 34)
+processing file asmFiles/mult_procedure.asm (5 of 34)
+processing file asmFiles/search.asm (6 of 34)
+processing file asmFiles/test.associativity.asm (7 of 34)
+processing file asmFiles/test.beq_ntaken.asm (8 of 34)
+processing file asmFiles/test.beq_taken.asm (9 of 34)
+processing file asmFiles/test.bge_ntaken.asm (10 of 34)
+processing file asmFiles/test.bge_taken.asm (11 of 34)
+processing file asmFiles/test.bgeu_ntaken.asm (12 of 34)
+processing file asmFiles/test.bgeu_taken.asm (13 of 34)
+processing file asmFiles/test.blt_ntaken.asm (14 of 34)
+processing file asmFiles/test.blt_taken.asm (15 of 34)
+processing file asmFiles/test.bltu_ntaken.asm (16 of 34)
+processing file asmFiles/test.bltu_taken.asm (17 of 34)
+processing file asmFiles/test.bne_ntaken.asm (18 of 34)
+processing file asmFiles/test.bne_taken.asm (19 of 34)
+processing file asmFiles/test.branchjump1.asm (20 of 34)
+processing file asmFiles/test.cfhazard_beq.asm (21 of 34)
+processing file asmFiles/test.dhazard_add.asm (22 of 34)
+processing file asmFiles/test.dhazard_lw.asm (23 of 34)
+processing file asmFiles/test.dhit_ihit_same_cycle.asm (24 of 34)
+processing file asmFiles/test.halt.asm (25 of 34)
+processing file asmFiles/test.ihit_before_dhit.asm (26 of 34)
+processing file asmFiles/test.jal.asm (27 of 34)
+processing file asmFiles/test.jalr.asm (28 of 34)
+processing file asmFiles/test.ldst1.asm (29 of 34)
+processing file asmFiles/test.ldst2.asm (30 of 34)
+processing file asmFiles/test.loadstore.asm (31 of 34)
+processing file asmFiles/test.mergesort_debug.asm (32 of 34)
+processing file asmFiles/test.rtype.asm (33 of 34)
+processing file asmFiles/test.shazard_lw.asm (34 of 34)

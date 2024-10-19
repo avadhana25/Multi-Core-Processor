@@ -318,7 +318,7 @@ always_comb begin : output_logic
             cif.dWEN = 1'b1;
             cif.daddr = {data_store2[index].tag,index,3'b100}; //piece together old address
             cif.dstore = data_store2[index].data[1];
-            if(index != 3'b111) begin
+            if(cif.dwait == 1'b0 && index != 3'b111) begin
                 next_index = index + 1;
             end
         end
