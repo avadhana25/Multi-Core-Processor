@@ -25,6 +25,7 @@ state_t state, next_state;
 word_t hit_counter, next_hit_counter;
 logic [2:0] index, next_index;
 logic next_dREN, next_dWEN;
+word_t next_dstore, next_daddr;
 
 
 always_ff @(posedge CLK, negedge n_rst) begin
@@ -40,6 +41,8 @@ always_ff @(posedge CLK, negedge n_rst) begin
         index <= '0;
         cif.dREN <= 0;
         cif.dWEN <= 0;
+        cif.dstore <= 0;
+        cif.daddr <= 0;
     end
     else begin
         state <= next_state;
@@ -53,6 +56,8 @@ always_ff @(posedge CLK, negedge n_rst) begin
         index <= next_index;
         cif.dREN <= next_dREN;
         cif.dWEN <= next_dWEN;
+        cif.dstore <= next_dstore;
+        cif.daddr <= next_daddr;
     end
 end
 
@@ -63,27 +68,37 @@ always_comb begin : next_state_logic
     //latching memory requests
     next_dREN = cif.dREN;
     next_dWEN = cif.dWEN;
+    next_daddr = cif.daddr;
+    next_dstore = cif.dstore;
     casez(state) 
         IDLE : begin
             if(dcif.halt == 1'b1) begin
                 next_state = DIRTY_CHECK;
                 next_dREN  = 1'b0;
                 next_dWEN  = 1'b0;
+                next_daddr = 0;
+                next_dstore = 0;
             end
             else if(miss == 1'b1 && LRU_tracker[cache_addr.idx] == 1'b1 && data_store1[cache_addr.idx].dirty == 1'b1) begin
                 next_state = STORE1_STORE_ONE;
                 next_dREN  = 1'b0;
                 next_dWEN  = 1'b1;
+                next_daddr = {data_store1[cache_addr.idx].tag,cache_addr.idx,3'b0}; //piece together old address
+                next_dstore = data_store1[cache_addr.idx].data[0];
             end
             else if(miss == 1'b1 && LRU_tracker[cache_addr.idx] == 1'b0 && data_store2[cache_addr.idx].dirty == 1'b1) begin
                 next_state = STORE2_STORE_ONE;
                 next_dREN  = 1'b0;
                 next_dWEN  = 1'b1;
+                next_daddr = {data_store2[cache_addr.idx].tag,cache_addr.idx,3'b0};
+                next_dstore = data_store2[cache_addr.idx].data[0];
             end
             else if(miss == 1'b1) begin
                 next_state = MEMORY_ONE;
                 next_dREN  = 1'b1;
                 next_dWEN  = 1'b0;
+                next_daddr = cache_addr.blkoff == 1'b0 ? dcif.dmemaddr : dcif.dmemaddr - 4;
+                next_dstore = 0;
             end
         end
         STORE1_STORE_ONE : begin
@@ -91,6 +106,8 @@ always_comb begin : next_state_logic
                 next_state = STORE1_STORE_TWO;
                 next_dREN  = 1'b0;
                 next_dWEN  = 1'b1;
+                next_daddr = {data_store1[cache_addr.idx].tag,cache_addr.idx,3'b100}; //block offset 1
+                next_dstore = data_store1[cache_addr.idx].data[1];
             end
         end
         STORE1_STORE_TWO : begin
@@ -98,6 +115,8 @@ always_comb begin : next_state_logic
                 next_state = MEMORY_ONE;
                 next_dREN  = 1'b1;
                 next_dWEN  = 1'b0;
+                next_daddr = cache_addr.blkoff == 1'b0 ? dcif.dmemaddr : dcif.dmemaddr - 4;
+                next_dstore = 0;
             end
         end
         STORE2_STORE_ONE : begin
@@ -105,6 +124,8 @@ always_comb begin : next_state_logic
                 next_state = STORE2_STORE_TWO;
                 next_dREN  = 1'b0;
                 next_dWEN  = 1'b1;
+                next_daddr =  {data_store2[cache_addr.idx].tag,cache_addr.idx,3'b100};
+                next_dstore = data_store2[cache_addr.idx].data[1];
             end
         end
         STORE2_STORE_TWO : begin
@@ -112,6 +133,8 @@ always_comb begin : next_state_logic
                 next_state = MEMORY_ONE;
                 next_dREN  = 1'b1;
                 next_dWEN  = 1'b0;
+                next_daddr = cache_addr.blkoff == 1'b0 ? dcif.dmemaddr : dcif.dmemaddr - 4;
+                next_dstore = 0;
             end
         end
         MEMORY_ONE : begin
@@ -119,6 +142,8 @@ always_comb begin : next_state_logic
                 next_state = MEMORY_TWO;
                 next_dREN  = 1'b1;
                 next_dWEN  = 1'b0;
+                next_daddr = cache_addr.blkoff == 1'b0 ? dcif.dmemaddr + 4 : dcif.dmemaddr;
+                next_dstore = 0;
             end
         end
         MEMORY_TWO : begin
@@ -126,6 +151,8 @@ always_comb begin : next_state_logic
                 next_state = IDLE;
                 next_dREN  = 1'b0;
                 next_dWEN  = 1'b0;
+                next_daddr = 0;
+                next_dstore = 0;
             end
         end
         DIRTY_CHECK : begin
@@ -133,16 +160,22 @@ always_comb begin : next_state_logic
                 next_state = STORE1_FLUSH_ONE;
                 next_dREN  = 1'b0;
                 next_dWEN  = 1'b1;
+                next_daddr = {data_store1[index].tag,index,3'b0}; //piece together old address
+                next_dstore = data_store1[index].data[0];
             end
             else if(data_store2[index].dirty == 1'b1) begin
                 next_state = STORE2_FLUSH_ONE;
                 next_dREN  = 1'b0;
                 next_dWEN  = 1'b1;
+                next_daddr = {data_store2[index].tag,index,3'b0}; //piece together old address
+                next_dstore = data_store2[index].data[0];
             end
             else if(index == 3'b111) begin
                 next_state = COUNTER_WRITE;
                 next_dREN  = 1'b0;
                 next_dWEN  = 1'b1;
+                next_daddr = 32'h3100;
+                next_dstore = hit_counter;
             end
         end
         STORE1_FLUSH_ONE : begin
@@ -150,6 +183,8 @@ always_comb begin : next_state_logic
                 next_state = STORE1_FLUSH_TWO;
                 next_dREN  = 1'b0;
                 next_dWEN  = 1'b1;
+                next_daddr = {data_store1[index].tag,index,3'b100}; //piece together old address
+                next_dstore = data_store1[index].data[1];
             end
         end
         STORE1_FLUSH_TWO : begin
@@ -157,16 +192,22 @@ always_comb begin : next_state_logic
                 next_state = STORE2_FLUSH_ONE;
                 next_dREN  = 1'b0;
                 next_dWEN  = 1'b1;
+                next_daddr = {data_store2[index].tag,index,3'b0}; //piece together old address
+                next_dstore = data_store2[index].data[0];
             end
             else if(cif.dwait == 1'b0 && data_store2[index].dirty == 1'b0 && index == 3'b111) begin
                 next_state = COUNTER_WRITE;
                 next_dREN  = 1'b0;
                 next_dWEN  = 1'b1;
+                next_daddr = 32'h3100;
+                next_dstore = hit_counter;
             end
             else if(cif.dwait == 1'b0) begin
                 next_state = DIRTY_CHECK;
                 next_dREN  = 1'b0;
                 next_dWEN  = 1'b0;
+                next_daddr = 0;
+                next_dstore = 0;
             end
         end
         STORE2_FLUSH_ONE : begin
@@ -174,6 +215,8 @@ always_comb begin : next_state_logic
                 next_state = STORE2_FLUSH_TWO;
                 next_dREN  = 1'b0;
                 next_dWEN  = 1'b1;
+                next_daddr = {data_store2[index].tag,index,3'b100}; //piece together old address
+                next_dstore = data_store2[index].data[1];
             end
         end
         STORE2_FLUSH_TWO : begin
@@ -181,11 +224,15 @@ always_comb begin : next_state_logic
                 next_state = DIRTY_CHECK;
                 next_dREN  = 1'b0;
                 next_dWEN  = 1'b0;
+                next_daddr = 0;
+                next_dstore = 0;
             end
             else if(cif.dwait == 1'b0) begin
                 next_state = COUNTER_WRITE;
                 next_dREN  = 1'b0;
                 next_dWEN  = 1'b1;
+                next_daddr = 32'h3100;
+                next_dstore = hit_counter;
             end
         end
         COUNTER_WRITE : begin
@@ -193,6 +240,8 @@ always_comb begin : next_state_logic
                 next_state = DONE;
                 next_dREN  = 1'b0;
                 next_dWEN  = 1'b0;
+                next_daddr = 0;
+                next_dstore = 0;
             end
         end
         DONE : begin
@@ -204,9 +253,9 @@ end
 always_comb begin : output_logic
     //memory controller outputs
  //   cif.dREN = '0;
-    cif.daddr = '0;
+ //   cif.daddr = '0;
  //   cif.dWEN = '0;
-    cif.dstore = '0;
+ //   cif.dstore = '0;
 
     //new cache values
     next_data_store1 = data_store1;
@@ -270,27 +319,27 @@ always_comb begin : output_logic
         end
         STORE1_STORE_ONE : begin
    //         cif.dWEN = 1'b1;
-            cif.daddr = {data_store1[cache_addr.idx].tag,cache_addr.idx,3'b0}; //piece together old address
-            cif.dstore = data_store1[cache_addr.idx].data[0];
+   //         cif.daddr = {data_store1[cache_addr.idx].tag,cache_addr.idx,3'b0}; //piece together old address
+   //        cif.dstore = data_store1[cache_addr.idx].data[0];
         end
         STORE1_STORE_TWO : begin
    //         cif.dWEN = 1'b1;
-            cif.daddr = {data_store1[cache_addr.idx].tag,cache_addr.idx,3'b100}; //block offset 1
-            cif.dstore = data_store1[cache_addr.idx].data[1];
+   //         cif.daddr = {data_store1[cache_addr.idx].tag,cache_addr.idx,3'b100}; //block offset 1
+   //         cif.dstore = data_store1[cache_addr.idx].data[1];
         end
         STORE2_STORE_ONE : begin
     //        cif.dWEN = 1'b1;
-            cif.daddr = {data_store2[cache_addr.idx].tag,cache_addr.idx,3'b0};
-            cif.dstore = data_store2[cache_addr.idx].data[0];
+    //        cif.daddr = {data_store2[cache_addr.idx].tag,cache_addr.idx,3'b0};
+    //        cif.dstore = data_store2[cache_addr.idx].data[0];
         end
         STORE2_STORE_TWO : begin
      //       cif.dWEN = 1'b1;
-            cif.daddr =  {data_store2[cache_addr.idx].tag,cache_addr.idx,3'b100};
-            cif.dstore = data_store2[cache_addr.idx].data[1];
+     //       cif.daddr =  {data_store2[cache_addr.idx].tag,cache_addr.idx,3'b100};
+     //       cif.dstore = data_store2[cache_addr.idx].data[1];
         end
         MEMORY_ONE : begin
       //      cif.dREN = 1'b1;
-            cif.daddr = cache_addr.blkoff == 1'b0 ? dcif.dmemaddr : dcif.dmemaddr - 4;
+      //      cif.daddr = cache_addr.blkoff == 1'b0 ? dcif.dmemaddr : dcif.dmemaddr - 4;
             if(cif.dwait == 1'b0 && LRU_tracker[cache_addr.idx] == 1'b1) begin
                 next_data_store1[cache_addr.idx].valid = 1'b0;
                 next_data_store1[cache_addr.idx].dirty = 1'b0;
@@ -306,7 +355,7 @@ always_comb begin : output_logic
         end
         MEMORY_TWO : begin
         //    cif.dREN = 1'b1;
-            cif.daddr = cache_addr.blkoff == 1'b0 ? dcif.dmemaddr + 4 : dcif.dmemaddr;
+        //    cif.daddr = cache_addr.blkoff == 1'b0 ? dcif.dmemaddr + 4 : dcif.dmemaddr;
             next_real_hit = 1'b0;
             if(cif.dwait == 1'b0 && dcif.dmemREN == 1'b1) begin
                 if(LRU_tracker[cache_addr.idx] == 1'b1) begin
@@ -350,34 +399,34 @@ always_comb begin : output_logic
         end
         STORE1_FLUSH_ONE : begin
     //        cif.dWEN = 1'b1;
-            cif.daddr = {data_store1[index].tag,index,3'b0}; //piece together old address
-            cif.dstore = data_store1[index].data[0];
+    //        cif.daddr = {data_store1[index].tag,index,3'b0}; //piece together old address
+    //        cif.dstore = data_store1[index].data[0];
         end
         STORE1_FLUSH_TWO : begin
      //       cif.dWEN = 1'b1;
-            cif.daddr = {data_store1[index].tag,index,3'b100}; //piece together old address
-            cif.dstore = data_store1[index].data[1];
+     //       cif.daddr = {data_store1[index].tag,index,3'b100}; //piece together old address
+     //       cif.dstore = data_store1[index].data[1];
             if(cif.dwait == 1'b0 && data_store2[index].dirty == 1'b0 && index != 3'b111) begin
                 next_index = index + 1;
             end
         end
         STORE2_FLUSH_ONE : begin
     //        cif.dWEN = 1'b1;
-            cif.daddr = {data_store2[index].tag,index,3'b0}; //piece together old address
-            cif.dstore = data_store2[index].data[0];
+    //        cif.daddr = {data_store2[index].tag,index,3'b0}; //piece together old address
+    //        cif.dstore = data_store2[index].data[0];
         end
         STORE2_FLUSH_TWO : begin
      //       cif.dWEN = 1'b1;
-            cif.daddr = {data_store2[index].tag,index,3'b100}; //piece together old address
-            cif.dstore = data_store2[index].data[1];
+     //       cif.daddr = {data_store2[index].tag,index,3'b100}; //piece together old address
+     //       cif.dstore = data_store2[index].data[1];
             if(cif.dwait == 1'b0 && index != 3'b111) begin
                 next_index = index + 1;
             end
         end
         COUNTER_WRITE : begin
        //     cif.dWEN = 1'b1;
-            cif.daddr = 32'h3100;
-            cif.dstore = hit_counter;
+       //     cif.daddr = 32'h3100;
+       //     cif.dstore = hit_counter;
             
         end
         DONE : begin
