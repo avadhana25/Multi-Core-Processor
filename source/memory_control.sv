@@ -209,6 +209,7 @@ module memory_control (
       begin
         ccif.ramREN = ccif.iREN[cpu_lru];
         ccif.ramaddr = ccif.iaddr[cpu_lru];
+        ccif.iload[cpu_lru] = ccif.ramload;
         if (ccif.ramstate == ACCESS)
         begin
           ccif.iwait[cpu_lru] = 1'b0;
@@ -219,6 +220,7 @@ module memory_control (
       begin
         ccif.ramREN = ccif.iREN[~cpu_lru];
         ccif.ramaddr = ccif.iaddr[~cpu_lru];
+        ccif.iload[~cpu_lru] = ccif.ramload;
         if (ccif.ramstate == ACCESS)
         begin
           ccif.iwait[~cpu_lru] = 1'b0;
