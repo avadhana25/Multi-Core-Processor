@@ -132,11 +132,27 @@ module memory_control (
       end
     end
 
+    CACHE_1:
+    begin
+      if (ccif.ramstate == ACCESS)
+      begin
+        next_state = CACHE_2;
+      end
+    end
+
+    CACHE_2:
+    begin
+      if (ccif.ramstate == ACCESS)
+      begin
+        next_state = IDLE;
+      end
+    end
+
     LOAD_1:
     begin
       if (ccif.ramstate == ACCESS)
       begin
-        next_state = LOAD_1;
+        next_state = LOAD_2;
       end
     end
 
