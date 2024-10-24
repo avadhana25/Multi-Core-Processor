@@ -66,7 +66,7 @@ module memory_control (
       begin
         next_state = STORE_1;
       end
-      else if (ccif.cctrans[0] || ccif.trans[1])          //msi transition
+      else if (ccif.cctrans[0] || ccif.cctrans[1])          //msi transition
       begin
         next_state = ARBITRATE;
       end
@@ -189,7 +189,7 @@ module memory_control (
     ccif.ccwait[0] = 1'b0;
     ccif.ccwait[1] = 1'b0;
     ccif.ccinv[0]  = 1'b0;
-    ccif.ccinc[1]  = 1'b0;
+    ccif.ccinv[1]  = 1'b0;
     ccif.ccsnoopaddr[0] = 32'b0;
     ccif.ccsnoopaddr[1] = 32'b0;
     next_cpu_lru = cpu_lru;

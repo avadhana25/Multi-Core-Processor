@@ -38,7 +38,7 @@ test #(.PERIOD(PERIOD)) PROG ();
 always #(PERIOD/2) CLK++;
 
 //DUT
-  memory_control DUT(ccif);
+  memory_control DUT(CLK, nRST, ccif);
 
   ram LINK(CLK, nRST, ramif);
 
@@ -142,7 +142,78 @@ program test;
   initial 
   begin
 
-    //TESTCASE 1: Intruction read
+    /*// controller ports to ram and caches
+    modport cc (
+              // cache inputs
+      input   iREN, dREN, dWEN, dstore, iaddr, daddr,
+              // ram inputs
+              ramload, ramstate,
+              // coherence inputs from cache
+              ccwrite, cctrans,
+              // cache outputs
+      output  iwait, dwait, iload, dload,
+              // ram outputs
+              ramstore, ramaddr, ramWEN, ramREN,
+              // coherence outputs to cache
+              ccwait, ccinv, ccsnoopaddr
+    );*/
+
+    //TESTCASE 1: Instruction read
+    testcase = 1;
+    testdesc = "INSTRUCTION READS";
+    testcases(testcase, testdesc);
+
+    reset_dut;
+
+    //inputs
+    cif0.iREN = 1'b1;
+    cif0.dREN = 1'b0;
+    cif0.dWEN = 1'b0;
+    cif0.iaddr = '0;
+    cif0.daddr = '0;
+    cif0.ccwrite = '0;
+    cif0.cctrans = '0;
+    cif0.dstore = '0;
+    cif1.iREN = 1'b1;
+    cif1.dREN = 1'b0;
+    cif1.dWEN = 1'b0;
+    cif1.iaddr = 32'h4;
+    cif1.daddr = '0;
+    cif1.ccwrite = '0;
+    cif1.cctrans = '0;
+    cif1.dstore = '0;
+
+    @(negedge ccif.iwait[0]);
+    if ((ccif.ramaddr == cif0.iaddr) && (ccif.ramload == cif0.iload))
+    begin
+        $display("Instruction succesfully read");
+    end
+    else
+    begin
+        $display("Instruction UNSUCCESFULLY read");
+    end
+    #(PERIOD / 2)
+
+    //TESTCASE 2: LRU Check
+    testcase = 2;
+    testdesc = "LRU Check";
+    testcases(testcase, testdesc);
+
+    @(negedge ccif.iwait[1]);
+    if ((ccif.ramaddr == cif1.iaddr) && (ccif.ramload == cif1.iload))
+    begin
+        $display("Instruction succesfully read");
+    end
+    else
+    begin
+        $display("Instruction UNSUCCESFULLY read");
+    end
+
+
+
+
+
+    /*//TESTCASE 1: Intruction read
     testcase = 1;
     testdesc = "INSTRUCTION READS";
     testcases(testcase, testdesc);
@@ -170,8 +241,8 @@ program test;
     reset_dut;
 
     //inputs
-    cif0.iREN = 1'b1;    dcif.ihit     = 0;
-    dcif.imemload = 0;
+    cif0.iREN = 1'b1;    //dcif.ihit     = 0;
+    //dcif.imemload = 0;
     cif0.dREN = 1'b0;
     cif0.dWEN = 1'b0;
     cif0.iaddr = '0;
@@ -226,6 +297,8 @@ program test;
             $display("Data in Memory %0d UNSUCCESFULLY loaded", i + 1);
         end
     end
+
+    */
     dump_memory();
     $finish;
 
