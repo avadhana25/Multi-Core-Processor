@@ -227,9 +227,9 @@ program test;
     cif1.cctrans = '0;
     cif1.dstore = '0;
 
-    //TESTCASE 3: LOAD MEMORY
+    //TESTCASE 3: STORES
     testcase = 3;
-    testdesc = "LOAD MEMORY";
+    testdesc = "STORES";
     testcases(testcase, testdesc);
 
     reset_dut;
@@ -261,6 +261,7 @@ program test;
     begin
         $display("Data in Memory UNSUCCESFULLY loaded");
     end
+    #(PERIOD)
 
     cif0.daddr = 32'h4;
     cif0.dstore = 32'h12345678;
@@ -274,7 +275,7 @@ program test;
     begin
         $display("Data in Memory UNSUCCESFULLY loaded");
     end
-    #(PERIOD / 2)
+    #(PERIOD)
 
     //TESTCASE 4: LRU Check
     testcase = 4;
@@ -291,6 +292,8 @@ program test;
         $display("Data in Memory UNSUCCESFULLY loaded");
     end
 
+    #(PERIOD)
+
     cif1.daddr = 32'hc;
     cif1.dstore = 32'h87654321;
 
@@ -303,6 +306,8 @@ program test;
     begin
         $display("Data in Memory UNSUCCESFULLY loaded");
     end
+
+    #(PERIOD)
 
     //reset values
     cif0.iREN = 1'b0;
@@ -360,7 +365,11 @@ program test;
         $display("Data UNSUCCESFULLY read from memory");
     end
 
+    #(PERIOD)
+    cif0.cctrans = '1;
     cif0.daddr = 32'h4;
+    #(PERIOD)
+    cif0.cctrans = '0;
 
     @(negedge ccif.dwait[0]);
     if ((ccif.ramaddr == cif0.daddr) && (ccif.ramload == cif0.dload))
@@ -371,6 +380,81 @@ program test;
     begin
         $display("Data UNSUCCESFULLY read from memory");
     end
+    #(PERIOD)
+
+    //reset values
+    cif0.iREN = 1'b0;
+    cif0.dREN = 1'b0;
+    cif0.dWEN = 1'b0;
+    cif0.iaddr = '0;
+    cif0.daddr = '0;
+    cif0.ccwrite = '0;
+    cif0.cctrans = '0;
+    cif0.dstore = '0;
+    cif1.iREN = 1'b0;
+    cif1.dREN = 1'b0;
+    cif1.dWEN = 1'b0;
+    cif1.iaddr = 32'h0;
+    cif1.daddr = '0;
+    cif1.ccwrite = '0;
+    cif1.cctrans = '0;
+    cif1.dstore = '0;
+
+    //TESTCASE 6: cache 1 request, cache 0 does not have value
+    testcase = 6;
+    testdesc = "cache 1 request, cache 0 does not have value";
+    testcases(testcase, testdesc);
+
+    reset_dut;
+
+    //inputs
+    cif0.iREN = 1'b1;
+    cif0.dREN = 1'b0;
+    cif0.dWEN = 1'b0;
+    cif0.iaddr = '0;
+    cif0.daddr = '0;
+    cif0.ccwrite = '0;
+    cif0.cctrans = '0;
+    cif0.dstore = 32'h0;
+    cif1.iREN = 1'b1;
+    cif1.dREN = 1'b1;
+    cif1.dWEN = 1'b0;
+    cif1.iaddr = 32'h4;
+    cif1.daddr = 32'h8;
+    cif1.ccwrite = '0;
+    cif1.cctrans = '1;
+    cif1.dstore = 32'h0;
+
+    #(PERIOD) 
+    cif1.cctrans = '0;
+
+    @(negedge ccif.dwait[1]);
+    if ((ccif.ramaddr == cif1.daddr) && (ccif.ramload == cif1.dload))
+    begin
+        $display("Data succesfully read from memory");
+    end
+    else
+    begin
+        $display("Data UNSUCCESFULLY read from memory");
+    end
+
+    #(PERIOD)
+    cif1.cctrans = '1;
+    cif1.daddr = 32'hc;
+    #(PERIOD)
+    cif1.cctrans = '0;
+
+    @(negedge ccif.dwait[1]);
+    if ((ccif.ramaddr == cif1.daddr) && (ccif.ramload == cif1.dload))
+    begin
+        $display("Data succesfully read from memory");
+    end
+    else
+    begin
+        $display("Data UNSUCCESFULLY read from memory");
+    end
+
+    #(PERIOD)
 
 
 
