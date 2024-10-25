@@ -2,6 +2,8 @@ onerror {resume}
 quietly WaveActivateNextPane {} 0
 add wave -noupdate /memory_control_tb/CLK
 add wave -noupdate /memory_control_tb/nRST
+add wave -noupdate /memory_control_tb/PROG/testcase
+add wave -noupdate /memory_control_tb/PROG/testdesc
 add wave -noupdate /memory_control_tb/DUT/ccif/iwait
 add wave -noupdate /memory_control_tb/DUT/ccif/dwait
 add wave -noupdate /memory_control_tb/DUT/ccif/iREN
@@ -23,6 +25,7 @@ add wave -noupdate /memory_control_tb/DUT/ccif/ramstate
 add wave -noupdate /memory_control_tb/DUT/ccif/ramaddr
 add wave -noupdate /memory_control_tb/DUT/ccif/ramstore
 add wave -noupdate /memory_control_tb/DUT/ccif/ramload
+add wave -noupdate /memory_control_tb/DUT/state
 TreeUpdate [SetDefaultTree]
 WaveRestoreCursors {{Cursor 1} {130435 ps} 0}
 quietly wave cursor active 1
@@ -40,4 +43,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {0 ps} {1 us}
+WaveRestoreZoom {654805 ns} {655805 ns}
