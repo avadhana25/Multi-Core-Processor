@@ -366,10 +366,7 @@ program test;
     end
 
     #(PERIOD)
-    cif0.cctrans = '1;
     cif0.daddr = 32'h4;
-    #(PERIOD)
-    cif0.cctrans = '0;
 
     @(negedge ccif.dwait[0]);
     if ((ccif.ramaddr == cif0.daddr) && (ccif.ramload == cif0.dload))
@@ -439,10 +436,7 @@ program test;
     end
 
     #(PERIOD)
-    cif1.cctrans = '1;
     cif1.daddr = 32'hc;
-    #(PERIOD)
-    cif1.cctrans = '0;
 
     @(negedge ccif.dwait[1]);
     if ((ccif.ramaddr == cif1.daddr) && (ccif.ramload == cif1.dload))
@@ -454,6 +448,81 @@ program test;
         $display("Data UNSUCCESFULLY read from memory");
     end
 
+    #(PERIOD)
+
+    //reset values
+    cif0.iREN = 1'b0;
+    cif0.dREN = 1'b0;
+    cif0.dWEN = 1'b0;
+    cif0.iaddr = '0;
+    cif0.daddr = '0;
+    cif0.ccwrite = '0;
+    cif0.cctrans = '0;
+    cif0.dstore = '0;
+    cif1.iREN = 1'b0;
+    cif1.dREN = 1'b0;
+    cif1.dWEN = 1'b0;
+    cif1.iaddr = 32'h0;
+    cif1.daddr = '0;
+    cif1.ccwrite = '0;
+    cif1.cctrans = '0;
+    cif1.dstore = '0;
+
+    //TESTCASE 7: cache 0 request, cache 1 has value
+    testcase = 7;
+    testdesc = "cache 0 request, cache 1 has value";
+    testcases(testcase, testdesc);
+
+    reset_dut;
+
+    //inputs
+    cif0.iREN = 1'b1;
+    cif0.dREN = 1'b1;
+    cif0.dWEN = 1'b0;
+    cif0.iaddr = '0;
+    cif0.daddr = '0;
+    cif0.ccwrite = '0;
+    cif0.cctrans = '1;
+    cif0.dstore = 32'h0;
+    cif1.iREN = 1'b1;
+    cif1.dREN = 1'b0;
+    cif1.dWEN = 1'b0;
+    cif1.iaddr = 32'h4;
+    cif1.daddr = 32'h0;
+    cif1.ccwrite = '0;
+    cif1.cctrans = '0;
+    cif1.dstore = 32'h0;
+
+    #(PERIOD * 2)
+    cif1.cctrans = '1;
+    #(PERIOD)
+    cif1.cctrans = '0;
+    cif1.dstore = 32'h11111111;
+
+    @(negedge ccif.dwait[0]);
+    if ((ccif.ramaddr == cif1.daddr) && (ccif.ramstore == cif0.dload) && ccif.ramstore == cif1.dstore)
+    begin
+        $display("Data succesfully read from cache 1");
+    end
+    else
+    begin
+        $display("Data UNSUCCESFULLY read from cache 1");
+    end
+
+    #(PERIOD)
+    cif0.daddr = 32'h4;
+    cif1.daddr = 32'h4;
+    cif1.dstore = 32'h22222222;
+
+    @(negedge ccif.dwait[0]);
+    if ((ccif.ramaddr == cif1.daddr) && (ccif.ramstore == cif0.dload) && ccif.ramstore == cif1.dstore)
+    begin
+        $display("Data succesfully read from cache 1");
+    end
+    else
+    begin
+        $display("Data UNSUCCESFULLY read from cache 1");
+    end
     #(PERIOD)
 
 
