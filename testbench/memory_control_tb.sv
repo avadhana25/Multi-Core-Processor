@@ -525,11 +525,27 @@ program test;
     end
     #(PERIOD)
 
+    //reset values
+    cif0.iREN = 1'b0;
+    cif0.dREN = 1'b0;
+    cif0.dWEN = 1'b0;
+    cif0.iaddr = '0;
+    cif0.daddr = '0;
+    cif0.ccwrite = '0;
+    cif0.cctrans = '0;
+    cif0.dstore = '0;
+    cif1.iREN = 1'b0;
+    cif1.dREN = 1'b0;
+    cif1.dWEN = 1'b0;
+    cif1.iaddr = 32'h0;
+    cif1.daddr = '0;
+    cif1.ccwrite = '0;
+    cif1.cctrans = '0;
+    cif1.dstore = '0;
 
-
-    /*//TESTCASE 1: Intruction read
-    testcase = 1;
-    testdesc = "INSTRUCTION READS";
+    //TESTCASE 8: cache 1 request, cache 0 has value
+    testcase = 8;
+    testdesc = "cache 1 request, cache 0 has value";
     testcases(testcase, testdesc);
 
     reset_dut;
@@ -539,50 +555,145 @@ program test;
     cif0.dREN = 1'b0;
     cif0.dWEN = 1'b0;
     cif0.iaddr = '0;
-    cif0.daddr = '0;
+    cif0.daddr = 32'h8;
+    cif0.ccwrite = '0;
+    cif0.cctrans = '0;
+    cif0.dstore = 32'h0;
+    cif1.iREN = 1'b1;
+    cif1.dREN = 1'b1;
+    cif1.dWEN = 1'b0;
+    cif1.iaddr = 32'h4;
+    cif1.daddr = 32'h8;
+    cif1.ccwrite = '0;
+    cif1.cctrans = '1;
+    cif1.dstore = 32'h0;
 
+    #(PERIOD * 2)
+    cif0.cctrans = '1;
+    #(PERIOD)
+    cif0.cctrans = '0;
+    cif0.dstore = 32'h33333333;
 
-    for (int i = 0; i <= 5 ; i++) 
+    @(negedge ccif.dwait[0]);
+    if ((ccif.ramaddr == cif0.daddr) && (ccif.ramstore == cif1.dload) && ccif.ramstore == cif0.dstore)
     begin
-        readn_instruction(i);
+        $display("Data succesfully read from cache 0");
+    end
+    else
+    begin
+        $display("Data UNSUCCESFULLY read from cache 0");
     end
 
-    //TESTACASE 2: LOAD MEMORY
-    testcase = 2;
-    testdesc = "LOADS TO MEMORY";
+    #(PERIOD)
+    cif0.daddr = 32'hc;
+    cif1.daddr = 32'hc;
+    cif0.dstore = 32'h44444444;
+
+    @(negedge ccif.dwait[0]);
+    if ((ccif.ramaddr == cif0.daddr) && (ccif.ramstore == cif1.dload) && ccif.ramstore == cif0.dstore)
+    begin
+        $display("Data succesfully read from cache 0");
+    end
+    else
+    begin
+        $display("Data UNSUCCESFULLY read from cache 0");
+    end
+    #(PERIOD)
+
+    //reset values
+    cif0.iREN = 1'b0;
+    cif0.dREN = 1'b0;
+    cif0.dWEN = 1'b0;
+    cif0.iaddr = '0;
+    cif0.daddr = '0;
+    cif0.ccwrite = '0;
+    cif0.cctrans = '0;
+    cif0.dstore = '0;
+    cif1.iREN = 1'b0;
+    cif1.dREN = 1'b0;
+    cif1.dWEN = 1'b0;
+    cif1.iaddr = 32'h0;
+    cif1.daddr = '0;
+    cif1.ccwrite = '0;
+    cif1.cctrans = '0;
+    cif1.dstore = '0;
+
+    //TESTCASE 9: cache 0 write, cache 1 has value
+    testcase = 9;
+    testdesc = "cache 0 write, cache 1 has value";
     testcases(testcase, testdesc);
 
     reset_dut;
 
     //inputs
-    cif0.iREN = 1'b1;    //dcif.ihit     = 0;
-    //dcif.imemload = 0;
+    cif0.iREN = 1'b1;
+    cif0.dREN = 1'b1;
+    cif0.dWEN = 1'b0;
+    cif0.iaddr = '0;
+    cif0.daddr = '0;
+    cif0.ccwrite = '1;
+    cif0.cctrans = '1;
+    cif0.dstore = 32'h0;
+    cif1.iREN = 1'b1;
+    cif1.dREN = 1'b0;
+    cif1.dWEN = 1'b0;
+    cif1.iaddr = 32'h4;
+    cif1.daddr = 32'h0;
+    cif1.ccwrite = '0;
+    cif1.cctrans = '0;
+    cif1.dstore = 32'h0;
+
+    #(PERIOD * 2)
+    cif1.cctrans = '1;
+    #(PERIOD)
+    cif1.cctrans = '0;
+
+    @(negedge ccif.dwait[0]);
+    if (ccif.ccinv[1] == 1'b1)
+    begin
+        $display("Data succesfully invalidated from cache 1");
+    end
+    else
+    begin
+        $display("Data UNSUCCESFULLY invalidated from cache 1");
+    end
+
+    #(PERIOD)
+    cif0.daddr = 32'h4;
+    cif1.daddr = 32'h4;
+
+    @(negedge ccif.dwait[0]);
+    if (ccif.ccinv[1] == 1'b1)
+    begin
+        $display("Data succesfully invalidated from cache 1");
+    end
+    else
+    begin
+        $display("Data UNSUCCESFULLY invalidated from cache 1");
+    end
+    #(PERIOD)
+
+    //reset values
+    cif0.iREN = 1'b0;
     cif0.dREN = 1'b0;
     cif0.dWEN = 1'b0;
     cif0.iaddr = '0;
     cif0.daddr = '0;
+    cif0.ccwrite = '0;
+    cif0.cctrans = '0;
+    cif0.dstore = '0;
+    cif1.iREN = 1'b0;
+    cif1.dREN = 1'b1;
+    cif1.dWEN = 1'b0;
+    cif1.iaddr = 32'h0;
+    cif1.daddr = '0;
+    cif1.ccwrite = '0;
+    cif1.cctrans = '0;
+    cif1.dstore = '0;
 
-    for (int i = 0; i <= 5 ; i++) 
-    begin
-        readn_instruction(i);
-
-        cif0.daddr = cif0.daddr + 4;
-        cif0.dREN = 1'b1;
-        #(PERIOD * 2)
-        if ((ccif.ramaddr == cif0.daddr) && (ccif.ramload == cif0.dload) && (ccif.dwait == 0))
-        begin
-            $display("Data in Memory %0d succesfully read: %h", i + 1, ccif.ramload);
-        end
-        else
-        begin
-            $display("Data in Memory %0d UNSUCCESFULLY read", i + 1);
-        end
-
-    end
-
-    //TESTCASE 3: STORE MEMORY
-    testcase = 3;
-    testdesc = "STORES TO MEMORY";
+    //TESTCASE 10: cache 1 write, cache 0 has value
+    testcase = 10;
+    testdesc = "cache 1 write, cache 0 has value";
     testcases(testcase, testdesc);
 
     reset_dut;
@@ -592,27 +703,49 @@ program test;
     cif0.dREN = 1'b0;
     cif0.dWEN = 1'b0;
     cif0.iaddr = '0;
-    cif0.daddr = 32'h400;
+    cif0.daddr = 32'h8;
+    cif0.ccwrite = '0;
+    cif0.cctrans = '0;
+    cif0.dstore = 32'h0;
+    cif1.iREN = 1'b1;
+    cif1.dREN = 1'b1;
+    cif1.dWEN = 1'b0;
+    cif1.iaddr = 32'h4;
+    cif1.daddr = 32'h8;
+    cif1.ccwrite = '1;
+    cif1.cctrans = '1;
+    cif1.dstore = 32'h0;
 
-    for (int i = 0; i <= 5 ; i++) 
+    #(PERIOD * 2)
+    cif0.cctrans = '1;
+    #(PERIOD)
+    cif0.cctrans = '0;
+
+    @(negedge ccif.dwait[0]);
+    if (ccif.ccinv[0] == 1'b1)
     begin
-        readn_instruction(i);
-
-        cif0.daddr = cif0.daddr + 4;
-        cif0.dWEN = 1'b1;
-        cif0.dstore = 32'hA;
-        #(PERIOD*2)
-        if ((ccif.ramaddr == cif0.daddr) && (ccif.ramstore == cif0.dstore) && (ccif.dwait == 0))
-        begin
-            $display("Data in Memory %0d succesfully loaded", i + 1);
-        end
-        else
-        begin
-            $display("Data in Memory %0d UNSUCCESFULLY loaded", i + 1);
-        end
+        $display("Data succesfully invalidated from cache 1");
+    end
+    else
+    begin
+        $display("Data UNSUCCESFULLY invalidated from cache 1");
     end
 
-    */
+    #(PERIOD)
+    cif0.daddr = 32'hc;
+    cif1.daddr = 32'hc;
+
+    @(negedge ccif.dwait[0]);
+    if (ccif.ccinv[0] == 1'b1)
+    begin
+        $display("Data succesfully invalidated from cache 1");
+    end
+    else
+    begin
+        $display("Data UNSUCCESFULLY invalidated from cache 1");
+    end
+    #(PERIOD)
+
     dump_memory();
     $finish;
 
