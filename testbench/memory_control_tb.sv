@@ -142,22 +142,6 @@ program test;
   initial 
   begin
 
-    /*// controller ports to ram and caches
-    modport cc (
-              // cache inputs
-      input   iREN, dREN, dWEN, dstore, iaddr, daddr,
-              // ram inputs
-              ramload, ramstate,
-              // coherence inputs from cache
-              ccwrite, cctrans,
-              // cache outputs
-      output  iwait, dwait, iload, dload,
-              // ram outputs
-              ramstore, ramaddr, ramWEN, ramREN,
-              // coherence outputs to cache
-              ccwait, ccinv, ccsnoopaddr
-    );*/
-
     //TESTCASE 1: Instruction read
     testcase = 1;
     testdesc = "INSTRUCTION READS";
@@ -641,7 +625,7 @@ program test;
     cif1.daddr = 32'h0;
     cif1.ccwrite = '0;
     cif1.cctrans = '0;
-    cif1.dstore = 32'h0;
+    cif1.dstore = 32'h55555555;
 
     #(PERIOD * 2)
     cif1.cctrans = '1;
@@ -661,6 +645,7 @@ program test;
     #(PERIOD)
     cif0.daddr = 32'h4;
     cif1.daddr = 32'h4;
+    cif1.dstore = 32'h66666666;
 
     @(negedge ccif.dwait[0]);
     if (ccif.ccinv[1] == 1'b1)
@@ -706,7 +691,7 @@ program test;
     cif0.daddr = 32'h8;
     cif0.ccwrite = '0;
     cif0.cctrans = '0;
-    cif0.dstore = 32'h0;
+    cif0.dstore = 32'h77777777;
     cif1.iREN = 1'b1;
     cif1.dREN = 1'b1;
     cif1.dWEN = 1'b0;
@@ -734,6 +719,7 @@ program test;
     #(PERIOD)
     cif0.daddr = 32'hc;
     cif1.daddr = 32'hc;
+    cif0.dstore = 32'h88888888;
 
     @(negedge ccif.dwait[0]);
     if (ccif.ccinv[0] == 1'b1)
@@ -746,6 +732,8 @@ program test;
     end
     #(PERIOD)
 
+    testcase = 0;
+    testdesc = "done";
     dump_memory();
     $finish;
 
