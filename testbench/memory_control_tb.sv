@@ -142,22 +142,6 @@ program test;
   initial 
   begin
 
-    /*// controller ports to ram and caches
-    modport cc (
-              // cache inputs
-      input   iREN, dREN, dWEN, dstore, iaddr, daddr,
-              // ram inputs
-              ramload, ramstate,
-              // coherence inputs from cache
-              ccwrite, cctrans,
-              // cache outputs
-      output  iwait, dwait, iload, dload,
-              // ram outputs
-              ramstore, ramaddr, ramWEN, ramREN,
-              // coherence outputs to cache
-              ccwait, ccinv, ccsnoopaddr
-    );*/
-
     //TESTCASE 1: Instruction read
     testcase = 1;
     testdesc = "INSTRUCTION READS";
