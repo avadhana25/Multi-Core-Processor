@@ -732,6 +732,59 @@ program test;
     end
     #(PERIOD)
 
+    //reset values
+    cif0.iREN = 1'b0;
+    cif0.dREN = 1'b0;
+    cif0.dWEN = 1'b0;
+    cif0.iaddr = '0;
+    cif0.daddr = '0;
+    cif0.ccwrite = '0;
+    cif0.cctrans = '0;
+    cif0.dstore = '0;
+    cif1.iREN = 1'b0;
+    cif1.dREN = 1'b1;
+    cif1.dWEN = 1'b0;
+    cif1.iaddr = 32'h0;
+    cif1.daddr = '0;
+    cif1.ccwrite = '0;
+    cif1.cctrans = '0;
+    cif1.dstore = '0;
+
+    //TESTCASE 11: cache 1 write, cache 0 has value
+    testcase = 11;
+    testdesc = "cache 1 write, cache 0 has value";
+    testcases(testcase, testdesc);
+
+    reset_dut;
+
+    //inputs
+    cif0.iREN = 1'b1;
+    cif0.dREN = 1'b0;
+    cif0.dWEN = 1'b0;
+    cif0.iaddr = '0;
+    cif0.daddr = 32'h8;
+    cif0.ccwrite = '0;
+    cif0.cctrans = '0;
+    cif0.dstore = 32'h77777777;
+    cif1.iREN = 1'b1;
+    cif1.dREN = 1'b0;
+    cif1.dWEN = 1'b0;
+    cif1.iaddr = 32'h4;
+    cif1.daddr = 32'h8;
+    cif1.ccwrite = '1;
+    cif1.cctrans = '1;
+    cif1.dstore = 32'h0;
+
+    #(PERIOD * 2)
+    if (ccif.ccinv[0] == 1'b1)
+    begin
+        $display("Data succesfully invalidated from cache 1");
+    end
+    else
+    begin
+        $display("Data UNSUCCESFULLY invalidated from cache 1");
+    end
+
     testcase = 0;
     testdesc = "done";
     dump_memory();
