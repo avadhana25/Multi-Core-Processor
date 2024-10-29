@@ -116,7 +116,7 @@ module memory_control (
       end
       else
       begin
-        next_state = IDLE;           //if msi transitioned but neither reads are on / s to m
+        next_state = IDLE;           //if msi transitioned but neither reads are on / both in s gets prwr 1. s to m 2. s to i
       end
     end
 
@@ -293,6 +293,20 @@ module memory_control (
         ccif.ccwait[cpu_lru] = 1'b1;
         next_cpu_lru = cpu_lru;
       end
+      else if (ccif.ccwrite[cpu_lru])            //when both are in s and there is a write, its going to hit and transition one to M. This will bring bus to arbirtrate but there wont
+      begin                                      //be a dren bc its a hit and it wont get to the state to invalidate other cache. do that here in the else case of arbitrate.
+        ccif.ccinv[~cpu_lru] = 1'b1;
+        ccif.ccsnoopaddr[~cpu_lru] = ccif.daddr[cpu_lru];
+        next_cpu_lru = ~cpu_lru;
+      end
+      else if (ccif.ccwrite[~cpu_lru])
+      begin
+        ccif.ccinv[cpu_lru] = 1'b1;
+        ccif.ccsnoopaddr[cpu_lru] = ccif.daddr[~cpu_lru];
+        next_cpu_lru = cpu_lru;
+      end
+
+
     end
 
     SNOOP:
