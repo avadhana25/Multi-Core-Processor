@@ -32,6 +32,9 @@ module datapath (
   // import types
   import cpu_types_pkg::*;
 
+  // pc init
+  parameter PC_INIT = 0;
+
   //interfaces initializations
   control_unit_if    cuif();
   program_counter_if pcif();
@@ -47,7 +50,7 @@ module datapath (
 
   //DUTS
   control_unit    CTRLU    (cuif);
-  program_counter PCNT     (CLK, nRST, pcif);
+  program_counter #(.PC_INIT(PC_INIT)) PCNT  (CLK, nRST, pcif);
   alu             ALU      (aluif);
   register_file   REGFILE  (CLK, nRST, rfif);
   if_id           IFID     (CLK, nRST, fdif);
@@ -59,15 +62,14 @@ module datapath (
 
 
 
-  // pc init
-  parameter PC_INIT = 0;
+  
 
 
 
   //logic instantiation
   word_t jumpAddr, branchAddr, signExt, zeroExt;
   funct3_b_t func3;
-  word_t xm_auipc_dest, mw_aupic_dest, xm_replace, mw_replace;
+  word_t xm_auipc_dest, mw_auipc_dest, xm_replace, mw_replace;
 
   //func3 for branch
   assign func3 = funct3_b_t'(dxif.instr_o[14:12]);
@@ -75,7 +77,7 @@ module datapath (
 
   //Setup Immediate values
   assign xm_auipc_dest = xmif.curr_pc_o + xmif.zeroExt_o;
-  assign wm_auipc_dest = mwif.curr_pc_o + mwif.zeroExt_o;
+  assign mw_auipc_dest = mwif.curr_pc_o + mwif.zeroExt_o;
   assign jumpAddr = (dxif.instr_o[31] == 1) ? {19'h7ffff, dxif.instr_o[31], dxif.instr_o[19:12], dxif.instr_o[20], dxif.instr_o[30:21], 1'b0} : {19'h0, dxif.instr_o[31], dxif.instr_o[19:12], dxif.instr_o[20], dxif.instr_o[30:21], 1'b0};
   assign branchAddr = (dxif.instr_o[31] == 1) ? {19'h7ffff, dxif.instr_o[31], dxif.instr_o[7], dxif.instr_o[30:25], dxif.instr_o[11:8], 1'b0} : {19'h0, dxif.instr_o[31], dxif.instr_o[7], dxif.instr_o[30:25], dxif.instr_o[11:8], 1'b0};
   assign zeroExt = {dxif.instr_o[31:12], 12'b0};    //for u type
@@ -187,6 +189,7 @@ module datapath (
   assign dxif.en        = dpif.ihit;
   assign dxif.flush     = hduif.threeInstrFlush;
   assign dxif.freeze    = hduif.freeze;
+  assign dxif.atomic_i  = cuif.atomic;            //needs to get to memory
 
   //set up execute memory latch
   assign xmif.branchAddr_i = branchAddr;
@@ -232,6 +235,7 @@ module datapath (
   assign xmif.opcode_i     = opcode_t'(dxif.instr_o[6:0]);
   assign xmif.imm_i        = signExt;
   assign xmif.dmemstore_i  = dxif.rdat2_o;
+  assign xmif.atomic_i     = dxif.atomic_o;
 
 
   //set memory writeback latch
@@ -248,8 +252,8 @@ module datapath (
     end
     else
     begin
-      if (xmif.dREN_o)
-      begin
+      if (xmif.dREN_o | xmif.atomic_o)          //atomic will always need dmemload
+      begin                                     //dmemload will have to be set to 0 or 1 for sc in dcache
         mwif.dmemload_i <= dpif.dmemload;
       end
     end
@@ -365,6 +369,10 @@ module datapath (
     begin
         aluif.port_b = signExt;
     end
+    else if (dxif.atomic_o)            //for LR SC
+    begin
+      aluif.port_b = 32'b0;
+    end
 
       else
       begin
@@ -446,9 +454,9 @@ module datapath (
     begin
       dpif.halt <= 1'b0;
     end
-    else
+    else if (mwif.halt_i)
     begin
-      dpif.halt <= mwif.halt_i;
+      dpif.halt <= 1'b1;
     end
   end
   assign dpif.imemREN   = 1;
@@ -457,6 +465,7 @@ module datapath (
   assign dpif.dmemWEN   = xmif.dWEN_o;
   assign dpif.dmemstore = xmif.rdat2_o;
   assign dpif.dmemaddr  = xmif.port_out_o;  
+  assign dpif.datomic   = xmif.atomic_o;
 
 
 

@@ -14,6 +14,9 @@ program counter source file
 
 module program_counter(input logic CLK, nRST, program_counter_if.pc pcif);
 
+// pc init
+  parameter PC_INIT = 0;
+
 word_t next_pc;
 //constant pc + 4 value
 assign pcif.npc = pcif.curr_pc + 4;
@@ -23,7 +26,7 @@ always_ff @(posedge CLK, negedge nRST)
 begin 
     if (!nRST)
     begin
-        pcif.curr_pc <= '0;
+        pcif.curr_pc <= PC_INIT;
     end
     else
     begin

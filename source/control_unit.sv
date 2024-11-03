@@ -16,6 +16,7 @@ module control_unit(control_unit_if.cu cuif);
 
 opcode_t opcode;
 logic [6:0] func7;
+logic [4:0] func5;
 logic [2:0] func3;
 
 
@@ -30,6 +31,7 @@ begin
   cuif.rs2    = regbits_t'(cuif.instr[24:20]);
   cuif.rd     = regbits_t'(cuif.instr[11:7]);
   func3       = funct3_r_t'(cuif.instr[14:12]);
+  func5       = funct5_atomic_t'(cuif.instr[31:27]);
   func7       = cuif.instr[31:25];
   cuif.imm    = cuif.instr[31:20];
 
@@ -41,10 +43,11 @@ begin
   cuif.regWr  = 1'b0;
   cuif.aluSrc = 1'b0;
   cuif.pcSrc  = 2'b0;
-  cuif.rdSel  = 3'b0;         //0: alu_out  1: d_memload  2:JAL or JALR  3: LUI  4:AUIPC
+  cuif.rdSel  = 3'b0;         //0: alu_out  1: d_memload  2:JAL or JALR  3: LUI  4:AUIPC  5: SC
   cuif.jpSel  = 1'b0;
   cuif.halt   = 1'b0;
   cuif.aluOp  = ALU_ADD;
+  cuif.atomic = 1'b0;
 
 
 
@@ -295,6 +298,31 @@ begin
     cuif.regWr  = 1'b1;           //write to register
     cuif.rdSel  = 3'h4;           //write pc + {imm,12'b0} to register
     cuif.pcSrc  = 2'b0;           //pc = pc +4;
+  end
+
+  LR_SC:       //ATOMIC
+  begin
+    //control signals
+    cuif.atomic = 1'b1;        //makes second alu op 0
+
+    if (func5 == LR)
+    begin
+      cuif.regWr = 1'b1;        //write to regsiter
+      cuif.aluSrc = 1'b0;       //dont use imm value
+      cuif.pcSrc = 2'b0;        //PC+4
+      cuif.dREN = 1'b1;         //Read from mem
+      cuif.rdSel = 3'b1;        //memload into register
+      cuif.aluOp= ALU_ADD;     //alu_add rs1 w 0
+    end
+    else if (func5 == SC)
+    begin
+      cuif.regWr = 1'b1;        //write to register
+      cuif.aluSrc = 1'b0;       //dont use imm value
+      cuif.pcSrc  = 2'b0;       //PC+4
+      cuif.dWEN   = 1'b1;       //write to mem
+      cuif.rdSel  = 3'b1;       //memload will be 0 on success and 1 on failure
+      cuif.aluOp  = ALU_ADD;    //alu add rs1 w 0 
+    end
   end
 
   HALT:
