@@ -8,6 +8,8 @@
 // mapped needs this
 `include "datapath_cache_if.vh"
 `include "caches_if.vh"
+`include "cache_control_if.vh"
+`include "cpu_ram_if.vh"
 
 //all types
 `include "cpu_types_pkg.vh"
@@ -26,8 +28,13 @@ module dcache_tb;
     logic CLK = 0, nRST;
 
     // interfaces
-    caches_if cif();
-    datapath_cache_if dcif();
+    caches_if cif0();
+    caches_if cif1();
+
+    datapath_cache_if dcif0();
+    datapath_cache_if dcif1();
+    cache_control_if ccif(cif0, cif1);
+    cpu_ram_if ramif();
 
     //test program
     test #(.PERIOD(PERIOD)) PROG (CLK);
@@ -36,7 +43,18 @@ module dcache_tb;
     always #(PERIOD/2) CLK++;
 
     //DUT
-    dcache DUT (CLK, nRST, dcif, cif);
+    dcache DC0 (CLK, nRST, dcif0, cif0);
+    dcache DC1 (CLK, nRST, dcif1, cif1);
+    memory_control MC (CLK, nRST, ccif);
+    ram LINK (CLK, nRST, ramif);
+
+    //connect cache input/output and ram input/output
+    assign ramif.ramaddr = ccif.ramaddr;
+    assign ramif.ramstore = ccif.ramstore;
+    assign ramif.ramREN = ccif.ramREN;
+    assign ramif.ramWEN = ccif.ramWEN;
+    assign ccif.ramstate = ramif.ramstate;
+    assign ccif.ramload = ramif.ramload;
 
     //tasks
     task reset_dut;
@@ -54,17 +72,18 @@ module dcache_tb;
 
     task reset_inputs;
         begin
-            dcif.halt = 0;
-            dcif.dmemREN = 0;
-            dcif.dmemWEN = 0;
-            dcif.datomic = 0;
-            dcif.dmemstore = 0;
-            dcif.dmemaddr = 0;
-            cif.dwait = 1;
-            cif.dload = 0;
-            cif.ccwait = 0;
-            cif.ccinv = 0;
-            cif.ccsnoopaddr = 0;
+            dcif0.halt = 0;
+            dcif0.dmemREN = 0;
+            dcif0.dmemWEN = 0;
+            dcif0.datomic = 0;
+            dcif0.dmemstore = 0;
+            dcif0.dmemaddr = 0;
+            dcif1.halt = 0;
+            dcif1.dmemREN = 0;
+            dcif1.dmemWEN = 0;
+            dcif1.datomic = 0;
+            dcif1.dmemstore = 0;
+            dcif1.dmemaddr = 0;
         end
     endtask
 
@@ -76,7 +95,7 @@ module dcache_tb;
             $display("\nTESTCASE %0d: %s\n", testcase, testdesc);
         end
     endtask
-
+/*
     task check_access;
     input word_t first_load;
     input word_t second_load;
@@ -109,6 +128,47 @@ module dcache_tb;
         
     end
     endtask
+*/
+    task automatic dump_memory();
+    string filename = "memcpu.hex";
+    int memfd;
+
+    cif0.daddr = 0;
+    cif0.dWEN = 0;
+    cif0.dREN = 0;
+
+    memfd = $fopen(filename,"w");
+    if (memfd)
+      $display("Starting memory dump.");
+    else
+      begin $display("Failed to open %s.",filename); $finish; end
+
+    for (int unsigned i = 0; memfd && i < 16384; i++)
+    begin
+      int chksum = 0;
+      bit [7:0][7:0] values;
+      string ihex;
+
+      cif0.daddr = i << 2;
+      cif0.dREN = 1;
+      repeat (4) @(posedge CLK);
+      if (cif0.dload === 0)
+        continue;
+      values = {8'h04,16'(i),8'h00,cif0.dload};
+      foreach (values[j])
+        chksum += values[j];
+      chksum = 16'h100 - chksum;
+      ihex = $sformatf(":04%h00%h%h",16'(i),cif0.dload,8'(chksum));
+      $fdisplay(memfd,"%s",ihex.toupper());
+    end //for
+    if (memfd)
+    begin
+      cif0.dREN = 0;
+      $fdisplay(memfd,":00000001FF");
+      $fclose(memfd);
+      $display("Finished memory dump.");
+    end
+  endtask
 
 
 
@@ -127,7 +187,97 @@ program test(input logic CLK);
     //set inputs
     reset_inputs;
 
+    //TESTCASE 1: CORE 0 Write TO 0x30, THEN CORE 1 READ SAME ADDRESS, LRU will pick core0 first, tests if both miss at same time
+    testcase = 1;
+    testdesc = "CORE 1 SNOOP INTO CORE 0 for 0x30";
+    testcases(testcase, testdesc);
 
+    dcif0.dmemWEN = 1'b1;
+    dcif0.dmemREN = 1'b0;
+    dcif0.dmemaddr = {26'h3, 3'b000, 1'b0, 2'h0};
+    dcif0.dmemstore = 32'h3333;
+
+    dcif1.dmemWEN = 1'b0;
+    dcif1.dmemREN = 1'b1;
+    dcif1.dmemaddr = {26'h3, 3'b000, 1'b0, 2'h0};
+
+    @(posedge dcif1.dhit)
+
+    if (dcif1.dmemload == dcif0.dmemstore)
+    begin
+        $display("Accurately read from Core 0");
+    end
+
+
+
+
+    testcase = 0;
+    testdesc = "done";
+    dump_memory();
+    $finish;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  end
+endprogram
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
     //TESTCASE 1: LOAD FROM 0x30 AND MISS
     testcase = 1;
     testdesc = "LOAD FROM 0x30 AND MISS";
@@ -382,3 +532,5 @@ program test(input logic CLK);
   end
 
   endprogram
+
+  */

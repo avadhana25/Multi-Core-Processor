@@ -66,7 +66,7 @@ module memory_control (
       begin
         next_state = STORE_1;
       end
-      else if (ccif.cctrans[0] || ccif.cctrans[1])          //msi transition
+      else if (ccif.dREN[0] || ccif.dREN[1])          //msi transition  /changed to dREN from cctrans
       begin
         next_state = ARBITRATE;
       end
@@ -324,7 +324,7 @@ module memory_control (
       //question: when will we get here when ccwrite is not active if snoopy needs an msi transition to get here? I to S causes S to S. should there be an exception case? ask TA
 
       ccif.ramWEN = 1'b1;
-      ccif.ramaddr = ccif.daddr[snoopy];            //can it also just be daddr[snooper]?
+      ccif.ramaddr = ccif.daddr[snooper];            //can it also just be daddr[snooper]?
       ccif.ramstore = ccif.dstore[snoopy];
       if (ccif.ramstate == ACCESS)
       begin
