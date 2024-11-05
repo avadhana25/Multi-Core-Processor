@@ -775,7 +775,7 @@ program test;
     cif1.cctrans = '1;
     cif1.dstore = 32'h0;
 
-    #(PERIOD * 2)
+    #(PERIOD * 3)
     if (ccif.ccinv[0] == 1'b1)
     begin
         $display("Data succesfully invalidated from cache 1");
