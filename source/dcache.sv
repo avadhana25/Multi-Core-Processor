@@ -18,7 +18,7 @@ dcache_frame [7:0] data_store1;
 dcache_frame [7:0] data_store2;
 dcache_frame [7:0] next_data_store1;
 dcache_frame [7:0] next_data_store2;
-dcachef_t cache_addr;
+dcachef_t cache_addr, snoop_addr;
 logic [7:0] LRU_tracker, next_LRU_tracker;
 logic miss, real_hit, next_real_hit;
 state_t state, next_state;
@@ -110,22 +110,32 @@ always_comb begin : next_state_logic
             if(snoop_addr.tag == data_store1[snoop_addr.idx].tag && data_store1[snoop_addr.idx].valid == 1'b1) begin
                 next_state = CACHE_1;
                 cif.cctrans = 1'b1;
+                next_dstore = data_store1[snoop_addr.idx].data[0];
             end
             else if(snoop_addr.tag == data_store2[snoop_addr.idx].tag && data_store2[snoop_addr.idx].valid == 1'b1) begin
                 next_state = CACHE_1;
                 cif.cctrans = 1'b1;
+                next_dstore = data_store2[snoop_addr.idx].data[0];
             end
             else begin
                 next_state = IDLE;
             end
         end
         CACHE_1 : begin
-            if(dwait == 1'b0) begin
+            if(cif.dwait == 1'b0) begin
                 next_state = CACHE_2;
+                if(snoop_addr.tag == data_store1[snoop_addr.idx].tag && data_store1[snoop_addr.idx].valid == 1'b1) 
+                begin
+                    next_dstore = data_store1[snoop_addr.idx].data[1];
+                end
+                else if(snoop_addr.tag == data_store2[snoop_addr.idx].tag && data_store2[snoop_addr.idx].valid == 1'b1) 
+                begin
+                    next_dstore = data_store2[snoop_addr.idx].data[1];
+                end
             end
         end
         CACHE_2 : begin
-            if(dwait == 1'b0) begin
+            if(cif.dwait == 1'b0) begin
                 next_state = IDLE;
             end
         end
@@ -362,21 +372,21 @@ always_comb begin : output_logic
             if(snoop_addr.tag == data_store1[snoop_addr.idx].tag && data_store1[snoop_addr.idx].valid == 1'b1) begin
                 next_data_store1[snoop_addr.idx].valid = ~cif.ccinv;
                 next_data_store1[snoop_addr.idx].dirty = 1'b0;
-                cif.dstore = data_store1[snoop_addr.idx].data[0];
+               // cif.dstore = data_store1[snoop_addr.idx].data[0];
             end
             else if(snoop_addr.tag == data_store2[snoop_addr.idx].tag && data_store2[snoop_addr.idx].valid == 1'b1) begin
                 next_data_store2[snoop_addr.idx].valid = ~cif.ccinv;
                 next_data_store2[snoop_addr.idx].dirty = 1'b0;
-                cif.dstore = data_store2[snoop_addr.idx].data[0];
+             //   cif.dstore = data_store2[snoop_addr.idx].data[0];
             end
         end
         CACHE_2 : begin
-            if(snoop_addr.tag == data_store1[snoop_addr.idx].tag && data_store1[snoop_addr.idx].valid == 1'b1) begin
-                cif.dstore = data_store1[snoop_addr.idx].data[1];
-            end
-            else if(snoop_addr.tag == data_store2[snoop_addr.idx].tag && data_store2[snoop_addr.idx].valid == 1'b1) begin
-                cif.dstore = data_store2[snoop_addr.idx].data[1];
-            end
+    //        if(snoop_addr.tag == data_store1[snoop_addr.idx].tag && data_store1[snoop_addr.idx].valid == 1'b1) begin
+    //            cif.dstore = data_store1[snoop_addr.idx].data[1];
+     //       end
+    //        else if(snoop_addr.tag == data_store2[snoop_addr.idx].tag && data_store2[snoop_addr.idx].valid == 1'b1) begin
+     //           cif.dstore = data_store2[snoop_addr.idx].data[1];
+     //       end
         end
         STORE1_STORE_ONE : begin
         end
