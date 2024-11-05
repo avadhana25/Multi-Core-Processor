@@ -12,7 +12,7 @@ module dcache
     caches_if.dcache cif
 );
 
-typedef enum logic [4:0] {IDLE, SNOOP, CACHE_1, CACHE_2, STORE1_STORE_ONE, STORE1_STORE_TWO, STORE2_STORE_ONE, STORE2_STORE_TWO, MEMORY_ONE, MEMORY_TWO, DIRTY_CHECK, STORE1_FLUSH_ONE, STORE1_FLUSH_TWO, STORE2_FLUSH_ONE, STORE2_FLUSH_TWO, COUNTER_WRITE, DONE} state_t;
+typedef enum logic [3:0] {IDLE, SNOOP, CACHE_1, CACHE_2, STORE1_STORE_ONE, STORE1_STORE_TWO, STORE2_STORE_ONE, STORE2_STORE_TWO, MEMORY_ONE, MEMORY_TWO, DIRTY_CHECK, STORE1_FLUSH_ONE, STORE1_FLUSH_TWO, STORE2_FLUSH_ONE, STORE2_FLUSH_TWO, DONE} state_t;
 
 dcache_frame [7:0] data_store1;
 dcache_frame [7:0] data_store2;
@@ -262,15 +262,6 @@ always_comb begin : next_state_logic
                 next_dstore = 0;
             end
             else if(cif.dwait == 1'b0) begin
-                next_state = COUNTER_WRITE;
-                next_dREN  = 1'b0;
-                next_dWEN  = 1'b1;
-                next_daddr = 32'h3100;
-                next_dstore = hit_counter;
-            end
-        end
-        COUNTER_WRITE : begin
-            if(cif.dwait == 1'b0) begin
                 next_state = DONE;
                 next_dREN  = 1'b0;
                 next_dWEN  = 1'b0;
@@ -443,6 +434,7 @@ always_comb begin : output_logic
             end
         end
         STORE1_FLUSH_ONE : begin
+            next_data_store1[index].dirty = 1'b0;
         end
         STORE1_FLUSH_TWO : begin
             if(cif.dwait == 1'b0 && data_store2[index].dirty == 1'b0 && index != 3'b111) begin
@@ -450,14 +442,12 @@ always_comb begin : output_logic
             end
         end
         STORE2_FLUSH_ONE : begin
+            next_data_store2[index].dirty = 1'b0;
         end
         STORE2_FLUSH_TWO : begin
             if(cif.dwait == 1'b0 && index != 3'b111) begin
                 next_index = index + 1;
             end
-        end
-        COUNTER_WRITE : begin
-            
         end
         DONE : begin
             //nothing
