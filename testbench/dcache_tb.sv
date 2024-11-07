@@ -178,6 +178,7 @@ program test(input logic CLK);
   parameter PERIOD = 10;
   integer testcase;
   string testdesc;
+  logic [31:0] temp_load;
   initial 
   begin
 
@@ -195,18 +196,164 @@ program test(input logic CLK);
     dcif0.dmemWEN = 1'b1;
     dcif0.dmemREN = 1'b0;
     dcif0.dmemaddr = {26'h3, 3'b000, 1'b0, 2'h0};
-    dcif0.dmemstore = 32'h3333;
+    dcif0.dmemstore = 32'h1111;
 
     dcif1.dmemWEN = 1'b0;
     dcif1.dmemREN = 1'b1;
     dcif1.dmemaddr = {26'h3, 3'b000, 1'b0, 2'h0};
 
-    @(posedge dcif1.dhit)
+    @(posedge dcif0.dhit)
+    dcif0.dmemWEN = 1'b0;
+    dcif0.dmemREN = 1'b0;
+
+
+
+
+
+    
+
+    @(posedge dcif1.dhit)                                //core 0 should start in M and then core 0 and core 1 should both be in S
+    dcif1.dmemWEN = 1'b0;
+    dcif1.dmemREN = 1'b0;
 
     if (dcif1.dmemload == dcif0.dmemstore)
     begin
         $display("Accurately read from Core 0");
     end
+
+    //TESTCASE 2: CORE 0 Write TO 0x30 again - send CORE 1 to Inavlid
+    testcase++;
+    testdesc = "CORE 1 WRITE TO 0x30 - INVALIDATE CORE 1";
+    testcases(testcase, testdesc);
+
+    reset_inputs;
+
+    dcif0.dmemWEN = 1'b1;
+    dcif0.dmemREN = 1'b0;
+    dcif0.dmemaddr = {26'h3, 3'b000, 1'b0, 2'h0};
+    dcif0.dmemstore = 32'h2222;
+
+
+
+    #(PERIOD)
+    dcif0.dmemWEN = 1'b0;                        //FAILS NEEDS TO INVALIDATE OTHER CORE
+    dcif0.dmemREN = 1'b0;
+
+    #(PERIOD)
+    dcif0.dmemWEN = 1'b0;                           //to fix lru until test case fixed
+    dcif0.dmemREN = 1'b1;
+    dcif0.dmemaddr = {26'h3, 3'b011, 1'b0, 2'h0};
+    
+    @(posedge dcif0.dhit)
+
+
+    //TESTCASE 3: BOTH CORES READ MISS AT SAME TIME , ALSO TESTS LRU CORE 1 SHOULD GET BUS FIRST
+    testcase++;
+    testdesc = "BOTH CORES READ MISS AT SAME TIME";
+    testcases(testcase, testdesc);
+
+    reset_inputs;
+
+    dcif0.dmemWEN = 1'b0;
+    dcif0.dmemREN = 1'b1;
+    dcif0.dmemaddr = {26'h0, 3'b001, 1'b0, 2'h0};
+
+
+    dcif1.dmemREN = 1'b1;
+    dcif1.dmemaddr = {26'h0, 3'b001, 1'b0, 2'h0};
+
+    @(posedge dcif1.dhit)
+    dcif1.dmemWEN = 1'b0;
+    dcif1.dmemREN = 1'b0;
+    temp_load = dcif1.dmemload;
+
+
+
+
+
+
+    
+
+    @(posedge dcif0.dhit)                                //both should be in S
+    dcif0.dmemWEN = 1'b0;
+    dcif0.dmemREN = 1'b0;
+
+    if (dcif0.dmemload == temp_load)
+    begin
+        $display("Both Cores Accurately Retreived Data");            
+    end
+
+
+    //TESTCASE 4: BOTH CORES WRITE TO 0x50
+    testcase++;
+    testdesc = "BOTH CORES WRITE TO 0x50";
+    testcases(testcase, testdesc);
+
+    reset_inputs;
+
+    dcif0.dmemWEN = 1'b1;
+    dcif0.dmemREN = 1'b0;
+    dcif0.dmemaddr = {26'h5, 3'b000, 1'b0, 2'h0};
+    dcif0.dmemstore = 32'h4444;
+
+
+    dcif1.dmemWEN = 1'b1;
+    dcif1.dmemREN = 1'b0;
+    dcif1.dmemaddr = {26'h5, 3'b000, 1'b1, 2'h0};
+    dcif1.dmemstore = 32'h4242;
+
+    @(posedge dcif1.dhit)      //core 1 should be in M
+    dcif1.dmemWEN = 1'b0;
+    dcif1.dmemREN = 1'b0;
+   
+    
+    @(posedge dcif0.dhit)                                //core 0 should be in M, core 1 in I
+    dcif0.dmemWEN = 1'b0;
+    dcif0.dmemREN = 1'b0;
+
+
+    //TESTCASE 5: CORE 1 TRIES TO ACCESS CACHE 1 CYCLE AFTER CORE 0
+    testcase++;
+    testdesc = "CORE 1 TRIES TO ACCESS CACHE 1 CYCLE AFTER CORE 0";
+    testcases(testcase, testdesc);
+
+    reset_inputs;
+
+    dcif0.dmemWEN = 1'b1;
+    dcif0.dmemREN = 1'b0;
+    dcif0.dmemaddr = {26'h6, 3'b000, 1'b0, 2'h0};
+    dcif0.dmemstore = 32'h5555;
+
+    #(2*PERIOD)
+    dcif1.dmemWEN = 1'b0;
+    dcif1.dmemREN = 1'b1;
+    dcif1.dmemaddr = {26'h6, 3'b000, 1'b1, 2'h0};
+
+    @(posedge dcif0.dhit)      //core 0 should be in M
+    dcif0.dmemWEN = 1'b0;
+    dcif0.dmemREN = 1'b0;
+   
+    
+    @(posedge dcif1.dhit)                        //core 0 should be in S, core 1 in S
+    dcif1.dmemWEN = 1'b0;
+    dcif1.dmemREN = 1'b0;
+
+    if (dcif1.dmemload == dcif0.dmemstore)
+    begin
+        $display("Accurately read from Core 0");
+    end
+
+
+ 
+
+
+
+
+
+
+
+
+    
 
 
 

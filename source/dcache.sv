@@ -215,11 +215,11 @@ always_comb begin : next_state_logic
                 next_dstore = data_store2[index].data[0];
             end
             else if(index == 3'b111) begin
-                next_state = COUNTER_WRITE;
-                next_dREN  = 1'b0;
-                next_dWEN  = 1'b1;
-                next_daddr = 32'h3100;
-                next_dstore = hit_counter;
+                next_state = DONE;
+           //     next_dREN  = 1'b0;
+           //     next_dWEN  = 1'b1;
+           //     next_daddr = 32'h3100;
+            //    next_dstore = hit_counter;
             end
         end
         STORE1_FLUSH_ONE : begin
@@ -240,11 +240,11 @@ always_comb begin : next_state_logic
                 next_dstore = data_store2[index].data[0];
             end
             else if(cif.dwait == 1'b0 && data_store2[index].dirty == 1'b0 && index == 3'b111) begin
-                next_state = COUNTER_WRITE;
-                next_dREN  = 1'b0;
-                next_dWEN  = 1'b1;
-                next_daddr = 32'h3100;
-                next_dstore = hit_counter;
+                next_state = DONE;
+          //      next_dREN  = 1'b0;
+          //      next_dWEN  = 1'b1;
+          //      next_daddr = 32'h3100;
+          //      next_dstore = hit_counter;
             end
             else if(cif.dwait == 1'b0) begin
                 next_state = DIRTY_CHECK;
