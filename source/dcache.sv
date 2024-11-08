@@ -83,11 +83,11 @@ always_comb begin : next_state_logic
             else if(cif.ccwait == 1'b1) begin
                 next_state = SNOOP;
             end
-            else if(dcif.dmemWEN == 1'b1 && data_store1[cache_addr.idx].tag == cache_addr.tag && data_store1[cache_addr.idx].valid == 1'b1) begin
+            else if(dcif.dmemWEN == 1'b1 && data_store1[cache_addr.idx].tag == cache_addr.tag && data_store1[cache_addr.idx].valid == 1'b1 && data_store1[cache_addr.idx].dirty == 1'b0) begin
                 next_state = HIT_INVALIDATE;
                 next_daddr = cache_addr;
             end
-            else if(dcif.dmemWEN == 1'b1 && data_store2[cache_addr.idx].tag == cache_addr.tag && data_store2[cache_addr.idx].valid == 1'b1) begin
+            else if(dcif.dmemWEN == 1'b1 && data_store2[cache_addr.idx].tag == cache_addr.tag && data_store2[cache_addr.idx].valid == 1'b1 && data_store2[cache_addr.idx].dirty == 1'b0) begin
                 next_state = HIT_INVALIDATE;
                 next_daddr = cache_addr;
             end
@@ -352,7 +352,6 @@ always_comb begin : output_logic
                 next_data_store1[cache_addr.idx].data[cache_addr.blkoff] = dcif.dmemstore;
                 next_hit_counter = hit_counter + 1;
                 next_LRU_tracker[cache_addr.idx] = 1'b0;
-                cif.cctrans = 1'b1;
             end
             else if (dcif.dmemWEN == 1'b1 && data_store2[cache_addr.idx].tag == cache_addr.tag && data_store2[cache_addr.idx].valid == 1'b1) begin
                 dcif.dhit = 1'b1;
@@ -362,7 +361,6 @@ always_comb begin : output_logic
                 next_data_store2[cache_addr.idx].data[cache_addr.blkoff] = dcif.dmemstore;
                 next_hit_counter = hit_counter + 1;
                 next_LRU_tracker[cache_addr.idx] = 1'b1;
-                cif.cctrans = 1'b1;
             end
             else if(dcif.dmemREN == 1'b1 || dcif.dmemWEN == 1'b1) begin
                 miss = 1'b1;
