@@ -1,23 +1,18 @@
 #----------------------------------------------------------
 # RISC-V Assembly
 #----------------------------------------------------------
-# registers a0-1,v0,t0
-# a0 = a
-# a1 = b
-# v0 = result
+# a2 = a
+# a3 = b
+# a0 = result
 
-#-max (a0=a,a1=b) returns v0=max(a,b)--------------
+#-max (a2=a,a3=b) returns a0=max(a,b)--------------
 max:
   push  $1
-   push  $12
-   push  $13
-   or    $10, $0, $12
-   slt   $5, $12, $13
-   beq   $5, $0, maxrtn
-   or    $10, $0, $13
+   or    $a0, $0, $a2
+   slt   $t0, $a2, $a3
+   beq   $t0, $0, maxrtn
+   or    $a0, $0, $a3
  maxrtn:
-  pop   $13
-   pop   $12
    pop   $1
    jr    $1
  #--------------------------------------------------
@@ -25,15 +20,11 @@ max:
 #-min (a0=a,a1=b) returns v0=min(a,b)--------------
 min:
   push  $1
-   push  $12
-   push  $13
-   or    $10, $0, $12
-   slt   $5, $13, $12
-   beq   $5, $0, minrtn
-   or    $10, $0, $13
+   or    $a0, $0, $a2
+   slt   $t0, $a3, $a2
+   beq   $t0, $0, minrtn
+   or    $a0, $0, $a3
  minrtn:
-  pop   $13
-   pop   $12
    pop   $1
    jr    $1
  #--------------------------------------------------
