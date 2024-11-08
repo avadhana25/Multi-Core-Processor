@@ -16,7 +16,8 @@ org 0x0200
   addi $5, $0, 0x8448
   nop
   nop
-  sw $5, 8($4)           #block at address 0xF000 goes to Invalid, block at 0xF008 goes to Modified from Invalid
+  sw $5, 4($4)           #block at address 0xF000 goes to Invalid, block at 0xF008 goes to Modified from Invalid
+  nop
   halt
 
 org   0xF000

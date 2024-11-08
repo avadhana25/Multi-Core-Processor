@@ -312,7 +312,7 @@ program test(input logic CLK);
     dcif0.dmemREN = 1'b0;
 
 
-    //TESTCASE 5: CORE 1 TRIES TO ACCESS CACHE 1 CYCLE AFTER CORE 0
+    //TESTCASE 5: CORE 1 TRIES TO ACCESS CACHE 1 CYCLE AFTER CORE 0               //HAS THE REPLACE DIRTY BACK ISSUE...CORE 1 TAKES OVER POST CORE 0 STORE BACK AND REAL WRITE
     testcase++;
     testdesc = "CORE 1 TRIES TO ACCESS CACHE 1 CYCLE AFTER CORE 0";
     testcases(testcase, testdesc);

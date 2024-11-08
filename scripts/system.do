@@ -175,6 +175,14 @@ add wave -noupdate /system_tb/DUT/CPU/DP0/REGFILE/rfif/wdat
 add wave -noupdate /system_tb/DUT/CPU/DP0/REGFILE/rfif/rdat1
 add wave -noupdate /system_tb/DUT/CPU/DP0/REGFILE/rfif/rdat2
 add wave -noupdate -divider DCACHE
+add wave -noupdate /system_tb/DUT/CPU/CM0/DCACHE/data_store1
+add wave -noupdate /system_tb/DUT/CPU/CM0/DCACHE/data_store2
+add wave -noupdate /system_tb/DUT/CPU/CM0/DCACHE/cache_addr
+add wave -noupdate /system_tb/DUT/CPU/CM0/DCACHE/snoop_addr
+add wave -noupdate /system_tb/DUT/CPU/CM0/DCACHE/LRU_tracker
+add wave -noupdate /system_tb/DUT/CPU/CM0/DCACHE/miss
+add wave -noupdate /system_tb/DUT/CPU/CM0/DCACHE/state
+add wave -noupdate -divider {CORE CHANGE}
 add wave -noupdate -divider fetch_decode
 add wave -noupdate /system_tb/DUT/CPU/DP1/IFID/fdif/instr_i
 add wave -noupdate /system_tb/DUT/CPU/DP1/IFID/fdif/npc_i
@@ -347,8 +355,16 @@ add wave -noupdate /system_tb/DUT/CPU/DP1/REGFILE/rfif/rsel2
 add wave -noupdate /system_tb/DUT/CPU/DP1/REGFILE/rfif/wdat
 add wave -noupdate /system_tb/DUT/CPU/DP1/REGFILE/rfif/rdat1
 add wave -noupdate /system_tb/DUT/CPU/DP1/REGFILE/rfif/rdat2
+add wave -noupdate -divider DCACHE
+add wave -noupdate /system_tb/DUT/CPU/CM1/DCACHE/data_store1
+add wave -noupdate /system_tb/DUT/CPU/CM1/DCACHE/data_store2
+add wave -noupdate /system_tb/DUT/CPU/CM1/DCACHE/cache_addr
+add wave -noupdate /system_tb/DUT/CPU/CM1/DCACHE/snoop_addr
+add wave -noupdate /system_tb/DUT/CPU/CM1/DCACHE/LRU_tracker
+add wave -noupdate /system_tb/DUT/CPU/CM1/DCACHE/miss
+add wave -noupdate /system_tb/DUT/CPU/CM1/DCACHE/state
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {421329 ps} 0}
+WaveRestoreCursors {{Cursor 1} {149218 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 150
 configure wave -valuecolwidth 100
@@ -364,4 +380,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {0 ps} {571 ns}
+WaveRestoreZoom {0 ps} {233929 ps}
