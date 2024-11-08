@@ -85,9 +85,11 @@ always_comb begin : next_state_logic
             end
             else if(dcif.dmemWEN == 1'b1 && data_store1[cache_addr.idx].tag == cache_addr.tag && data_store1[cache_addr.idx].valid == 1'b1) begin
                 next_state = HIT_INVALIDATE;
+                next_daddr = cache_addr;
             end
             else if(dcif.dmemWEN == 1'b1 && data_store2[cache_addr.idx].tag == cache_addr.tag && data_store2[cache_addr.idx].valid == 1'b1) begin
                 next_state = HIT_INVALIDATE;
+                next_daddr = cache_addr;
             end
             else if(miss == 1'b1 && LRU_tracker[cache_addr.idx] == 1'b1 && data_store1[cache_addr.idx].dirty == 1'b1) begin
                 next_state = STORE1_STORE_ONE;
