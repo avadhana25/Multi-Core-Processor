@@ -12,7 +12,7 @@ module dcache
     caches_if.dcache cif
 );
 
-typedef enum logic [3:0] {IDLE, SNOOP, CACHE_1, CACHE_2, STORE1_STORE_ONE, STORE1_STORE_TWO, STORE2_STORE_ONE, STORE2_STORE_TWO, MEMORY_ONE, MEMORY_TWO, DIRTY_CHECK, STORE1_FLUSH_ONE, STORE1_FLUSH_TWO, STORE2_FLUSH_ONE, STORE2_FLUSH_TWO, DONE} state_t;
+typedef enum logic [4:0] {IDLE, HIT_INVALIDATE, SNOOP, CACHE_1, CACHE_2, STORE1_STORE_ONE, STORE1_STORE_TWO, STORE2_STORE_ONE, STORE2_STORE_TWO, MEMORY_ONE, MEMORY_TWO, DIRTY_CHECK, STORE1_FLUSH_ONE, STORE1_FLUSH_TWO, STORE2_FLUSH_ONE, STORE2_FLUSH_TWO, DONE} state_t;
 
 dcache_frame [7:0] data_store1;
 dcache_frame [7:0] data_store2;
@@ -83,6 +83,12 @@ always_comb begin : next_state_logic
             else if(cif.ccwait == 1'b1) begin
                 next_state = SNOOP;
             end
+            else if(dcif.dmemWEN == 1'b1 && data_store1[cache_addr.idx].tag == cache_addr.tag && data_store1[cache_addr.idx].valid == 1'b1) begin
+                next_state = HIT_INVALIDATE;
+            end
+            else if(dcif.dmemWEN == 1'b1 && data_store2[cache_addr.idx].tag == cache_addr.tag && data_store2[cache_addr.idx].valid == 1'b1) begin
+                next_state = HIT_INVALIDATE;
+            end
             else if(miss == 1'b1 && LRU_tracker[cache_addr.idx] == 1'b1 && data_store1[cache_addr.idx].dirty == 1'b1) begin
                 next_state = STORE1_STORE_ONE;
                 next_dREN  = 1'b0;
@@ -103,6 +109,11 @@ always_comb begin : next_state_logic
                 next_dWEN  = 1'b0;
                 next_daddr = cache_addr.blkoff == 1'b0 ? dcif.dmemaddr : dcif.dmemaddr - 4;
                 next_dstore = 0;
+            end
+        end
+        HIT_INVALIDATE : begin
+            if(cif.dwait == 1'b0) begin
+                next_state = IDLE;
             end
         end
         SNOOP : begin
@@ -356,6 +367,9 @@ always_comb begin : output_logic
                 next_hit_counter = hit_counter - 1;
             end
         end
+        HIT_INVALIDATE : begin
+            cif.cctrans = 1'b1;
+        end
         SNOOP : begin
             if(snoop_addr.tag == data_store1[snoop_addr.idx].tag && data_store1[snoop_addr.idx].valid == 1'b1) begin
                 cif.cctrans = 1'b1;
@@ -395,6 +409,14 @@ always_comb begin : output_logic
         STORE2_STORE_TWO : begin
         end
         MEMORY_ONE : begin
+            if(cif.ccinv == 1'b1) begin
+                if(snoop_addr.tag == data_store1[snoop_addr.idx].tag) begin
+                    next_data_store1[snoop_addr.idx].valid = 1'b0;
+                end
+                else if(snoop_addr.tag == data_store2[snoop_addr.idx].tag) begin
+                    next_data_store2[snoop_addr.idx].valid = 1'b0;
+                end
+            end
             if(cif.dwait == 1'b0 && LRU_tracker[cache_addr.idx] == 1'b1) begin
                 next_data_store1[cache_addr.idx].valid = 1'b0;
                 next_data_store1[cache_addr.idx].dirty = 1'b0;

@@ -301,12 +301,14 @@ module memory_control (
         ccif.ccinv[~cpu_lru] = 1'b1;
         ccif.ccsnoopaddr[~cpu_lru] = ccif.daddr[cpu_lru];
         next_cpu_lru = ~cpu_lru;
+        ccif.dwait[cpu_lru] = 1'b0;
       end
       else if (ccif.cctrans[~cpu_lru])
       begin
         ccif.ccinv[cpu_lru] = 1'b1;
         ccif.ccsnoopaddr[cpu_lru] = ccif.daddr[~cpu_lru];
         next_cpu_lru = cpu_lru;
+        ccif.dwait[~cpu_lru] = 1'b0;
       end
     end
 
