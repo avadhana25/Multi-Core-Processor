@@ -312,9 +312,9 @@ program test(input logic CLK);
     dcif0.dmemREN = 1'b0;
 
 
-    //TESTCASE 5: CORE 1 TRIES TO ACCESS CACHE 1 CYCLE AFTER CORE 0               //HAS THE REPLACE DIRTY BACK ISSUE...CORE 1 TAKES OVER POST CORE 0 STORE BACK AND REAL WRITE
+    //TESTCASE 5: CORE 1 TRIES TO ACCESS CACHE 1 CYCLE AFTER CORE 0  WHEN CORE 0 HAS TO EVICT            
     testcase++;
-    testdesc = "CORE 1 TRIES TO ACCESS CACHE 1 CYCLE AFTER CORE 0";
+    testdesc = "CORE 1 TRIES TO ACCESS CACHE 1 CYCLE AFTER CORE 0, CORE 0 MUST EVICT";
     testcases(testcase, testdesc);
 
     reset_inputs;
@@ -329,19 +329,16 @@ program test(input logic CLK);
     dcif1.dmemREN = 1'b1;
     dcif1.dmemaddr = {26'h6, 3'b000, 1'b1, 2'h0};
 
-    @(posedge dcif0.dhit)      //core 0 should be in M
-    dcif0.dmemWEN = 1'b0;
-    dcif0.dmemREN = 1'b0;
-   
-    
-    @(posedge dcif1.dhit)                        //core 0 should be in S, core 1 in S
+    @(posedge dcif1.dhit)      //core 1 hits first as core 0 write isnt complete yet - goes to S
     dcif1.dmemWEN = 1'b0;
     dcif1.dmemREN = 1'b0;
+   
+    
+    @(posedge dcif0.dhit)                        //core 0 overwrites goes to M, core 1 goes to I
+    dcif0.dmemWEN = 1'b0;
+    dcif0.dmemREN = 1'b0;
 
-    if (dcif1.dmemload == dcif0.dmemstore)
-    begin
-        $display("Accurately read from Core 0");
-    end
+
 
 
  

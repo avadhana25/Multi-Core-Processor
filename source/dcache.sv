@@ -320,8 +320,8 @@ always_comb begin : output_logic
         IDLE : begin
             if(dcif.halt == 1'b1) begin
                 for(int i = 0; i < 8; i++) begin
-                    next_data_store1[i].valid = 1'b0;
-                    next_data_store2[i].valid = 1'b0;
+             //       next_data_store1[i].valid = 1'b0;
+             //       next_data_store2[i].valid = 1'b0;
                 end
             end
             else if(cif.ccinv == 1'b1) begin
