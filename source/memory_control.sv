@@ -66,6 +66,9 @@ module memory_control (
       begin
         next_state = STORE_1;
       end
+      else if(ccif.cctrans[0] || ccif.cctrans[1]) begin
+        next_state = ARBITRATE;
+      end
       else if (ccif.dREN[0] || ccif.dREN[1])          //msi transition  /changed to dREN from cctrans
       begin
         next_state = ARBITRATE;
@@ -200,7 +203,7 @@ module memory_control (
 
     IDLE:
     begin
-      //nothing
+      
     end
 
     INSTRUCTION:
@@ -293,31 +296,29 @@ module memory_control (
         ccif.ccwait[cpu_lru] = 1'b1;
         next_cpu_lru = cpu_lru;
       end
-      else if (ccif.ccwrite[cpu_lru])            //when both are in s and there is a write, its going to hit and transition one to M. This will bring bus to arbirtrate but there wont
+      else if (ccif.cctrans[cpu_lru])            //when both are in s and there is a write, its going to hit and transition one to M. This will bring bus to arbirtrate but there wont
       begin                                      //be a dren bc its a hit and it wont get to the state to invalidate other cache. do that here in the else case of arbitrate.
         ccif.ccinv[~cpu_lru] = 1'b1;
         ccif.ccsnoopaddr[~cpu_lru] = ccif.daddr[cpu_lru];
         next_cpu_lru = ~cpu_lru;
       end
-      else if (ccif.ccwrite[~cpu_lru])
+      else if (ccif.cctrans[~cpu_lru])
       begin
         ccif.ccinv[cpu_lru] = 1'b1;
         ccif.ccsnoopaddr[cpu_lru] = ccif.daddr[~cpu_lru];
         next_cpu_lru = cpu_lru;
       end
-
-
     end
 
     SNOOP:
     begin
-      ccif.ccwait[snoopy] = 1'b1; 
+      //ccif.ccwait[snoopy] = 1'b1; 
       ccif.ccsnoopaddr[snoopy] = ccif.daddr[snooper];          //check address in other cpu
     end
 
     CACHE_1:
     begin
-      ccif.ccwait[snoopy] = 1'b1;
+      //ccif.ccwait[snoopy] = 1'b1;
       ccif.ccsnoopaddr[snoopy] = ccif.daddr[snooper];
       ccif.dload[snooper] = ccif.dstore[snoopy];         //cpu snooped into sends data to requestor
       ccif.ccinv[snoopy] = ccif.ccwrite[snooper];        //if snooper is writing, then invalidate senders block
@@ -335,7 +336,7 @@ module memory_control (
 
     CACHE_2:
     begin
-      ccif.ccwait[snoopy] = 1'b1;
+      //ccif.ccwait[snoopy] = 1'b1;
       ccif.ccsnoopaddr[snoopy] = ccif.daddr[snooper];
       ccif.dload[snooper] = ccif.dstore[snoopy];         //cpu snooped into sends data to requestor
       ccif.ccinv[snoopy] = ccif.ccwrite[snooper];        //if snooper is writing, then invalidate senders block
@@ -353,7 +354,7 @@ module memory_control (
 
     LOAD_1:
     begin
-      ccif.ccwait[snoopy] = 1'b1;
+      //ccif.ccwait[snoopy] = 1'b1;
       ccif.ramREN = 1'b1;
       ccif.ramaddr = ccif.daddr[snooper];
       ccif.dload[snooper] = ccif.ramload;
@@ -365,7 +366,7 @@ module memory_control (
 
     LOAD_2:
     begin
-      ccif.ccwait[snoopy] = 1'b1;
+      //ccif.ccwait[snoopy] = 1'b1;
       ccif.ramREN = 1'b1;
       ccif.ramaddr = ccif.daddr[snooper];
       ccif.dload[snooper] = ccif.ramload;

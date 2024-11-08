@@ -71,7 +71,6 @@ always_comb begin : next_state_logic
     next_dWEN = cif.dWEN;
     next_daddr = cif.daddr;
     next_dstore = cif.dstore;
-    cif.cctrans = 1'b0;
     casez(state) 
         IDLE : begin
             if(dcif.halt == 1'b1) begin
@@ -109,12 +108,10 @@ always_comb begin : next_state_logic
         SNOOP : begin
             if(snoop_addr.tag == data_store1[snoop_addr.idx].tag && data_store1[snoop_addr.idx].valid == 1'b1) begin
                 next_state = CACHE_1;
-                cif.cctrans = 1'b1;
                 next_dstore = data_store1[snoop_addr.idx].data[0];
             end
             else if(snoop_addr.tag == data_store2[snoop_addr.idx].tag && data_store2[snoop_addr.idx].valid == 1'b1) begin
                 next_state = CACHE_1;
-                cif.cctrans = 1'b1;
                 next_dstore = data_store2[snoop_addr.idx].data[0];
             end
             else begin
@@ -304,6 +301,7 @@ always_comb begin : output_logic
     next_hit_counter = hit_counter;
     next_real_hit = 1'b1;
     next_index = index;
+    cif.cctrans = 1'b0;
 
     casez(state) 
         IDLE : begin
@@ -341,6 +339,7 @@ always_comb begin : output_logic
                 next_data_store1[cache_addr.idx].data[cache_addr.blkoff] = dcif.dmemstore;
                 next_hit_counter = hit_counter + 1;
                 next_LRU_tracker[cache_addr.idx] = 1'b0;
+                cif.cctrans = 1'b1;
             end
             else if (dcif.dmemWEN == 1'b1 && data_store2[cache_addr.idx].tag == cache_addr.tag && data_store2[cache_addr.idx].valid == 1'b1) begin
                 dcif.dhit = 1'b1;
@@ -350,6 +349,7 @@ always_comb begin : output_logic
                 next_data_store2[cache_addr.idx].data[cache_addr.blkoff] = dcif.dmemstore;
                 next_hit_counter = hit_counter + 1;
                 next_LRU_tracker[cache_addr.idx] = 1'b1;
+                cif.cctrans = 1'b1;
             end
             else if(dcif.dmemREN == 1'b1 || dcif.dmemWEN == 1'b1) begin
                 miss = 1'b1;
@@ -357,7 +357,12 @@ always_comb begin : output_logic
             end
         end
         SNOOP : begin
-
+            if(snoop_addr.tag == data_store1[snoop_addr.idx].tag && data_store1[snoop_addr.idx].valid == 1'b1) begin
+                cif.cctrans = 1'b1;
+            end
+            else if(snoop_addr.tag == data_store2[snoop_addr.idx].tag && data_store2[snoop_addr.idx].valid == 1'b1) begin
+                cif.cctrans = 1'b1;
+            end
         end
         CACHE_1 : begin
             if(snoop_addr.tag == data_store1[snoop_addr.idx].tag && data_store1[snoop_addr.idx].valid == 1'b1) begin
@@ -380,10 +385,12 @@ always_comb begin : output_logic
      //       end
         end
         STORE1_STORE_ONE : begin
+            next_data_store1[cache_addr.idx].dirty = 1'b0;
         end
         STORE1_STORE_TWO : begin
         end
         STORE2_STORE_ONE : begin
+            next_data_store2[cache_addr.idx].dirty = 1'b0;
         end
         STORE2_STORE_TWO : begin
         end
