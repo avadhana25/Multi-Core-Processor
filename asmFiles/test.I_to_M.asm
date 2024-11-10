@@ -2,7 +2,7 @@
 # RISC-V Assembly
 #----------------------------------------------------------
 #--------------------------------------
-# Test Block transition from Invalid to Modified and Modified to Invalid
+# Test Block transition from Invalid to Modified and Modified to Invalid - works
 #--------------------------------------
 org 0x0000
   addi $4, $0, 0xF000     #memory
@@ -16,7 +16,7 @@ org 0x0200
   addi $5, $0, 0x8448
   nop
   nop
-  sw $5, 4($4)           #block at address 0xF000 goes to Invalid, block at 0xF008 goes to Modified from Invalid
+  sw $5, 4($4)           #block at address 0xF000 goes to Invalid, block at 0xF004 goes to Modified from Invalid
   nop
   halt
 

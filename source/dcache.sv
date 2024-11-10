@@ -379,6 +379,7 @@ always_comb begin : output_logic
             end
         end
         CACHE_1 : begin
+            /*
             if(snoop_addr.tag == data_store1[snoop_addr.idx].tag && data_store1[snoop_addr.idx].valid == 1'b1) begin
                 next_data_store1[snoop_addr.idx].valid = ~cif.ccinv;
                 next_data_store1[snoop_addr.idx].dirty = 1'b0;
@@ -389,26 +390,33 @@ always_comb begin : output_logic
                 next_data_store2[snoop_addr.idx].dirty = 1'b0;
              //   cif.dstore = data_store2[snoop_addr.idx].data[0];
             end
+            */
         end
         CACHE_2 : begin
-    //        if(snoop_addr.tag == data_store1[snoop_addr.idx].tag && data_store1[snoop_addr.idx].valid == 1'b1) begin
-    //            cif.dstore = data_store1[snoop_addr.idx].data[1];
-     //       end
-    //        else if(snoop_addr.tag == data_store2[snoop_addr.idx].tag && data_store2[snoop_addr.idx].valid == 1'b1) begin
-     //           cif.dstore = data_store2[snoop_addr.idx].data[1];
-     //       end
+            if(snoop_addr.tag == data_store1[snoop_addr.idx].tag && data_store1[snoop_addr.idx].valid == 1'b1 && cif.dwait == 1'b0) begin
+                next_data_store1[snoop_addr.idx].valid = ~cif.ccinv;
+                next_data_store1[snoop_addr.idx].dirty = 1'b0;
+            end
+            else if(snoop_addr.tag == data_store2[snoop_addr.idx].tag && data_store2[snoop_addr.idx].valid == 1'b1 && cif.dwait == 1'b0) begin
+                next_data_store2[snoop_addr.idx].valid = ~cif.ccinv;
+                next_data_store2[snoop_addr.idx].dirty = 1'b0;
+            end
+
         end
         STORE1_STORE_ONE : begin
             next_data_store1[cache_addr.idx].dirty = 1'b0;
         end
         STORE1_STORE_TWO : begin
+            next_data_store1[cache_addr.idx].valid = 1'b0;
         end
         STORE2_STORE_ONE : begin
             next_data_store2[cache_addr.idx].dirty = 1'b0;
         end
         STORE2_STORE_TWO : begin
+            next_data_store2[cache_addr.idx].valid = 1'b0;
         end
         MEMORY_ONE : begin
+            
             if(cif.ccinv == 1'b1) begin
                 if(snoop_addr.tag == data_store1[snoop_addr.idx].tag) begin
                     next_data_store1[snoop_addr.idx].valid = 1'b0;
@@ -417,6 +425,7 @@ always_comb begin : output_logic
                     next_data_store2[snoop_addr.idx].valid = 1'b0;
                 end
             end
+            
             if(cif.dwait == 1'b0 && LRU_tracker[cache_addr.idx] == 1'b1) begin
                 next_data_store1[cache_addr.idx].valid = 1'b0;
                 next_data_store1[cache_addr.idx].dirty = 1'b0;
@@ -432,6 +441,7 @@ always_comb begin : output_logic
         end
         MEMORY_TWO : begin
             next_real_hit = 1'b0;
+            
             if(cif.dwait == 1'b0 && dcif.dmemREN == 1'b1) begin
                 if(LRU_tracker[cache_addr.idx] == 1'b1) begin
                     next_data_store1[cache_addr.idx].valid = 1'b1;

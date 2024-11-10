@@ -2,7 +2,7 @@
 # RISC-V Assembly
 #----------------------------------------------------------
 #--------------------------------------
-# Test Block transition from Invalid to Shared and Modified to Shared
+# Test Block transition from Invalid to Shared and Modified to Shared - works
 #--------------------------------------
 org 0x0000
   addi $4, $0, 0xF000     #memory

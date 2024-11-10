@@ -223,7 +223,7 @@ program test(input logic CLK);
 
     //TESTCASE 2: CORE 0 Write TO 0x30 again - send CORE 1 to Inavlid
     testcase++;
-    testdesc = "CORE 1 WRITE TO 0x30 - INVALIDATE CORE 1";
+    testdesc = "CORE 0 WRITE TO 0x30 - INVALIDATE CORE 1";
     testcases(testcase, testdesc);
 
     reset_inputs;
@@ -235,16 +235,11 @@ program test(input logic CLK);
 
 
 
-    #(PERIOD)
-    dcif0.dmemWEN = 1'b0;                        //FAILS NEEDS TO INVALIDATE OTHER CORE
-    dcif0.dmemREN = 1'b0;
-
-    #(PERIOD)
-    dcif0.dmemWEN = 1'b0;                           //to fix lru until test case fixed
-    dcif0.dmemREN = 1'b1;
-    dcif0.dmemaddr = {26'h3, 3'b011, 1'b0, 2'h0};
-    
     @(posedge dcif0.dhit)
+    dcif0.dmemWEN = 1'b0;                        
+    dcif0.dmemREN = 1'b0;
+    
+    
 
 
     //TESTCASE 3: BOTH CORES READ MISS AT SAME TIME , ALSO TESTS LRU CORE 1 SHOULD GET BUS FIRST
@@ -337,6 +332,69 @@ program test(input logic CLK);
     @(posedge dcif0.dhit)                        //core 0 overwrites goes to M, core 1 goes to I
     dcif0.dmemWEN = 1'b0;
     dcif0.dmemREN = 1'b0;
+
+
+    //TESTCASE 6: BOTH CORES WRITE TO SAME BLOCK BUT DIFFERENT WORD
+    testcase++;
+    testdesc = "BOTH CORES WRITE TO SAME BLOCK BUT DIFFERENT WORD";
+    testcases(testcase, testdesc);
+
+    reset_inputs;
+
+    dcif0.dmemWEN = 1'b1;
+    dcif0.dmemREN = 1'b0;
+    dcif0.dmemaddr = {26'h6, 3'b010, 1'b0, 2'h0};
+    dcif0.dmemstore = 32'h5678;
+
+    dcif1.dmemWEN = 1'b1;
+    dcif1.dmemREN = 1'b0;
+    dcif1.dmemaddr = {26'h6, 3'b010, 1'b1, 2'h0};
+    dcif1.dmemstore = 32'h1234;
+
+    @(posedge dcif1.dhit)      //core 1 hits first (lru) goes to M
+    dcif1.dmemWEN = 1'b0;
+    dcif1.dmemREN = 1'b0;
+   
+    
+    @(posedge dcif0.dhit)                        //core 0 overwrites goes to M, core 1 goes to I, core 0 gets both words
+    dcif0.dmemWEN = 1'b0;
+    dcif0.dmemREN = 1'b0;
+
+
+    //TESTCASE 8: CORE 0 FLUSHES, CORE 1 ACCESSES M BLCK FROM CORE 0 WHILE CORE 0 FLUSHING
+    testcase++;
+    testdesc = "ACCESS DURING FLUSH";
+    testcases(testcase, testdesc);
+
+    reset_inputs;
+
+    dcif0.dmemWEN = 1'b1;
+    dcif0.dmemREN = 1'b0;
+    dcif0.dmemaddr = {26'h6, 3'b011, 1'b0, 2'h0};
+    dcif0.dmemstore = 32'h8888;
+
+
+    @(posedge dcif0.dhit)      //core 1 hits first (lru) goes to M
+    dcif0.dmemWEN = 1'b0;
+    dcif0.dmemREN = 1'b0;
+    dcif0.halt = 1'b1;
+
+    #(PERIOD*4)
+    dcif1.dmemWEN = 1'b0;
+    dcif1.dmemREN = 1'b1;
+    dcif1.dmemaddr = {26'h6, 3'b011, 1'b0, 2'h0};
+   
+    
+    @(posedge dcif1.dhit)                        
+    dcif1.dmemWEN = 1'b0;
+    dcif1.dmemREN = 1'b0;
+    if (dcif1.dmemload == dcif0.dmemstore)
+    begin
+        $display("Word accurately retrieved mid flush");            
+    end
+
+
+    
 
 
 

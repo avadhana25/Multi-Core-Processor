@@ -2,7 +2,7 @@
 # RISC-V Assembly
 #----------------------------------------------------------
 #--------------------------------------
-# Test Block transition from Modified to Modified
+# Test Block transition from Modified to Modified - works
 #--------------------------------------
 org 0x0000
   addi $4, $0, 0xF000     #memory
