@@ -208,10 +208,6 @@ program test(input logic CLK);
 
 
 
-
-
-    
-
     @(posedge dcif1.dhit)                                //core 0 should start in M and then core 0 and core 1 should both be in S
     dcif1.dmemWEN = 1'b0;
     dcif1.dmemREN = 1'b0;
@@ -235,9 +231,10 @@ program test(input logic CLK);
 
 
 
-    @(posedge dcif0.dhit)
+    #(PERIOD * 5)
     dcif0.dmemWEN = 1'b0;                        
     dcif0.dmemREN = 1'b0;
+    
     
     
 

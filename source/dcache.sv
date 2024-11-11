@@ -325,11 +325,11 @@ always_comb begin : output_logic
                 end
             end
             else if(cif.ccinv == 1'b1) begin
-                if(snoop_addr.tag == data_store1[snoop_addr.idx].tag) begin
-                    next_data_store1[snoop_addr.idx].valid = 1'b0;
+                if(snoop_addr.tag == data_store1[snoop_addr.idx].tag && data_store1[snoop_addr.idx].valid == 1'b1) begin
+                    next_data_store1[snoop_addr.idx].valid = 1'b0;         
                 end
-                else if(snoop_addr.tag == data_store2[snoop_addr.idx].tag) begin
-                    next_data_store2[snoop_addr.idx].valid = 1'b0;
+                else if(snoop_addr.tag == data_store2[snoop_addr.idx].tag && data_store2[snoop_addr.idx].valid == 1'b1) begin
+                    next_data_store2[snoop_addr.idx].valid = 1'b0;     
                 end
             end
             else if(dcif.dmemREN == 1'b1 && data_store1[cache_addr.idx].tag == cache_addr.tag && data_store1[cache_addr.idx].valid == 1'b1) begin

@@ -239,7 +239,7 @@ module memory_control (
         ccif.ramWEN = ccif.dWEN[cpu_lru];
         ccif.ramaddr = ccif.daddr[cpu_lru];
         ccif.ramstore = ccif.dstore[cpu_lru];
-        ccif.ccwait[~cpu_lru] = 1'b1;
+  //      ccif.ccwait[~cpu_lru] = 1'b1;
         //thought about stalling other cpu here but dont think its necessary bc it has to wait for this to complete anyways
         if (ccif.ramstate == ACCESS)
         begin
@@ -251,7 +251,7 @@ module memory_control (
         ccif.ramWEN = ccif.dWEN[~cpu_lru];
         ccif.ramaddr = ccif.daddr[~cpu_lru];
         ccif.ramstore = ccif.dstore[~cpu_lru];
-        ccif.ccwait[cpu_lru] = 1'b1;
+   //     ccif.ccwait[cpu_lru] = 1'b1;
         if (ccif.ramstate == ACCESS)
         begin
           ccif.dwait[~cpu_lru] = 1'b0;
@@ -266,7 +266,7 @@ module memory_control (
         ccif.ramWEN = ccif.dWEN[cpu_lru];
         ccif.ramaddr = ccif.daddr[cpu_lru];
         ccif.ramstore = ccif.dstore[cpu_lru];
-        ccif.ccwait[~cpu_lru] = 1'b1;
+    //    ccif.ccwait[~cpu_lru] = 1'b1;
         //thought about stalling other cpu here but dont think its necessary bc it has to wait for this to complete anyways
         if (ccif.ramstate == ACCESS)
         begin
@@ -279,7 +279,7 @@ module memory_control (
         ccif.ramWEN = ccif.dWEN[~cpu_lru];
         ccif.ramaddr = ccif.daddr[~cpu_lru];
         ccif.ramstore = ccif.dstore[~cpu_lru];
-        ccif.ccwait[cpu_lru] = 1'b1;
+   //     ccif.ccwait[cpu_lru] = 1'b1;
         if (ccif.ramstate == ACCESS)
         begin
           ccif.dwait[~cpu_lru] = 1'b0;

@@ -2,7 +2,7 @@
 # RISC-V Assembly
 #----------------------------------------------------------
 #--------------------------------------
-# Test Block transition from Shared to Modified and Shared to Invalid
+# Test Block transition from Shared to Modified and Shared to Invalid - works
 #--------------------------------------
   org 0x0000
   addi $4, $0, 0xF000     #memory
@@ -15,6 +15,8 @@ org 0x0200
   addi $4, $0, 0xF000
   nop
   lw $5, 0($4)           #block at address 0x00F0 should now be in shared
+  nop
+  nop
   halt
 
 org   0xF000
