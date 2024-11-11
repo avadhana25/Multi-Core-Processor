@@ -2,45 +2,39 @@
 # RISC-V Assembly
 #----------------------------------------------------------
 
-# registers a0-1,v0-1,t0
-# a0 = Numerator
-# a1 = Denominator
-# v0 = Quotient
-# v1 = Remainder
+# a2 = Numerator
+# a3 = Denominator
+# a0 = Quotient
+# a1 = Remainder
 
-
-#-divide(N=$a0,D=$a1) returns (Q=$v0,R=$v1)--------
+#-divide(N=$a2,D=$a3) returns (Q=$a0,R=$a1)--------
 divide:               # setup frame
   push  $1           # saved return address
-   push  $12           # saved register
-   push  $13           # saved register
-   or    $10, $0, $0   # Quotient v0=0
-   or    $11, $0, $12  # Remainder t2=N=a0
-   beq   $0, $13, divrtn # test zero D
-   slt   $5, $13, $0  # test neg D
-   bne   $5, $0, divdneg
-   slt   $5, $12, $0  # test neg N
-   bne   $5, $0, divnneg
+   or    $a0, $0, $0   # Quotient v0=0
+   or    $a1, $0, $a2  # Remainder t2=N=a0
+   beq   $0, $a3, divrtn # test zero D
+   slt   $t0, $a3, $0  # test neg D
+   bne   $t0, $0, divdneg
+   slt   $t0, $a2, $0  # test neg N
+   bne   $t0, $0, divnneg
  divloop:
-  slt   $5, $11, $13 # while R >= D
-   bne   $5, $0, divrtn
-   addi $10, $10, 1   # Q = Q + 1
-   sub  $11, $11, $13 # R = R - D
+  slt   $t0, $a1, $a3 # while R >= D
+   bne   $t0, $0, divrtn
+   addi $a0, $a0, 1   # Q = Q + 1
+   sub  $a1, $a1, $a3 # R = R - D
    j     divloop
 divnneg:
-  sub  $12, $0, $12  # negate N
+  sub  $a2, $0, $a2  # negate N
    jal   divide        # call divide
-  sub  $10, $0, $10  # negate Q
-   beq   $11, $0, divrtn
-   addi $10, $10, -1  # return -Q-1
+  sub  $a0, $0, $a0  # negate Q
+   beq   $a1, $0, divrtn
+   addi $a0, $a0, -1  # return -Q-1
    j     divrtn
 divdneg:
-  sub  $12, $0, $13  # negate D
+  sub  $a2, $0, $a3  # negate D
    jal   divide        # call divide
-  sub  $10, $0, $10  # negate Q
+  sub  $a0, $0, $a0  # negate Q
  divrtn:
-  pop $13
-   pop $12
    pop $1
    jr  $1
 #-divide--------------------------------------------
