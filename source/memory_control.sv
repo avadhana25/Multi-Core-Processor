@@ -292,11 +292,22 @@ module memory_control (
     begin
       if (ccif.dREN[cpu_lru])
       begin
+        if (ccif.cctrans[~cpu_lru])
+          begin
+            ccif.ccinv[cpu_lru] = 1'b1;
+            ccif.ccsnoopaddr[cpu_lru] = ccif.daddr[~cpu_lru];
+          end
         ccif.ccwait[~cpu_lru] = 1'b1;            //snoopy cpu wait to get into coherence states
         next_cpu_lru = ~cpu_lru;
       end
       else if (ccif.dREN[~cpu_lru])
       begin
+
+        if (ccif.cctrans[cpu_lru])            //when both are in s and there is a write, its going to hit and transition one to M. This will bring bus to arbirtrate but there wont
+        begin                                      //be a dren bc its a hit and it wont get to the state to invalidate other cache. do that here in the else case of arbitrate.
+          ccif.ccinv[~cpu_lru] = 1'b1;
+          ccif.ccsnoopaddr[~cpu_lru] = ccif.daddr[cpu_lru];
+        end
         ccif.ccwait[cpu_lru] = 1'b1;
         next_cpu_lru = cpu_lru;
       end

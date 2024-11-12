@@ -114,7 +114,11 @@ always_comb begin : next_state_logic
             end
         end
         HIT_INVALIDATE : begin
-            if(cif.dwait == 1'b0) begin
+            if (cif.ccwait == 1'b1)
+            begin
+                next_state = SNOOP;
+            end
+            else if(cif.dwait == 1'b0) begin
                 next_state = IDLE;
             end
         end
