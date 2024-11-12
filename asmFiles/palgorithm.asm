@@ -16,30 +16,34 @@
 	lui  t0, 0xab275
 	ori  t0, t0, 0x7fe #seed generation
 	
-	add  t3, $0, $0 #total random numbers generated
-	addi t4, $0, 256 #max number to generate
+	add  t6, $0, $0 #total random numbers generated
+	addi a1, $0, 256 #max number to generate
 				
-	loop:     bne  t3, zero, store_a0 #check if first number generated					
-						sw   t0, 0(a2) #store seed to crc32 argument location
+	loop:     			bne  t6, $0, prev_generated #check if first number generated					
+						add  a2, $0, t0 #store seed to crc32 argument location
 						j    crc_call
 				
-  store_a0: sw a0, 0(a2) #put previous random number into a2
+  	prev_generated: 	add a2, $0, a0 #put previous random number into a2
 
-	crc_call: jal  crc32
+	crc_call: 			jal  crc32
 						#lock
-						ori  a3, zero, lock_var
+						ori  a3, $0, lock_var
 						jal  lock
 						#critical section----------
-						ori  t2, zero, stack_pointer
+						addi t3, $0, 0x0400
+						add  t2, $0, $0
+						lui  t2, stack_pointer
+						srli t2, t2, 12 #t2 now contains stack pointer value
 						lw   t0, 0(t2)
 						addi t1, t0, -4 #allocate space on stack
-						sw   t1, 0(t2)
-						sw   a0, 0(t2) #store random number
+						sw   t1, 4(t3) #store new stack value
+						sw   a0, 0(t1) #store random number at top of stack
 						#end critical section------
-						ori  a0, zero, lock_var    # move lock to argument register
+						ori  a3, $0, lock_var    # move lock to argument register
 						jal  unlock                # release the lock
-						addi t3, t3, 1
-						blt  t3, t4, loop #check if 256 numbers have been generated
+						addi t6, t6, 1
+						addi t0, $0, 256 #max number to generate
+						blt  t6, t0, loop #check if 256 numbers have been generated
 
 	halt
 
@@ -165,9 +169,10 @@ min:
  #----------------------------------------------------------
 # Shared Data Segment
 #----------------------------------------------------------
-org 0x0500
+org 0x0400
 lock_var:
-	cfw 0x0   
+	cfw 0x0
 stack_pointer:
-  cfw 0x1FFF
+	cfw 0x1FFC
+
 
