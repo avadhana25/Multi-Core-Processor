@@ -123,7 +123,7 @@ module system_tb;
   */
 
   
-  cpu_tracker_rv32 cpu_track0 (
+  cpu_tracker_rv32 #(.CPUID(1)) cpu_track0 (
   // No need to change this
   .CLK(DUT.CPU.DP0.CLK),
   // Since single cycle, this is just PC enable
@@ -166,7 +166,7 @@ module system_tb;
   .dat_addr(DUT.CPU.DP0.mwif.port_out_o)
   );
 
-  cpu_tracker_rv32 #(.CPUID (1)) cpu_track1  (
+  cpu_tracker_rv32 #(.CPUID (2)) cpu_track1  (
   // No need to change this
   .CLK(DUT.CPU.DP1.CLK),
   // Since single cycle, this is just PC enable
