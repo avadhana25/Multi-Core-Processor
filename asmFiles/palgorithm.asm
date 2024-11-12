@@ -30,12 +30,11 @@
 						ori  a3, $0, lock_var
 						jal  lock
 						#critical section----------
-						addi t3, $0, 0x0400
+						addi t3, $0, 0x0400 #shared memory space
 						add  t2, $0, $0
 						lui  t2, stack_pointer
 						srli t2, t2, 12 #t2 now contains stack pointer value
-						lw   t0, 0(t2)
-						addi t1, t0, -4 #allocate space on stack
+						addi t1, t2, -4 #allocate space on stack
 						sw   t1, 4(t3) #store new stack value
 						sw   a0, 0(t1) #store random number at top of stack
 						#end critical section------
@@ -51,11 +50,58 @@
 # Core 2 Init
 #----------------------------------------------------------
 #this core processes the random numbers
-	org 0x0200               
-	li   sp, 0x7FFC            # core 2 stack
+	org  0x0200               
+	li   sp, 0x7FFC # core 2 stack
+	ori t3, $0, 0x400 #shared memory space
+	add t4, $0, $0 #store max value
+	add t5, $0, $0 #stores min value
+	add t6, $0, $0 #stores average value
+	add a1, $0, $0
+	repeat: 			lui  t2, 0x01FFC
+						srli t2, t2, 12 #comparison value to see if anything new is in the stack
 
+	new_value_check:	lw   t0, 4(t3) 
+						beq  t0, t2, new_value_check
+						#lock
+						ori  a3, $0, lock_var
+						jal  lock
+						#critical section----------
+						add  t2, $0, $0
+						lui  t2, stack_pointer
+						srli t2, t2, 12 #t2 now contains stack pointer value
+						lw   t1, 0(t2)
+						sw   $0, 0(t2) #zero out value
+						addi t0, t2, 4 #deallocate space on stack
+						sw   t0, 4(t3) #store new stack value
+						#end critical section------
+						ori  a3, $0, lock_var    # move lock to argument register
+						jal  unlock                # release the lock
 
+						#max calculation
+						or   a2, $0, t1
+						slli a2, a2, 16
+						srli a2, a2, 16
+						or   a3, $0, t4
+						slli a3, a3, 16
+						srli a3, a3, 16
+						jal  max
+						or   t4, $0, a0
 
+						#min calculation
+						or   a3, $0, t5
+						slli a3, a3, 16
+						srli a3, a3, 16
+						jal  min
+						add  t5, $0, a0
+
+						#average calculation
+						slli t1, t1, 16
+						srli t1, t1, 16
+						add  t6, t6, t1
+						addi a1, a1, 1
+						ori  t0, $0, 256
+						blt  a1, t0, repeat
+						srli t6, t6, 8 #divide by 256
 
 	halt
 
