@@ -13,11 +13,17 @@ module dcache
 );
 
 typedef enum logic [4:0] {IDLE, HIT_INVALIDATE, SNOOP, CACHE_1, CACHE_2, STORE1_STORE_ONE, STORE1_STORE_TWO, STORE2_STORE_ONE, STORE2_STORE_TWO, MEMORY_ONE, MEMORY_TWO, DIRTY_CHECK, STORE1_FLUSH_ONE, STORE1_FLUSH_TWO, STORE2_FLUSH_ONE, STORE2_FLUSH_TWO, DONE} state_t;
-
+//reservation frame
+  typedef struct packed {
+	logic valid;
+	logic [7:0] addr;
+  } reserve_frame;
 dcache_frame [7:0] data_store1;
 dcache_frame [7:0] data_store2;
+reserve_frame  reserve;          
 dcache_frame [7:0] next_data_store1;
 dcache_frame [7:0] next_data_store2;
+reserve_frame  next_reserve;
 dcachef_t cache_addr, snoop_addr;
 logic [7:0] LRU_tracker, next_LRU_tracker;
 logic miss, real_hit, next_real_hit;
@@ -26,6 +32,7 @@ word_t hit_counter, next_hit_counter;
 logic [2:0] index, next_index;
 logic next_dREN, next_dWEN;
 word_t next_dstore, next_daddr;
+logic invalidated, next_invalidated;
 
 
 always_ff @(posedge CLK, negedge n_rst) begin
@@ -36,9 +43,11 @@ always_ff @(posedge CLK, negedge n_rst) begin
             data_store1[i] <= '0;
             data_store2[i] <= '0;
         end
+        reserve <= '0;
         hit_counter <= '0;
         real_hit <= 1'b1;
         index <= '0;
+        invalidated <= 0;
         cif.dREN <= 0;
         cif.dWEN <= 0;
         cif.dstore <= 0;
@@ -51,9 +60,11 @@ always_ff @(posedge CLK, negedge n_rst) begin
             data_store1[i] <= next_data_store1[i];
             data_store2[i] <= next_data_store2[i];
         end
+        reserve <= next_reserve;
         hit_counter <= next_hit_counter;
         real_hit <= next_real_hit;
         index <= next_index;
+        invalidated <= next_invalidated;
         cif.dREN <= next_dREN;
         cif.dWEN <= next_dWEN;
         cif.dstore <= next_dstore;
@@ -111,6 +122,11 @@ always_comb begin : next_state_logic
                 next_dWEN  = 1'b0;
                 next_daddr = cache_addr.blkoff == 1'b0 ? dcif.dmemaddr : dcif.dmemaddr - 4;
                 next_dstore = 0;
+            end
+            else if (dcif.dmemWEN == 1'b1 && dcif.datomic == 1'b1)
+            begin
+                next_state = HIT_INVALIDATE;
+                next_daddr = cache_addr;
             end
         end
         HIT_INVALIDATE : begin
@@ -305,6 +321,7 @@ always_comb begin : output_logic
     //new cache values
     next_data_store1 = data_store1;
     next_data_store2 = data_store2;
+    next_reserve = reserve;
 
     //hit/miss outputs
     dcif.dhit = '0;
@@ -318,10 +335,12 @@ always_comb begin : output_logic
     next_hit_counter = hit_counter;
     next_real_hit = 1'b1;
     next_index = index;
+    next_invalidated = invalidated;
     cif.cctrans = 1'b0;
 
     casez(state) 
         IDLE : begin
+            next_invalidated = 1'b0;
             if(dcif.halt == 1'b1) begin
                 for(int i = 0; i < 8; i++) begin
              //       next_data_store1[i].valid = 1'b0;
@@ -330,41 +349,104 @@ always_comb begin : output_logic
             end
             else if(cif.ccinv == 1'b1) begin
                 if(snoop_addr.tag == data_store1[snoop_addr.idx].tag && data_store1[snoop_addr.idx].valid == 1'b1) begin
-                    next_data_store1[snoop_addr.idx].valid = 1'b0;         
+                    next_data_store1[snoop_addr.idx].valid = 1'b0;
                 end
                 else if(snoop_addr.tag == data_store2[snoop_addr.idx].tag && data_store2[snoop_addr.idx].valid == 1'b1) begin
-                    next_data_store2[snoop_addr.idx].valid = 1'b0;     
+                    next_data_store2[snoop_addr.idx].valid = 1'b0; 
                 end
+                if ({snoop_addr[31:3], 3'b0} == reserve.addr)
+                begin
+                    next_reserve.valid = 1'b0; 
+                end
+
             end
             else if(dcif.dmemREN == 1'b1 && data_store1[cache_addr.idx].tag == cache_addr.tag && data_store1[cache_addr.idx].valid == 1'b1) begin
                 dcif.dhit = 1'b1;
                 dcif.dmemload = data_store1[cache_addr.idx].data[cache_addr.blkoff];
                 next_hit_counter = hit_counter + 1;
                 next_LRU_tracker[cache_addr.idx] = 1'b0;
+                if (dcif.datomic == 1'b1)
+                begin
+                    next_reserve.valid = 1'b1;
+                    next_reserve.addr  = {cache_addr.tag, cache_addr.idx, 3'b0};
+                end
             end
             else if(dcif.dmemREN == 1'b1 && data_store2[cache_addr.idx].tag == cache_addr.tag && data_store2[cache_addr.idx].valid == 1'b1) begin
                 dcif.dhit = 1'b1;
                 dcif.dmemload = data_store2[cache_addr.idx].data[cache_addr.blkoff];
                 next_hit_counter = hit_counter + 1;
                 next_LRU_tracker[cache_addr.idx] = 1'b1;
+                if (dcif.datomic == 1'b1)
+                begin
+                    next_reserve.valid = 1'b1;
+                    next_reserve.addr  = {cache_addr.tag, cache_addr.idx, 3'b0};
+                end
             end
             else if(dcif.dmemWEN == 1'b1 && data_store1[cache_addr.idx].tag == cache_addr.tag && data_store1[cache_addr.idx].valid == 1'b1) begin
-                dcif.dhit = 1'b1;
-                next_data_store1[cache_addr.idx].valid = 1'b1;
-                next_data_store1[cache_addr.idx].dirty = 1'b1;
-                next_data_store1[cache_addr.idx].tag = cache_addr.tag;
-                next_data_store1[cache_addr.idx].data[cache_addr.blkoff] = dcif.dmemstore;
-                next_hit_counter = hit_counter + 1;
-                next_LRU_tracker[cache_addr.idx] = 1'b0;
+                if (dcif.datomic == 1'b1 && invalidated == 1'b1)   //only checks after invalidation
+                begin
+                    if (reserve.valid == 1'b1 && {cache_addr[31:3], 3'b0} == reserve.addr)
+                    begin
+                        dcif.dhit = 1'b1;
+                        next_data_store1[cache_addr.idx].valid = 1'b1;
+                        next_data_store1[cache_addr.idx].dirty = 1'b1;
+                        next_data_store1[cache_addr.idx].tag = cache_addr.tag;
+                        next_data_store1[cache_addr.idx].data[cache_addr.blkoff] = dcif.dmemstore;
+                        next_reserve.valid = 1'b0;
+                        next_hit_counter = hit_counter + 1;
+                        next_LRU_tracker[cache_addr.idx] = 1'b0;
+                        dcif.dmemload = 1'b0;
+                    end
+                    else
+                    begin
+                        dcif.dhit = 1'b1;
+                        dcif.dmemload = 1'b1;
+                        next_LRU_tracker[cache_addr.idx] = 1'b0;
+                    end
+                end
+                else if (dcif.datomic == 1'b0)
+                begin
+                    dcif.dhit = 1'b1;
+                    next_data_store1[cache_addr.idx].valid = 1'b1;
+                    next_data_store1[cache_addr.idx].dirty = 1'b1;
+                    next_data_store1[cache_addr.idx].tag = cache_addr.tag;
+                    next_data_store1[cache_addr.idx].data[cache_addr.blkoff] = dcif.dmemstore;
+                    next_hit_counter = hit_counter + 1;
+                    next_LRU_tracker[cache_addr.idx] = 1'b0;
+                end
             end
             else if (dcif.dmemWEN == 1'b1 && data_store2[cache_addr.idx].tag == cache_addr.tag && data_store2[cache_addr.idx].valid == 1'b1) begin
-                dcif.dhit = 1'b1;
-                next_data_store2[cache_addr.idx].valid = 1'b1;
-                next_data_store2[cache_addr.idx].dirty = 1'b1;
-                next_data_store2[cache_addr.idx].tag = cache_addr.tag;
-                next_data_store2[cache_addr.idx].data[cache_addr.blkoff] = dcif.dmemstore;
-                next_hit_counter = hit_counter + 1;
-                next_LRU_tracker[cache_addr.idx] = 1'b1;
+                if (dcif.datomic == 1'b1 && invalidated == 1'b1)   //only checks after invalidation
+                begin
+                    if (reserve.valid == 1'b1 && {cache_addr[31:3], 3'b0} == reserve.addr)
+                    begin
+                        dcif.dhit = 1'b1;
+                        next_data_store2[cache_addr.idx].valid = 1'b1;
+                        next_data_store2[cache_addr.idx].dirty = 1'b1;
+                        next_data_store2[cache_addr.idx].tag = cache_addr.tag;
+                        next_data_store2[cache_addr.idx].data[cache_addr.blkoff] = dcif.dmemstore;
+                        next_reserve.valid = 1'b0;
+                        next_hit_counter = hit_counter + 1;
+                        next_LRU_tracker[cache_addr.idx] = 1'b0;
+                        dcif.dmemload = 1'b0;
+                    end
+                    else
+                    begin
+                        dcif.dhit = 1'b1;
+                        dcif.dmemload = 1'b1;
+                        next_LRU_tracker[cache_addr.idx] = 1'b0;
+                    end
+                end
+                else if (dcif.datomic == 1'b0)
+                begin
+                    dcif.dhit = 1'b1;
+                    next_data_store2[cache_addr.idx].valid = 1'b1;
+                    next_data_store2[cache_addr.idx].dirty = 1'b1;
+                    next_data_store2[cache_addr.idx].tag = cache_addr.tag;
+                    next_data_store2[cache_addr.idx].data[cache_addr.blkoff] = dcif.dmemstore;
+                    next_hit_counter = hit_counter + 1;
+                    next_LRU_tracker[cache_addr.idx] = 1'b1;
+                end
             end
             else if(dcif.dmemREN == 1'b1 || dcif.dmemWEN == 1'b1) begin
                 miss = 1'b1;
@@ -372,7 +454,8 @@ always_comb begin : output_logic
             end
         end
         HIT_INVALIDATE : begin
-            cif.cctrans = 1'b1;
+            cif.cctrans = 1'b1; 
+            next_invalidated = 1'b1;    //lets idle know invalidation has occured
         end
         SNOOP : begin
             if(snoop_addr.tag == data_store1[snoop_addr.idx].tag && data_store1[snoop_addr.idx].valid == 1'b1) begin
@@ -427,6 +510,10 @@ always_comb begin : output_logic
                 end
                 else if(snoop_addr.tag == data_store2[snoop_addr.idx].tag) begin
                     next_data_store2[snoop_addr.idx].valid = 1'b0;
+                end
+                if ({snoop_addr[31:3], 3'b0} == reserve.addr)
+                begin
+                    next_reserve.valid = 1'b0; 
                 end
             end
             
