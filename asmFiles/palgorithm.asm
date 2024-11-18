@@ -50,11 +50,12 @@
 #this core processes the random numbers
 	org  0x0200               
 	li   sp, 0x7FFC # core 2 stack
-	ori t3, $0, 0x400 #shared memory space
-	add t4, $0, $0 #store max value
-	add t5, $0, $0 #stores min value
-	add t6, $0, $0 #stores average value
-	add a1, $0, $0
+	ori  t3, $0, 0x400 #shared memory space
+	add  t4, $0, $0 #store max value
+	lui  t5, 0xFFFF 
+	srli t5, t5, 12 #stores min value
+	add  t6, $0, $0 #stores average value
+	add  a1, $0, $0
 	repeat: 			lui  t2, 0x01FFC
 						srli t2, t2, 12 #comparison value to see if anything new is in the stack
 
@@ -74,27 +75,30 @@
 						jal  unlock                # release the lock
 
 						#max calculation
-						or   a2, $0, t1
-						slli a2, a2, 16
+						or   a2, $0, t1 #contains value at global stack
+						slli a2, a2, 16 #shift out top 16 bits
 						srli a2, a2, 16
-						or   a3, $0, t4
-						slli a3, a3, 16
+						or   a3, $0, t4 #contains current max value
+						slli a3, a3, 16 #shift out top 16 bits
 						srli a3, a3, 16
 						jal  max
-						or   t4, $0, a0
+						or   t4, $0, a0 #update current max value
 
 						#min calculation
-						or   a3, $0, t5
-						slli a3, a3, 16
-						srli a3, a3, 16
+						or   a2, $0, t1 #contains value at global stack
+						slli a2, a2, 16 #shift out top 16 bits
+						srli a2, a2, 16
+						or   a3, $0, t5 #contains current min value
+						slli a3, a3, 16 #shift out top 16 bits
+						srli a3, a3, 16 #shift out top 16 bits
 						jal  min
-						add  t5, $0, a0
+						or   t5, $0, a0 #update current min value
 
 						#average calculation
-						slli t1, t1, 16
+						slli t1, t1, 16 #shift out top most bits
 						srli t1, t1, 16
-						add  t6, t6, t1
-						addi a1, a1, 1
+						add  t6, t6, t1 #add to running sum
+						addi a1, a1, 1 #increment counter
 						ori  t0, $0, 256
 						blt  a1, t0, repeat
 						srli t6, t6, 8 #divide by 256
