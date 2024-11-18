@@ -31,9 +31,7 @@
 						jal  lock
 						#critical section----------
 						addi t3, $0, 0x0400 #shared memory space
-						add  t2, $0, $0
-						lui  t2, stack_pointer
-						srli t2, t2, 12 #t2 now contains stack pointer value
+						lw   t2, 4(t3) #t2 now contains stack pointer value
 						addi t1, t2, -4 #allocate space on stack
 						sw   t1, 4(t3) #store new stack value
 						sw   a0, 0(t1) #store random number at top of stack
@@ -66,9 +64,7 @@
 						ori  a3, $0, lock_var
 						jal  lock
 						#critical section----------
-						add  t2, $0, $0
-						lui  t2, stack_pointer
-						srli t2, t2, 12 #t2 now contains stack pointer value
+						lw   t2, 4(t3) #t2 now contains stack pointer value
 						lw   t1, 0(t2)
 						sw   $0, 0(t2) #zero out value
 						addi t0, t2, 4 #deallocate space on stack
