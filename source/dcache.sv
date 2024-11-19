@@ -33,7 +33,7 @@ logic [2:0] index, next_index;
 logic next_dREN, next_dWEN;
 word_t next_dstore, next_daddr;
 logic invalidated, next_invalidated;
-
+logic next_cctrans;
 
 always_ff @(posedge CLK, negedge n_rst) begin
     if(!n_rst) begin
@@ -52,6 +52,7 @@ always_ff @(posedge CLK, negedge n_rst) begin
         cif.dWEN <= 0;
         cif.dstore <= 0;
         cif.daddr <= 0;
+        cif.cctrans <= 0;
     end
     else begin
         state <= next_state;
@@ -69,6 +70,7 @@ always_ff @(posedge CLK, negedge n_rst) begin
         cif.dWEN <= next_dWEN;
         cif.dstore <= next_dstore;
         cif.daddr <= next_daddr;
+        cif.cctrans <= next_cctrans;
     end
 end
 
@@ -82,6 +84,7 @@ always_comb begin : next_state_logic
     next_dWEN = cif.dWEN;
     next_daddr = cif.daddr;
     next_dstore = cif.dstore;
+    next_cctrans = cif.cctrans;
     casez(state) 
         IDLE : begin
             if(dcif.halt == 1'b1) begin
@@ -93,14 +96,22 @@ always_comb begin : next_state_logic
             end
             else if(cif.ccwait == 1'b1) begin
                 next_state = SNOOP;
+                if(snoop_addr.tag == data_store1[snoop_addr.idx].tag && data_store1[snoop_addr.idx].valid == 1'b1) begin //(fixed) caused combinational loop because cctrans depends on snoop addr and snoop in memory control transition depends on cctrans
+                    next_cctrans = 1'b1;
+                end
+                else if(snoop_addr.tag == data_store2[snoop_addr.idx].tag && data_store2[snoop_addr.idx].valid == 1'b1) begin
+                    next_cctrans = 1'b1;
+                end
             end
             else if(dcif.dmemWEN == 1'b1 && data_store1[cache_addr.idx].tag == cache_addr.tag && data_store1[cache_addr.idx].valid == 1'b1 && data_store1[cache_addr.idx].dirty == 1'b0) begin
                 next_state = HIT_INVALIDATE;
                 next_daddr = cache_addr;
+                next_cctrans = 1'b1;
             end
             else if(dcif.dmemWEN == 1'b1 && data_store2[cache_addr.idx].tag == cache_addr.tag && data_store2[cache_addr.idx].valid == 1'b1 && data_store2[cache_addr.idx].dirty == 1'b0) begin
                 next_state = HIT_INVALIDATE;
                 next_daddr = cache_addr;
+                next_cctrans = 1'b1;
             end
             else if(miss == 1'b1 && LRU_tracker[cache_addr.idx] == 1'b1 && data_store1[cache_addr.idx].dirty == 1'b1) begin
                 next_state = STORE1_STORE_ONE;
@@ -127,28 +138,39 @@ always_comb begin : next_state_logic
             begin
                 next_state = HIT_INVALIDATE;
                 next_daddr = cache_addr;
+                next_cctrans = 1'b1;
             end
         end
         HIT_INVALIDATE : begin
             if (cif.ccwait == 1'b1)
             begin
                 next_state = SNOOP;
+                if(snoop_addr.tag == data_store1[snoop_addr.idx].tag && data_store1[snoop_addr.idx].valid == 1'b1) begin //causes combinational loop because cctrans depends on snoop addr and snoop in memory control transition depends on cctrans
+                    next_cctrans = 1'b1;
+                end
+                else if(snoop_addr.tag == data_store2[snoop_addr.idx].tag && data_store2[snoop_addr.idx].valid == 1'b1) begin
+                    next_cctrans = 1'b1;
+                end
             end
             else if(cif.dwait == 1'b0) begin
                 next_state = IDLE;
+                next_cctrans = 1'b0;
             end
         end
         SNOOP : begin
             if(snoop_addr.tag == data_store1[snoop_addr.idx].tag && data_store1[snoop_addr.idx].valid == 1'b1) begin
                 next_state = CACHE_1;
                 next_dstore = data_store1[snoop_addr.idx].data[0];
+                next_cctrans = 1'b0;
             end
             else if(snoop_addr.tag == data_store2[snoop_addr.idx].tag && data_store2[snoop_addr.idx].valid == 1'b1) begin
                 next_state = CACHE_1;
                 next_dstore = data_store2[snoop_addr.idx].data[0];
+                next_cctrans = 1'b0;
             end
             else begin
                 next_state = IDLE;
+                next_cctrans = 1'b0;
             end
         end
         CACHE_1 : begin
@@ -208,6 +230,12 @@ always_comb begin : next_state_logic
         MEMORY_ONE : begin
             if(cif.ccwait == 1'b1) begin
                 next_state = SNOOP;
+                if(snoop_addr.tag == data_store1[snoop_addr.idx].tag && data_store1[snoop_addr.idx].valid == 1'b1) begin //causes combinational loop because cctrans depends on snoop addr and snoop in memory control transition depends on cctrans
+                    next_cctrans = 1'b1;
+                end
+                else if(snoop_addr.tag == data_store2[snoop_addr.idx].tag && data_store2[snoop_addr.idx].valid == 1'b1) begin
+                    next_cctrans = 1'b1;
+                end
             end
             else if(cif.dwait == 1'b0) begin
                 next_state = MEMORY_TWO;
@@ -229,6 +257,12 @@ always_comb begin : next_state_logic
         DIRTY_CHECK : begin
             if(cif.ccwait == 1'b1) begin
                 next_state = SNOOP;
+                if(snoop_addr.tag == data_store1[snoop_addr.idx].tag && data_store1[snoop_addr.idx].valid == 1'b1) begin //causes combinational loop because cctrans depends on snoop addr and snoop in memory control transition depends on cctrans
+                    next_cctrans = 1'b1;
+                end
+                else if(snoop_addr.tag == data_store2[snoop_addr.idx].tag && data_store2[snoop_addr.idx].valid == 1'b1) begin
+                    next_cctrans = 1'b1;
+                end
             end
             else if(data_store1[index].dirty == 1'b1) begin
                 next_state = STORE1_FLUSH_ONE;
@@ -336,7 +370,6 @@ always_comb begin : output_logic
     next_real_hit = 1'b1;
     next_index = index;
     next_invalidated = invalidated;
-    cif.cctrans = 1'b0;
 
     casez(state) 
         IDLE : begin
@@ -454,16 +487,10 @@ always_comb begin : output_logic
             end
         end
         HIT_INVALIDATE : begin
-            cif.cctrans = 1'b1; 
             next_invalidated = 1'b1;    //lets idle know invalidation has occured
         end
         SNOOP : begin
-            if(snoop_addr.tag == data_store1[snoop_addr.idx].tag && data_store1[snoop_addr.idx].valid == 1'b1) begin
-                cif.cctrans = 1'b1;
-            end
-            else if(snoop_addr.tag == data_store2[snoop_addr.idx].tag && data_store2[snoop_addr.idx].valid == 1'b1) begin
-                cif.cctrans = 1'b1;
-            end
+            
         end
         CACHE_1 : begin
             /*
