@@ -1,0 +1,40 @@
+processing file asmFiles/multicore.dual.llsc.asm (1 of 5)
+processing file asmFiles/multicore.example.asm (2 of 5)
+processing file asmFiles/multicore.palgorithm.asm (3 of 5)
+processing file asmFiles/multicore.test.coherence1.asm (4 of 5)
+processing file asmFiles/multicore.test.coherence2.asm (5 of 5)
+processing file asmFiles/multicore.dual.llsc.asm (1 of 5)
+processing file asmFiles/multicore.example.asm (2 of 5)
+processing file asmFiles/multicore.palgorithm.asm (3 of 5)
+processing file asmFiles/multicore.test.coherence1.asm (4 of 5)
+processing file asmFiles/multicore.test.coherence2.asm (5 of 5)
+processing file asmFiles/multicore.dual.llsc.asm (1 of 5)
+--- memsim.hex	2024-11-21 18:05:04.952924485 -0500
++++ memcpu.hex	2024-11-21 18:05:04.931923683 -0500
+@@ -17,6 +17,8 @@
+ :04001000FFFFFFFFF0
+ :0400200000000002DA
+ :0400220000000001D9
++:0400240000000002D6
++:0400260000000001D5
+ :040080000000223723
+ :04008100FC02021368
+ :0400820009006513F9
+processing file asmFiles/multicore.example.asm (2 of 5)
+--- memsim.hex	2024-11-21 18:05:31.855951904 -0500
++++ memcpu.hex	2024-11-21 18:05:31.837951216 -0500
+@@ -40,6 +40,7 @@
+ :04008E0000012083CA
+ :04008F000041011318
+ :040090000000806785
+-:0400C1000000000239
++:0400C1000000000338
++:041FFE000000020CD1
+ :043FFE000000000CB3
+ :00000001FF
+processing file asmFiles/multicore.palgorithm.asm (3 of 5)
+processing file asmFiles/multicore.dual.llsc.asm (1 of 5)
+processing file asmFiles/multicore.example.asm (2 of 5)
+processing file asmFiles/multicore.palgorithm.asm (3 of 5)
+processing file asmFiles/multicore.test.coherence1.asm (4 of 5)
+processing file asmFiles/multicore.test.coherence2.asm (5 of 5)
