@@ -13,8 +13,7 @@
 	org 0x0000    
 	li   sp, 0xFFFC    # core 1 stack
 	
-	lui  t0, 0xab275
-	ori  t0, t0, 0x7fe #seed generation
+	li  t0, 0x98 #seed generation
 	
 	add  t6, $0, $0 #total random numbers generated
 	addi a1, $0, 256 #max number to generate
@@ -102,6 +101,12 @@
 						ori  t0, $0, 256
 						blt  a1, t0, repeat
 						srli t6, t6, 8 #divide by 256
+
+						li t2, test_loc
+						sw t4, 0(t2)
+						sw t5, 4(t2)
+						sw t6, 8(t2)
+
 
 	halt
 
@@ -220,5 +225,10 @@ lock_var:
 	cfw 0x0
 stack_pointer:
 	cfw 0x1FFC
+
+
+org 0x1000
+test_loc:
+	cfw 0x0
 
 
