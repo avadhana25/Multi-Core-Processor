@@ -17,7 +17,7 @@ module ex_mem(input logic CLK, nRST, ex_mem_if.exmem xmif);
 
 word_t next_npc, next_curr_pc, next_rdat2, next_branchAddr, next_jumpAddr, next_zeroExt, next_port_out, next_instr, next_imm, next_dmemstore;
 logic [4:0] next_rs1, next_rs2, next_rd;
-logic next_branch, next_regWr, next_dWEN, next_dREN, next_jpSel;
+logic next_branch, next_regWr, next_dWEN, next_dREN, next_jpSel, next_atomic;
 logic [2:0] next_rdSel, next_func3;
 logic [1:0] next_pcSrc;
 logic next_halt;
@@ -52,6 +52,7 @@ begin
         xmif.opcode_o     <= RTYPE;
         xmif.imm_o        <= 32'b0;
         xmif.dmemstore_o  <= 32'b0;
+        xmif.atomic_o     <= 32'b0;
     end
     else
     begin
@@ -79,6 +80,7 @@ begin
         xmif.opcode_o     <= next_opcode;
         xmif.imm_o        <= next_imm;
         xmif.dmemstore_o  <= next_dmemstore;
+        xmif.atomic_o     <= next_atomic;
     end
 end
 
@@ -107,6 +109,7 @@ always_comb begin
     next_imm = xmif.imm_o;
     next_opcode = xmif.opcode_o;
     next_dmemstore = xmif.dmemstore_o;
+    next_atomic = xmif.atomic_o;
     if(xmif.flush & xmif.en) begin
         next_npc = '0; 
         next_curr_pc = '0;
@@ -132,6 +135,7 @@ always_comb begin
         next_opcode = RTYPE;
         next_imm = '0;
         next_dmemstore = '0;
+        next_atomic = '0;
     end
     else if(xmif.dhit) begin
         next_dWEN = '0; 
@@ -162,6 +166,7 @@ always_comb begin
         next_opcode = xmif.opcode_i;
         next_imm = xmif.imm_i;
         next_dmemstore = xmif.dmemstore_i;
+        next_atomic = xmif.atomic_i;
     end
     
     

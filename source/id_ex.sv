@@ -16,7 +16,7 @@ decode_execute latch source file
 module id_ex(input logic CLK, nRST, id_ex_if.idex dxif);
 
 word_t next_instr, next_npc, next_curr_pc, next_rdat1, next_rdat2; 
-logic next_regWr, next_dWEN, next_dREN, next_jpSel, next_aluSrc;
+logic next_regWr, next_dWEN, next_dREN, next_jpSel, next_aluSrc, next_atomic;
 aluop_t next_aluOp; 
 logic [2:0] next_rdSel; 
 logic [1:0] next_pcSrc; 
@@ -40,6 +40,7 @@ begin
         dxif.rdSel_o   <= 3'b0;
         dxif.pcSrc_o   <= 2'b0;
         dxif.halt_o    <= 1'b0;
+        dxif.atomic_o  <= 1'b0;
     end
     else
     begin
@@ -57,6 +58,7 @@ begin
         dxif.rdSel_o   <= next_rdSel;
         dxif.pcSrc_o   <= next_pcSrc;
         dxif.halt_o    <= next_halt;
+        dxif.atomic_o  <= next_atomic;
     end
 end
 
@@ -75,6 +77,7 @@ always_comb begin
     next_rdSel = dxif.rdSel_o; 
     next_pcSrc = dxif.pcSrc_o; 
     next_halt = dxif.halt_o;
+    next_atomic = dxif.atomic_o;
     if(dxif.flush & dxif.en) begin
         next_instr = '0;
         next_npc = '0;
@@ -90,6 +93,7 @@ always_comb begin
         next_rdSel = '0; 
         next_pcSrc = '0; 
         next_halt = '0;
+        next_atomic = '0;
     end
     else if(dxif.freeze & dxif.en) begin
         next_instr = '0;
@@ -106,6 +110,7 @@ always_comb begin
         next_rdSel = '0; 
         next_pcSrc = '0; 
         next_halt = '0;
+        next_atomic = '0;
     end
     else if (dxif.en) begin
         next_instr = dxif.instr_i;
@@ -122,6 +127,7 @@ always_comb begin
         next_rdSel  = dxif.rdSel_i;
         next_pcSrc = dxif.pcSrc_i;
         next_halt = dxif.halt_i;
+        next_atomic = dxif.atomic_i;
     end
 end
 

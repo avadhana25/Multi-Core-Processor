@@ -8,6 +8,8 @@
 // mapped needs this
 `include "datapath_cache_if.vh"
 `include "caches_if.vh"
+`include "cache_control_if.vh"
+`include "cpu_ram_if.vh"
 
 //all types
 `include "cpu_types_pkg.vh"
@@ -26,8 +28,13 @@ module dcache_tb;
     logic CLK = 0, nRST;
 
     // interfaces
-    caches_if cif();
-    datapath_cache_if dcif();
+    caches_if cif0();
+    caches_if cif1();
+
+    datapath_cache_if dcif0();
+    datapath_cache_if dcif1();
+    cache_control_if ccif(cif0, cif1);
+    cpu_ram_if ramif();
 
     //test program
     test #(.PERIOD(PERIOD)) PROG (CLK);
@@ -36,7 +43,18 @@ module dcache_tb;
     always #(PERIOD/2) CLK++;
 
     //DUT
-    dcache DUT (CLK, nRST, dcif, cif);
+    dcache DC0 (CLK, nRST, dcif0, cif0);
+    dcache DC1 (CLK, nRST, dcif1, cif1);
+    memory_control MC (CLK, nRST, ccif);
+    ram LINK (CLK, nRST, ramif);
+
+    //connect cache input/output and ram input/output
+    assign ramif.ramaddr = ccif.ramaddr;
+    assign ramif.ramstore = ccif.ramstore;
+    assign ramif.ramREN = ccif.ramREN;
+    assign ramif.ramWEN = ccif.ramWEN;
+    assign ccif.ramstate = ramif.ramstate;
+    assign ccif.ramload = ramif.ramload;
 
     //tasks
     task reset_dut;
@@ -54,17 +72,18 @@ module dcache_tb;
 
     task reset_inputs;
         begin
-            dcif.halt = 0;
-            dcif.dmemREN = 0;
-            dcif.dmemWEN = 0;
-            dcif.datomic = 0;
-            dcif.dmemstore = 0;
-            dcif.dmemaddr = 0;
-            cif.dwait = 1;
-            cif.dload = 0;
-            cif.ccwait = 0;
-            cif.ccinv = 0;
-            cif.ccsnoopaddr = 0;
+            dcif0.halt = 0;
+            dcif0.dmemREN = 0;
+            dcif0.dmemWEN = 0;
+            dcif0.datomic = 0;
+            dcif0.dmemstore = 0;
+            dcif0.dmemaddr = 0;
+            dcif1.halt = 0;
+            dcif1.dmemREN = 0;
+            dcif1.dmemWEN = 0;
+            dcif1.datomic = 0;
+            dcif1.dmemstore = 0;
+            dcif1.dmemaddr = 0;
         end
     endtask
 
@@ -76,7 +95,7 @@ module dcache_tb;
             $display("\nTESTCASE %0d: %s\n", testcase, testdesc);
         end
     endtask
-
+/*
     task check_access;
     input word_t first_load;
     input word_t second_load;
@@ -109,6 +128,47 @@ module dcache_tb;
         
     end
     endtask
+*/
+    task automatic dump_memory();
+    string filename = "memcpu.hex";
+    int memfd;
+
+    cif0.daddr = 0;
+    cif0.dWEN = 0;
+    cif0.dREN = 0;
+
+    memfd = $fopen(filename,"w");
+    if (memfd)
+      $display("Starting memory dump.");
+    else
+      begin $display("Failed to open %s.",filename); $finish; end
+
+    for (int unsigned i = 0; memfd && i < 16384; i++)
+    begin
+      int chksum = 0;
+      bit [7:0][7:0] values;
+      string ihex;
+
+      cif0.daddr = i << 2;
+      cif0.dREN = 1;
+      repeat (4) @(posedge CLK);
+      if (cif0.dload === 0)
+        continue;
+      values = {8'h04,16'(i),8'h00,cif0.dload};
+      foreach (values[j])
+        chksum += values[j];
+      chksum = 16'h100 - chksum;
+      ihex = $sformatf(":04%h00%h%h",16'(i),cif0.dload,8'(chksum));
+      $fdisplay(memfd,"%s",ihex.toupper());
+    end //for
+    if (memfd)
+    begin
+      cif0.dREN = 0;
+      $fdisplay(memfd,":00000001FF");
+      $fclose(memfd);
+      $display("Finished memory dump.");
+    end
+  endtask
 
 
 
@@ -118,6 +178,7 @@ program test(input logic CLK);
   parameter PERIOD = 10;
   integer testcase;
   string testdesc;
+  logic [31:0] temp_load;
   initial 
   begin
 
@@ -127,7 +188,295 @@ program test(input logic CLK);
     //set inputs
     reset_inputs;
 
+    //TESTCASE 1: CORE 0 Write TO 0x30, THEN CORE 1 READ SAME ADDRESS, LRU will pick core0 first, tests if both miss at same time
+    testcase = 1;
+    testdesc = "CORE 1 SNOOP INTO CORE 0 for 0x30";
+    testcases(testcase, testdesc);
 
+    dcif0.dmemWEN = 1'b1;
+    dcif0.dmemREN = 1'b0;
+    dcif0.dmemaddr = {26'h3, 3'b000, 1'b0, 2'h0};
+    dcif0.dmemstore = 32'h1111;
+
+    dcif1.dmemWEN = 1'b0;
+    dcif1.dmemREN = 1'b1;
+    dcif1.dmemaddr = {26'h3, 3'b000, 1'b0, 2'h0};
+
+    @(posedge dcif0.dhit)
+    dcif0.dmemWEN = 1'b0;
+    dcif0.dmemREN = 1'b0;
+
+
+
+    @(posedge dcif1.dhit)                                //core 0 should start in M and then core 0 and core 1 should both be in S
+    dcif1.dmemWEN = 1'b0;
+    dcif1.dmemREN = 1'b0;
+
+    if (dcif1.dmemload == dcif0.dmemstore)
+    begin
+        $display("Accurately read from Core 0");
+    end
+
+    //TESTCASE 2: CORE 0 Write TO 0x30 again - send CORE 1 to Inavlid
+    testcase++;
+    testdesc = "CORE 0 WRITE TO 0x30 - INVALIDATE CORE 1";
+    testcases(testcase, testdesc);
+
+    reset_inputs;
+
+    dcif0.dmemWEN = 1'b1;
+    dcif0.dmemREN = 1'b0;
+    dcif0.dmemaddr = {26'h3, 3'b000, 1'b0, 2'h0};
+    dcif0.dmemstore = 32'h2222;
+
+
+
+    #(PERIOD * 5)
+    dcif0.dmemWEN = 1'b0;                        
+    dcif0.dmemREN = 1'b0;
+    
+    
+    
+
+
+    //TESTCASE 3: BOTH CORES READ MISS AT SAME TIME , ALSO TESTS LRU CORE 1 SHOULD GET BUS FIRST
+    testcase++;
+    testdesc = "BOTH CORES READ MISS AT SAME TIME";
+    testcases(testcase, testdesc);
+
+    reset_inputs;
+
+    dcif0.dmemWEN = 1'b0;
+    dcif0.dmemREN = 1'b1;
+    dcif0.dmemaddr = {26'h0, 3'b001, 1'b0, 2'h0};
+
+
+    dcif1.dmemREN = 1'b1;
+    dcif1.dmemaddr = {26'h0, 3'b001, 1'b0, 2'h0};
+
+    @(posedge dcif1.dhit)
+    dcif1.dmemWEN = 1'b0;
+    dcif1.dmemREN = 1'b0;
+    temp_load = dcif1.dmemload;
+
+
+
+
+
+
+    
+
+    @(posedge dcif0.dhit)                                //both should be in S
+    dcif0.dmemWEN = 1'b0;
+    dcif0.dmemREN = 1'b0;
+
+    if (dcif0.dmemload == temp_load)
+    begin
+        $display("Both Cores Accurately Retreived Data");            
+    end
+
+
+    //TESTCASE 4: BOTH CORES WRITE TO 0x50
+    testcase++;
+    testdesc = "BOTH CORES WRITE TO 0x50";
+    testcases(testcase, testdesc);
+
+    reset_inputs;
+
+    dcif0.dmemWEN = 1'b1;
+    dcif0.dmemREN = 1'b0;
+    dcif0.dmemaddr = {26'h5, 3'b000, 1'b0, 2'h0};
+    dcif0.dmemstore = 32'h4444;
+
+
+    dcif1.dmemWEN = 1'b1;
+    dcif1.dmemREN = 1'b0;
+    dcif1.dmemaddr = {26'h5, 3'b000, 1'b1, 2'h0};
+    dcif1.dmemstore = 32'h4242;
+
+    @(posedge dcif1.dhit)      //core 1 should be in M
+    dcif1.dmemWEN = 1'b0;
+    dcif1.dmemREN = 1'b0;
+   
+    
+    @(posedge dcif0.dhit)                                //core 0 should be in M, core 1 in I
+    dcif0.dmemWEN = 1'b0;
+    dcif0.dmemREN = 1'b0;
+
+
+    //TESTCASE 5: CORE 1 TRIES TO ACCESS CACHE 1 CYCLE AFTER CORE 0  WHEN CORE 0 HAS TO EVICT            
+    testcase++;
+    testdesc = "CORE 1 TRIES TO ACCESS CACHE 1 CYCLE AFTER CORE 0, CORE 0 MUST EVICT";
+    testcases(testcase, testdesc);
+
+    reset_inputs;
+
+    dcif0.dmemWEN = 1'b1;
+    dcif0.dmemREN = 1'b0;
+    dcif0.dmemaddr = {26'h6, 3'b000, 1'b0, 2'h0};
+    dcif0.dmemstore = 32'h5555;
+
+    #(2*PERIOD)
+    dcif1.dmemWEN = 1'b0;
+    dcif1.dmemREN = 1'b1;
+    dcif1.dmemaddr = {26'h6, 3'b000, 1'b1, 2'h0};
+
+    @(posedge dcif1.dhit)      //core 1 hits first as core 0 write isnt complete yet - goes to S
+    dcif1.dmemWEN = 1'b0;
+    dcif1.dmemREN = 1'b0;
+   
+    
+    @(posedge dcif0.dhit)                        //core 0 overwrites goes to M, core 1 goes to I
+    dcif0.dmemWEN = 1'b0;
+    dcif0.dmemREN = 1'b0;
+
+
+    //TESTCASE 6: BOTH CORES WRITE TO SAME BLOCK BUT DIFFERENT WORD
+    testcase++;
+    testdesc = "BOTH CORES WRITE TO SAME BLOCK BUT DIFFERENT WORD";
+    testcases(testcase, testdesc);
+
+    reset_inputs;
+
+    dcif0.dmemWEN = 1'b1;
+    dcif0.dmemREN = 1'b0;
+    dcif0.dmemaddr = {26'h6, 3'b010, 1'b0, 2'h0};
+    dcif0.dmemstore = 32'h5678;
+
+    dcif1.dmemWEN = 1'b1;
+    dcif1.dmemREN = 1'b0;
+    dcif1.dmemaddr = {26'h6, 3'b010, 1'b1, 2'h0};
+    dcif1.dmemstore = 32'h1234;
+
+    @(posedge dcif1.dhit)      //core 1 hits first (lru) goes to M
+    dcif1.dmemWEN = 1'b0;
+    dcif1.dmemREN = 1'b0;
+   
+    
+    @(posedge dcif0.dhit)                        //core 0 overwrites goes to M, core 1 goes to I, core 0 gets both words
+    dcif0.dmemWEN = 1'b0;
+    dcif0.dmemREN = 1'b0;
+
+
+    //TESTCASE 8: CORE 0 FLUSHES, CORE 1 ACCESSES M BLCK FROM CORE 0 WHILE CORE 0 FLUSHING
+    testcase++;
+    testdesc = "ACCESS DURING FLUSH";
+    testcases(testcase, testdesc);
+
+    reset_inputs;
+
+    dcif0.dmemWEN = 1'b1;
+    dcif0.dmemREN = 1'b0;
+    dcif0.dmemaddr = {26'h6, 3'b011, 1'b0, 2'h0};
+    dcif0.dmemstore = 32'h8888;
+
+
+    @(posedge dcif0.dhit)      //core 1 hits first (lru) goes to M
+    dcif0.dmemWEN = 1'b0;
+    dcif0.dmemREN = 1'b0;
+    dcif0.halt = 1'b1;
+
+    #(PERIOD*4)
+    dcif1.dmemWEN = 1'b0;
+    dcif1.dmemREN = 1'b1;
+    dcif1.dmemaddr = {26'h6, 3'b011, 1'b0, 2'h0};
+   
+    
+    @(posedge dcif1.dhit)                        
+    dcif1.dmemWEN = 1'b0;
+    dcif1.dmemREN = 1'b0;
+    if (dcif1.dmemload == dcif0.dmemstore)
+    begin
+        $display("Word accurately retrieved mid flush");            
+    end
+
+
+    
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+    
+
+
+
+
+    testcase = 0;
+    testdesc = "done";
+    dump_memory();
+    $finish;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  end
+endprogram
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
     //TESTCASE 1: LOAD FROM 0x30 AND MISS
     testcase = 1;
     testdesc = "LOAD FROM 0x30 AND MISS";
@@ -382,3 +731,5 @@ program test(input logic CLK);
   end
 
   endprogram
+
+  */

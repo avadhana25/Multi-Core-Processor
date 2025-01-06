@@ -77,6 +77,7 @@ module system_tb;
     .reg_dat(DUT.CPU.DP.MW_o.wdat)
   );
   */
+/*
   cpu_tracker_rv32 cpu_track0 (
   // No need to change this
   .CLK(DUT.CPU.DP.CLK),
@@ -119,6 +120,95 @@ module system_tb;
   //Addr. to load/store from/to memory
   .dat_addr(DUT.CPU.DP.mwif.port_out_o)
   );
+  */
+
+  
+  cpu_tracker_rv32 #(.CPUID(1)) cpu_track0 (
+  // No need to change this
+  .CLK(DUT.CPU.DP0.CLK),
+  // Since single cycle, this is just PC enable
+  .wb_stall(DUT.CPU.DP0.hduif.freeze),
+  //dhit signal
+  .dhit(DUT.CPU.DP0.mwif.dhit_o),
+  //funct3 field
+  .funct_3(DUT.CPU.DP0.mwif.func3_o),
+  //funct7 field
+  .funct_7(DUT.CPU.DP0.mwif.func7_o),
+  //funct7 opcode
+  .opcode(DUT.CPU.DP0.mwif.opcode_o),
+  // The 'rs1' portion of an instruction
+  .rs1(DUT.CPU.DP0.mwif.rs1_o),
+  // The 'rs2' portion of an instruction
+  .rs2(DUT.CPU.DP0.mwif.rs2_o),
+  //write select from reg. file
+  .wsel(DUT.CPU.DP0.rfif.wsel),
+  //Instruction loaded from memory
+  .instr(DUT.CPU.DP0.mwif.instr_o),
+  // Connect the PC to this
+  .pc(DUT.CPU.DP0.mwif.curr_pc_o),
+  // Connect the next PC to this
+  .next_pc_val(DUT.CPU.DP0.mwif.npc_o),
+  // Connect branch addr
+  .branch_addr(DUT.CPU.DP0.mwif.branchAddr_o),
+  // Connect jump addr
+  .jump_addr(DUT.CPU.DP0.mwif.jumpAddr_o),
+  // This means it should already be shifted/extended/whatever
+  .imm(DUT.CPU.DP0.mwif.imm_o),
+  //Pre shifted bits from U-type inst.
+  .lui_pre_shift(DUT.CPU.DP0.mwif.instr_o[31:12]),
+  //Data to store to memory
+  .store_dat(DUT.CPU.DP0.mwif.dmemstore_o),
+  //Data to write to reg. file
+  .reg_dat(DUT.CPU.DP0.rfif.wdat),
+  //Data loaded from memory
+  .load_dat(DUT.CPU.DP0.mwif.dmemload_o),
+  //Addr. to load/store from/to memory
+  .dat_addr(DUT.CPU.DP0.mwif.port_out_o)
+  );
+
+  cpu_tracker_rv32 #(.CPUID (2)) cpu_track1  (
+  // No need to change this
+  .CLK(DUT.CPU.DP1.CLK),
+  // Since single cycle, this is just PC enable
+  .wb_stall(DUT.CPU.DP1.hduif.freeze),
+  //dhit signal
+  .dhit(DUT.CPU.DP1.mwif.dhit_o),
+  //funct3 field
+  .funct_3(DUT.CPU.DP1.mwif.func3_o),
+  //funct7 field
+  .funct_7(DUT.CPU.DP1.mwif.func7_o),
+  //funct7 opcode
+  .opcode(DUT.CPU.DP1.mwif.opcode_o),
+  // The 'rs1' portion of an instruction
+  .rs1(DUT.CPU.DP1.mwif.rs1_o),
+  // The 'rs2' portion of an instruction
+  .rs2(DUT.CPU.DP1.mwif.rs2_o),
+  //write select from reg. file
+  .wsel(DUT.CPU.DP1.rfif.wsel),
+  //Instruction loaded from memory
+  .instr(DUT.CPU.DP1.mwif.instr_o),
+  // Connect the PC to this
+  .pc(DUT.CPU.DP1.mwif.curr_pc_o),
+  // Connect the next PC to this
+  .next_pc_val(DUT.CPU.DP1.mwif.npc_o),
+  // Connect branch addr
+  .branch_addr(DUT.CPU.DP1.mwif.branchAddr_o),
+  // Connect jump addr
+  .jump_addr(DUT.CPU.DP1.mwif.jumpAddr_o),
+  // This means it should already be shifted/extended/whatever
+  .imm(DUT.CPU.DP1.mwif.imm_o),
+  //Pre shifted bits from U-type inst.
+  .lui_pre_shift(DUT.CPU.DP1.mwif.instr_o[31:12]),
+  //Data to store to memory
+  .store_dat(DUT.CPU.DP1.mwif.dmemstore_o),
+  //Data to write to reg. file
+  .reg_dat(DUT.CPU.DP1.rfif.wdat),
+  //Data loaded from memory
+  .load_dat(DUT.CPU.DP1.mwif.dmemload_o),
+  //Addr. to load/store from/to memory
+  .dat_addr(DUT.CPU.DP1.mwif.port_out_o)
+  );
+  
 `else
   system                              DUT (,,,,//for altera debug ports
     CLK,
